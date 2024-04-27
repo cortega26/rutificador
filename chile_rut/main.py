@@ -203,9 +203,9 @@ class Rut:
 
         if formato in formato_salida:
             return formato_salida[formato](ruts_formateados)
-        
+  
         if formato is None:
             return ",".join(ruts_formateados)
         else:
             raise ValueError(f"Formato '{formato}' no válido.")
-        
+       
