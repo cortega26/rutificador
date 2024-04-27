@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-# RUT Chileno
+# chile-rut
 
 Una biblioteca Python para validar y formatear RUTs (Rol Único Tributario) chilenos.
 
