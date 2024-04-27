@@ -27,7 +27,7 @@ Puedes instalar la librería utilizando pip:
 ### Importar la clase Rut
 
 ```python
-from rut_chileno import Rut
+from chile-rut import Rut
 ```
 
 ## Crear Un Objeto
@@ -44,7 +44,7 @@ La validación del RUT se realiza automáticamente al crear un objeto `Rut`. Si 
 ## Calcular el Dígito Verificador de un RUT
 
 ```python
-from rut_chileno import RutDigitoVerificador
+from chile-rut import RutDigitoVerificador
 
 digito_verificador = RutDigitoVerificador('12345678').digito_verificador
 print(digito_verificador)  # Salida: 5
