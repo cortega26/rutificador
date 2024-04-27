@@ -19,7 +19,7 @@ Una biblioteca Python para validar y formatear RUTs (Rol Único Tributario) chil
 Puedes instalar la librería utilizando pip:
 
 ```python
-!pip install rut_chileno
+!pip install chile_rut
 ```
 
 ## Uso
@@ -27,7 +27,7 @@ Puedes instalar la librería utilizando pip:
 ### Importar la clase Rut
 
 ```python
-from chile-rut import Rut
+from chile_rut import Rut
 ```
 
 ## Crear Un Objeto
@@ -44,7 +44,7 @@ La validación del RUT se realiza automáticamente al crear un objeto `Rut`. Si 
 ## Calcular el Dígito Verificador de un RUT
 
 ```python
-from chile-rut import RutDigitoVerificador
+from chile_rut import RutDigitoVerificador
 
 digito_verificador = RutDigitoVerificador('12345678').digito_verificador
 print(digito_verificador)  # Salida: 5
