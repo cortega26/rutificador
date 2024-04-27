@@ -1,3 +1,48 @@
+"""
+Módulo para trabajar con RUTs chilenos.
+
+Este módulo proporciona clases y funciones para validar, formatear y manipular RUTs chilenos.
+
+Clases:
+- RutBase: Representa el número base de un RUT chileno.
+- RutDigitoVerificador: Calcula y representa el dígito verificador de un RUT chileno.
+- Rut: Representa un RUT chileno completo y proporciona métodos para validarlo y formatearlo.
+
+Funciones:
+- validar_lista_ruts(ruts): Valida una lista de RUTs chilenos.
+- formatear_lista_ruts(ruts, separador_miles=False, mayusculas=False, formato=None):
+  Formatea una lista de RUTs chilenos según las opciones especificadas.
+
+Constantes:
+- FACTORES_DIGITO_VERIFICADOR: Lista de factores utilizados para calcular el dígito verificador.
+- MODULO_DIGITO_VERIFICADOR: Valor utilizado para calcular el dígito verificador.
+- RUT_REGEX: Expresión regular utilizada para validar el formato de un RUT.
+
+Excepciones:
+- RutInvalidoError: Excepción lanzada cuando se encuentra un RUT inválido.
+
+Uso:
+    from chile_rut import Rut, validar_lista_ruts, formatear_lista_ruts
+
+    # Crear un objeto Rut
+    rut = Rut('12345678-9')
+    print(str(rut))  # Salida: '12345678-9'
+
+    # Validar una lista de RUTs
+    lista_ruts = ['12345678-9', '98765432-1', 'rut_invalido']
+    ruts_validos = validar_lista_ruts(lista_ruts)
+    print(ruts_validos)  # Salida: ['12345678-9', '98765432-1']
+
+    # Formatear una lista de RUTs
+    ruts_formateados = formatear_lista_ruts(lista_ruts, separador_miles=True, mayusculas=True, formato='xml')
+    print(ruts_formateados)
+    # Salida:
+    # <root>
+    #     <rut>12.345.678-9</rut>
+    #     <rut>98.765.432-1</rut>
+    # </root>
+"""
+
 import re
 from exceptions import RutInvalidoError
 
@@ -118,7 +163,7 @@ class Rut:
         """
         rut = str(self)
         if separador_miles:
-            rut = (self._agregar_separador_miles(rut.split("-")[0]) + "-" + rut.split("-")[1])
+            rut = self._agregar_separador_miles(rut.split("-")[0]) + "-" + rut.split("-")[1]
 
         if mayusculas:
             rut = rut.upper()
@@ -201,5 +246,5 @@ class Rut:
 
         if formato is None:
             return ",".join(ruts_formateados)
-        
+    
         raise ValueError(f"Formato '{formato}' no válido.")
