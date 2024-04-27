@@ -16,6 +16,7 @@ from chile_rut.main import RutDigitoVerificador
 from chile_rut.exceptions import RutInvalidoError
 import pytest
 
+
 class TestRutDigitoVerificador:
     """Test suite for RutDigitoVerificador class."""
 

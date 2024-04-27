@@ -10,6 +10,7 @@ from chile_rut.main import RutBase
 from chile_rut.exceptions import RutInvalidoError
 import pytest
 
+
 class TestRutBase:
     """Test suite for the RutBase class."""
 

@@ -11,6 +11,7 @@ import pytest
 from chile_rut.main import RutBase
 from chile_rut.exceptions import RutInvalidoError
 
+
 class TestRutBase:
 
     # Creating a new instance of RutBase with a valid base string should set the 'base' attribute to the normalized base string.
