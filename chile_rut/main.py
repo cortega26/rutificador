@@ -34,7 +34,8 @@ Uso:
     print(ruts_validos)  # Salida: ['12345678-9', '98765432-1']
 
     # Formatear una lista de RUTs
-    ruts_formateados = formatear_lista_ruts(lista_ruts, separador_miles=True, mayusculas=True, formato='xml')
+    ruts_formateados = formatear_lista_ruts(lista_ruts, separador_miles=True,
+                                            mayusculas=True, formato='xml')
     print(ruts_formateados)
     # Salida:
     # <root>
@@ -49,6 +50,7 @@ from exceptions import RutInvalidoError
 FACTORES_DIGITO_VERIFICADOR = [2, 3, 4, 5, 6, 7]
 MODULO_DIGITO_VERIFICADOR = 11
 RUT_REGEX = r"^(\d{1,8}(?:.\d{3})*)(-([0-9kK]))?$"
+
 
 class RutBase:
     """Representa el número base de un RUT chileno."""
@@ -73,6 +75,7 @@ class RutBase:
     def __str__(self):
         return self.base
 
+
 class RutDigitoVerificador(RutBase):
     """Calcula y representa el dígito verificador de un RUT chileno."""
 
@@ -93,6 +96,7 @@ class RutDigitoVerificador(RutBase):
 
     def __str__(self):
         return self.digito_verificador
+
 
 class Rut:
     """
@@ -136,7 +140,9 @@ class Rut:
 
         self.base_string = match.group(1)
         digito_verificador_input = match.group(3).lower() if match.group(3) else None
-        digito_verificador_calculado = RutDigitoVerificador(self.base_string).digito_verificador
+        digito_verificador_calculado = RutDigitoVerificador(
+            self.base_string
+        ).digito_verificador
 
         if (
             digito_verificador_input
@@ -163,7 +169,11 @@ class Rut:
         """
         rut = str(self)
         if separador_miles:
-            rut = self._agregar_separador_miles(rut.split("-")[0]) + "-" + rut.split("-")[1]
+            rut = (
+                self._agregar_separador_miles(rut.split("-", maxsplit=1)[0])
+                + "-"
+                + rut.split("-")[1]
+            )
 
         if mayusculas:
             rut = rut.upper()
@@ -198,11 +208,11 @@ class Rut:
 
     @staticmethod
     def _formatear_xml(ruts_formateados):
-        xml_lines = ['<root>']
+        xml_lines = ["<root>"]
         for rut in ruts_formateados:
             xml_lines.append(f"    <rut>{rut}</rut>")
-        xml_lines.append('</root>')
-        return '\n'.join(xml_lines)
+        xml_lines.append("</root>")
+        return "\n".join(xml_lines)
 
     @staticmethod
     def _formatear_json(ruts_formateados):
@@ -246,5 +256,5 @@ class Rut:
 
         if formato is None:
             return ",".join(ruts_formateados)
-    
+
         raise ValueError(f"Formato '{formato}' no válido.")
