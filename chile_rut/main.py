@@ -170,7 +170,10 @@ class Rut:
 
     @staticmethod
     def _formatear_json(ruts_formateados):
-        return f'[{",".join([f'{{"rut": "{rut}"}}' for rut in ruts_formateados])}]'
+        #return f'[{", ".join([f'{{"rut": "{rut}"}}' for rut in ruts_formateados])}]'
+        ruts_json = [{"rut": rut} for rut in ruts_formateados]
+        return str(ruts_json)
+
 
     @staticmethod
     def formatear_lista_ruts(
@@ -210,3 +213,43 @@ class Rut:
             return ",".join(ruts_formateados)
         else:
             raise ValueError(f"Formato '{formato}' no válido.")
+
+
+ruts = [
+    "25.030.096",
+    "1234567-4",
+    "9.876.543-3",
+    "0004",
+    "1 ",
+    " 2",
+    " 3 ",
+    "25005183",
+    "11.222.333",
+    "1234",
+    "11000999",
+    "000.123.456",
+    "00.111.111",
+    "98765432",
+    "22222222",
+    "12.345.670",
+    12,
+    "123",
+    "1234",
+    "12345",
+    "123456",
+    "1234567",
+    "12345678",
+    #'123999-',
+    #'888.888.885-5',
+    "999999",
+    "999999-k",
+]
+
+try:
+    ruts_validos = Rut.validar_lista_ruts(ruts)
+    #print("validos", ruts_validos)
+    formateados = Rut.formatear_lista_ruts(ruts, formato="json", separador_miles=True)
+    print(formateados)
+    # print("\n".join(formateados))
+except RutInvalidoError as e:
+    print(e)
