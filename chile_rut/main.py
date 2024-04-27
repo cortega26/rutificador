@@ -1,45 +1,45 @@
 import re
 from exceptions import RutInvalidoError
 
-
 FACTORES_DIGITO_VERIFICADOR = [2, 3, 4, 5, 6, 7]
 MODULO_DIGITO_VERIFICADOR = 11
 RUT_REGEX = r"^(\d{1,8}(?:.\d{3})*)(-([0-9kK]))?$"
-
 
 class RutBase:
     """Representa el número base de un RUT chileno."""
 
     def __init__(self, base):
         self.rut_original = base
-        self._validar_base(base)
-        self.base = base.replace(".", "").lstrip("0")
-        if len(self.base) > 8:
+        self.base = self.validar_y_normalizar_base(base)
+
+    def validar_y_normalizar_base(self, base):
+        """Valida y normaliza el número base."""
+        if not re.match(r"^\d{1,3}(?:\.\d{3})*$", base) and not base.isdigit():
+            raise RutInvalidoError(f"El número base '{base}' no es válido.")
+
+        base_normalizada = base.replace(".", "").lstrip("0")
+        if len(base_normalizada) > 8:
             raise RutInvalidoError(
                 f"El rut {self.rut_original} es inválido ya que contiene más de 8 dígitos."
             )
 
-    def _validar_base(self, base):
-        """Valida el formato del número base."""
-        if not re.match(r"^\d{1,3}(?:\.\d{3})*$", base) and not base.isdigit():
-            raise RutInvalidoError(f"El número base '{base}' no es válido.")
+        return base_normalizada
 
     def __str__(self):
         return self.base
 
-
-class RutDigitoVerificador:
+class RutDigitoVerificador(RutBase):
     """Calcula y representa el dígito verificador de un RUT chileno."""
 
     def __init__(self, base):
-        self.base = RutBase(base)
+        super().__init__(base)
         self.digito_verificador = self.calcular_digito_verificador()
 
     def calcular_digito_verificador(self):
         """Calcula el dígito verificador del RUT."""
         suma_parcial = sum(
             int(digito) * FACTORES_DIGITO_VERIFICADOR[i % 6]
-            for i, digito in enumerate(reversed(str(self.base.base)))
+            for i, digito in enumerate(reversed(str(self.base)))
         )
         digito_verificador = (
             MODULO_DIGITO_VERIFICADOR - suma_parcial % MODULO_DIGITO_VERIFICADOR
@@ -48,7 +48,6 @@ class RutDigitoVerificador:
 
     def __str__(self):
         return self.digito_verificador
-
 
 class Rut:
     """
@@ -92,9 +91,7 @@ class Rut:
 
         self.base_string = match.group(1)
         digito_verificador_input = match.group(3).lower() if match.group(3) else None
-        digito_verificador_calculado = RutDigitoVerificador(
-            self.base_string
-        ).digito_verificador
+        digito_verificador_calculado = RutDigitoVerificador(self.base_string).digito_verificador
 
         if (
             digito_verificador_input
@@ -114,18 +111,14 @@ class Rut:
 
         Args:
             separador_miles (bool, opcional): Si se deben agregar separadores de miles (puntos).
-            mayusculas (bool, opcional): Si el dígito verificador debe ser mayúscula cuando este sea 'k'.
+            mayusculas (bool, opcional): Si el D.V. debe ser mayúscula cuando este sea 'k'.
 
         Returns:
             str: El RUT formateado según las opciones especificadas.
         """
         rut = str(self)
         if separador_miles:
-            rut = (
-                self._agregar_separador_miles(rut.split("-")[0])
-                + "-"
-                + rut.split("-")[1]
-            )
+            rut = (self._agregar_separador_miles(rut.split("-")[0]) + "-" + rut.split("-")[1])
 
         if mayusculas:
             rut = rut.upper()
@@ -160,14 +153,16 @@ class Rut:
 
     @staticmethod
     def _formatear_xml(ruts_formateados):
-        return f"<root>{''.join(['<rut>' + rut + '</rut>' for rut in ruts_formateados])}</root>"
+        xml_lines = ['<root>']
+        for rut in ruts_formateados:
+            xml_lines.append(f"    <rut>{rut}</rut>")
+        xml_lines.append('</root>')
+        return '\n'.join(xml_lines)
 
     @staticmethod
     def _formatear_json(ruts_formateados):
-        #return f'[{", ".join([f'{{"rut": "{rut}"}}' for rut in ruts_formateados])}]'
         ruts_json = [{"rut": rut} for rut in ruts_formateados]
         return str(ruts_json)
-
 
     @staticmethod
     def formatear_lista_ruts(
@@ -189,8 +184,8 @@ class Rut:
             str: Una cadena de RUTs formateados según las opciones especificadas.
 
         Raises:
-        RutInvalidoError: Si alguno de los RUTs en la lista es inválido.
-        ValueError: Si se especifica un formato no válido.
+            RutInvalidoError: Si alguno de los RUTs en la lista es inválido.
+            ValueError: Si se especifica un formato no válido.
         """
         formato_salida = {
             "csv": Rut._formatear_csv,
@@ -206,5 +201,5 @@ class Rut:
 
         if formato is None:
             return ",".join(ruts_formateados)
-        else:
-            raise ValueError(f"Formato '{formato}' no válido.")
+        
+        raise ValueError(f"Formato '{formato}' no válido.")
