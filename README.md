@@ -102,7 +102,7 @@ print(xml_ruts)
 ```
 
 ## Estructura del Código
-```
+
 rut_chileno/
 ├── rut_chileno/
 │   ├── __init__.py
@@ -112,7 +112,7 @@ rut_chileno/
 │   └── test_rut.py
 ├── README.md
 └── LICENSE
-```
+
 
 - `main.py`: Contiene las clases principales Rut, RutBase y RutDigitoVerificador.
 - `exceptions.py`: Define las excepciones personalizadas RutError, RutInvalidoError y RutDigitoVerificadorInvalidoError.
