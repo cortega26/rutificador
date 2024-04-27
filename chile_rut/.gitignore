@@ -1,0 +1,62 @@
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test caches
+.pytest_cache/
+
+# Virtual environments
+venv/
+.env/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE project files
+*.idea/
+*.vscode/
+
+# Build directories
+build/
+dist/
+*.egg-info/
+
+# Common data files
+*.csv
+*.json
+*.xml
+
+# Common backup files
+*.bak
+*.orig
+*.tmp
+
+# Hidden directories (e.g., config, logs)
+.*
+!.git
+!.gitignore
+
+# Log files
+*.log
+
+# Temporary files (e.g., editor files)
+*~
+*.swp
+*.swo
+.DS_Store
+
+# Package files
+*.egg
+*.whl
+*.deb
+
+# Thumbs.db
+Thumbs.db
+
+# Other binary files
+*.dll
+*.so
+*.dylib
