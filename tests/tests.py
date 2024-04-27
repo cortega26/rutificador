@@ -1,5 +1,6 @@
 import pytest
-from chile_rut.main import RutBase, RutInvalidoError, RutDigitoVerificador
+from chile_rut.exceptions import RutInvalidoError, RutDigitoVerificadorInvalidoError
+from chile_rut.main import Rut, RutBase, RutDigitoVerificador
 
 
 # Tests for the RutBase class.

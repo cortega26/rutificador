@@ -1,16 +1,10 @@
 import re
+from exceptions import RutInvalidoError
+
 
 FACTORES_DIGITO_VERIFICADOR = [2, 3, 4, 5, 6, 7]
 MODULO_DIGITO_VERIFICADOR = 11
 RUT_REGEX = r"^(\d{1,8}(?:.\d{3})*)(-([0-9kK]))?$"
-
-
-class RutError(Exception):
-    """Excepción base para errores relacionados con el RUT."""
-
-
-class RutInvalidoError(RutError):
-    """Lanzada cuando el formato del RUT ingresado es inválido."""
 
 
 class RutBase:
