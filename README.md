@@ -77,14 +77,14 @@ print(Rut.formatear_lista_ruts(ruts_validos, separador_miles=True, mayusculas=Tr
 
 # En formato csv
 ruts = ['12.345.678', '9876543-4', '1.234.567-3', '18005183']
-csv_ruts = Rut.formatear_lista_ruts(ruts, formato='csv', separador_miles=True)
+csv_ruts = Rut.formatear_lista_ruts(ruts, formato='csv')
 print(csv_ruts)
 # Salida
 rut
-12.345.678-9
-9.876.543-4
-1.234.567-3
-18.005.183-0
+12345678-9
+9876543-4
+1234567-3
+18005183-0
 
 # En formato json
 ruts = ['12.345.678', '9876543-4', '1.234.567-3', '18005183']
