@@ -1,3 +1,11 @@
+"""Module containing test cases for the chile_rut package.
+
+This module includes classes for testing the functionality of the chile_rut package.
+It provides tests for the Rut, RutBase, and RutDigitoVerificador classes, covering
+valid and invalid cases to ensure the package behaves as expected.
+"""
+
+
 import pytest
 from chile_rut.exceptions import RutInvalidoError, RutDigitoVerificadorInvalidoError
 from chile_rut.main import Rut, RutBase, RutDigitoVerificador
