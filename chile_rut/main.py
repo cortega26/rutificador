@@ -45,7 +45,7 @@ Uso:
 """
 
 import re
-from exceptions import RutInvalidoError
+from .exceptions import RutInvalidoError
 
 FACTORES_DIGITO_VERIFICADOR = [2, 3, 4, 5, 6, 7]
 MODULO_DIGITO_VERIFICADOR = 11
