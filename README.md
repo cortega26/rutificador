@@ -115,11 +115,6 @@ chile-rut/
 └── LICENSE
 ```
 
-- `main.py`: Contiene las clases principales Rut, RutBase y RutDigitoVerificador.
-- `exceptions.py`: Define las excepciones personalizadas RutError, RutInvalidoError y RutDigitoVerificadorInvalidoError.
-- `utils.py`: Funciones de utilidad.
-- `tests/`: Directorio que contiene las pruebas unitarias.
-
 ## Contribuciones
 
 Las contribuciones son bienvenidas. Por favor, sigue las pautas de contribución descritas en el archivo CONTRIBUTING.md.
