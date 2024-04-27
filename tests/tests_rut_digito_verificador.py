@@ -8,13 +8,11 @@ The tests cover various scenarios, including:
 - Calculating the correct digit verifier for different valid RUT bases.
 - Raising a RutInvalidoError for invalid RUT base strings, such as non-digit characters.
 - Testing RUT bases with different lengths and compositions to verify the correct handling.
-
-These tests help ensure the accuracy and robustness of the RutDigitoVerificador class.
 """
 
+import pytest
 from chile_rut.main import RutDigitoVerificador
 from chile_rut.exceptions import RutInvalidoError
-import pytest
 
 
 class TestRutDigitoVerificador:

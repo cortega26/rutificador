@@ -6,9 +6,9 @@ valid and invalid base strings, as well as other input conditions such as
 leading zeros, dots as separators, and empty strings.
 """
 
+import pytest
 from chile_rut.main import RutBase
 from chile_rut.exceptions import RutInvalidoError
-import pytest
 
 
 class TestRutBase:
@@ -60,7 +60,7 @@ class TestRutBase:
         rut = RutBase(base)
         assert rut.base == "12345678"
 
-    def test_invalid_base_string(self):
+    def test_invalid_base_string_non_digits(self):
         """Test RutBase instance with invalid base string containing non-digit characters.
 
         Ensures invalid base string with non-digit characters raises RutInvalidoError.

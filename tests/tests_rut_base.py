@@ -3,8 +3,7 @@
 This module contains tests for the RutBase class from the chile_rut package.
 The tests cover a variety of scenarios including valid and invalid base strings,
 as well as various input conditions such as leading zeros, thousands separators,
-and non-digit characters. The tests use parametrization to efficiently test
-multiple input scenarios for the RutBase class.
+and non-digit characters.
 """
 
 import pytest
