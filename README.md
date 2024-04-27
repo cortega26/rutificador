@@ -104,8 +104,8 @@ print(xml_ruts)
 ## Estructura del Código
 
 ```
-rut_chileno/
-├── rut_chileno/
+chile-rut/
+├── chile_rut/
 │   ├── __init__.py
 │   └── main.py
 ├── tests/
