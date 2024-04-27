@@ -102,20 +102,6 @@ print(xml_ruts)
 <root><rut>12345678-9</rut><rut>9876543-4</rut><rut>1234567-3</rut><rut>18005183-0</rut></root>
 ```
 
-## Estructura del Código
-
-```
-chile-rut/
-├── chile_rut/
-│   ├── __init__.py
-│   └── main.py
-├── tests/
-│   ├── __init__.py
-│   └── test_rut.py
-├── README.md
-└── LICENSE
-```
-
 ## Contribuciones
 
 Las contribuciones son bienvenidas. Por favor, sigue las pautas de contribución descritas en el archivo CONTRIBUTING.md.
