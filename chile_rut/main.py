@@ -220,7 +220,8 @@ class Rut:
         formato (str, opcional): El formato de salida deseado (csv, json, xml, etc.).
 
         Returns:
-            str: Una cadena con los RUTs válidos e inválidos formateados según las opciones especificadas.
+            str: Una cadena con los RUTs válidos e inválidos formateados según las opciones
+                especificadas.
 
         Raises:
             RutInvalidoError: Si alguno de los RUTs en la lista es inválido.
@@ -237,7 +238,8 @@ class Rut:
 
         resultado = ''
         if ruts_validos:
-            ruts_validos_formateados = [Rut(rut).formatear(separador_miles, mayusculas) for rut in ruts_validos]
+            ruts_validos_formateados = [Rut(rut).formatear(separador_miles, mayusculas) 
+                                        for rut in ruts_validos]
             resultado += 'RUTs válidos:\n'
             if formato in ('csv', 'xml', 'json'):
                 resultado += formato_salida[formato](ruts_validos_formateados)
