@@ -1,6 +1,4 @@
 """
-Módulo para trabajar con RUTs chilenos.
-
 Este módulo proporciona clases y funciones para validar, formatear y manipular RUTs chilenos.
 
 Clases:
@@ -9,47 +7,24 @@ Clases:
 - Rut: Representa un RUT chileno completo y proporciona métodos para validarlo y formatearlo.
 
 Funciones:
-- validar_lista_ruts(ruts): Valida una lista de RUTs chilenos.
+- calcular_digito_verificador: Calcula el dígito verificador de un RUT.
+- validar_lista_ruts(ruts): Valida una lista de RUTs.
 - formatear_lista_ruts(ruts, separador_miles=False, mayusculas=False, formato=None):
-  Formatea una lista de RUTs chilenos según las opciones especificadas.
-
-Constantes:
-- FACTORES_DIGITO_VERIFICADOR: Lista de factores utilizados para calcular el dígito verificador.
-- MODULO_DIGITO_VERIFICADOR: Valor utilizado para calcular el dígito verificador.
-- RUT_REGEX: Expresión regular utilizada para validar el formato de un RUT.
+    Formatea una lista de RUTs chilenos según las opciones especificadas.
 
 Excepciones:
 - RutInvalidoError: Excepción lanzada cuando se encuentra un RUT inválido.
-
-Uso:
-    from chile_rut import Rut, validar_lista_ruts, formatear_lista_ruts
-
-    # Crear un objeto Rut
-    rut = Rut('12345678-9')
-    print(str(rut))  # Salida: '12345678-9'
-
-    # Validar una lista de RUTs
-    lista_ruts = ['12345678-9', '98765432-1', 'rut_invalido']
-    ruts_validos = validar_lista_ruts(lista_ruts)
-    print(ruts_validos)  # Salida: ['12345678-9', '98765432-1']
-
-    # Formatear una lista de RUTs
-    ruts_formateados = formatear_lista_ruts(lista_ruts, separador_miles=True,
-                                            mayusculas=True, formato='xml')
-    print(ruts_formateados)
-    # Salida:
-    # <root>
-    #     <rut>12.345.678-9</rut>
-    #     <rut>98.765.432-1</rut>
-    # </root>
 """
 
 import re
-from .exceptions import RutInvalidoError
 
 FACTORES_DIGITO_VERIFICADOR = [2, 3, 4, 5, 6, 7]
 MODULO_DIGITO_VERIFICADOR = 11
 RUT_REGEX = r"^(\d{1,8}(?:.\d{3})*)(-([0-9kK]))?$"
+
+
+class RutInvalidoError(Exception):
+    """Lanzada cuando el formato del RUT ingresado es inválido."""
 
 
 class RutBase:
@@ -67,7 +42,7 @@ class RutBase:
         base_normalizada = base.replace(".", "").lstrip("0")
         if len(base_normalizada) > 8:
             raise RutInvalidoError(
-                f"El rut {self.rut_original} es inválido ya que contiene más de 8 dígitos."
+                f"El rut '{self.rut_original}' es inválido ya que contiene más de 8 dígitos."
             )
 
         return base_normalizada
@@ -194,12 +169,21 @@ class Rut:
             ruts (List[str]): Una lista de RUTs en formato string o numérico.
 
         Returns:
-            List[str]: Una lista de RUTs válidos en formato string.
+            dict: Un diccionario con dos claves: 'validos' y 'invalidos',
+                  cada una conteniendo una lista de RUTs válidos e inválidos respectivamente.
 
         Raises:
             RutInvalidoError: Si alguno de los RUTs en la lista es inválido.
         """
-        return [str(Rut(rut)) for rut in ruts]
+        validos = []
+        invalidos = []
+        for rut in ruts:
+            try:
+                rut_valido = str(Rut(rut))
+                validos.append(rut_valido)
+            except RutInvalidoError as e:
+                invalidos.append((rut, str(e)))
+        return {'validos': validos, 'invalidos': invalidos}
 
     @staticmethod
     def _formatear_csv(ruts_formateados):
@@ -228,15 +212,15 @@ class Rut:
     ):
         """
         Formatea una lista de RUTs según las opciones especificadas.
-
+        
         Args:
-            ruts (List[str]): Una lista de RUTs en formato string o numérico.
-            separador_miles (bool): Si se deben agregar separadores de miles (puntos).
-            mayusculas (bool): Si los RUTs deben estar en mayúsculas.
-            formato (str, opcional): El formato de salida deseado (csv, json, xml, etc.).
+        ruts (List[str]): Una lista de RUTs en formato string o numérico.
+        separador_miles (bool): Si se deben agregar separadores de miles (puntos).
+        mayusculas (bool): Si los RUTs deben estar en mayúsculas.
+        formato (str, opcional): El formato de salida deseado (csv, json, xml, etc.).
 
         Returns:
-            str: Una cadena de RUTs formateados según las opciones especificadas.
+            str: Una cadena con los RUTs válidos e inválidos formateados según las opciones especificadas.
 
         Raises:
             RutInvalidoError: Si alguno de los RUTs en la lista es inválido.
@@ -247,14 +231,64 @@ class Rut:
             "xml": Rut._formatear_xml,
             "json": Rut._formatear_json,
         }
-        ruts_formateados = [
-            Rut(rut).formatear(separador_miles, mayusculas) for rut in ruts
-        ]
+        ruts_validos_invalidos = Rut.validar_lista_ruts(ruts)
+        ruts_validos = ruts_validos_invalidos['validos']
+        ruts_invalidos = ruts_validos_invalidos['invalidos']
 
-        if formato in formato_salida:
-            return formato_salida[formato](ruts_formateados)
+        resultado = ''
+        if ruts_validos:
+            ruts_validos_formateados = [Rut(rut).formatear(separador_miles, mayusculas) for rut in ruts_validos]
+            resultado += 'RUTs válidos:\n'
+            if formato in ('csv', 'xml', 'json'):
+                resultado += formato_salida[formato](ruts_validos_formateados)
+            else:
+                resultado += '\n'.join(ruts_validos_formateados)
+            resultado += '\n\n'
 
-        if formato is None:
-            return ",".join(ruts_formateados)
+        if ruts_invalidos:
+            resultado += 'RUTs inválidos:\n'
+            for rut, error in ruts_invalidos:
+                resultado += f'{rut} - {error}\n'
 
-        raise ValueError(f"Formato '{formato}' no válido.")
+        return resultado
+
+
+ruts = [
+    "25.030.096",
+    "1234567-4",
+    "9.876.543-3",
+    "0004",
+    "1 ",
+    " 2",
+    " 3 ",
+    "25005183",
+    "11.222.333",
+    "1234",
+    "11000999",
+    "000.123.456",
+    "00.111.111",
+    "98765432",
+    "22222222",
+    "12.345.670",
+    12,
+    "123",
+    "1234",
+    "12345",
+    "123456",
+    "1234567",
+    "12345678",
+    '123999-',
+    '888.888.885-5',
+    "999999",
+    "999999-k",
+    "22.22",
+    "1-9k"
+]
+
+try:
+    ruts_validos = Rut.validar_lista_ruts(ruts)
+    print("validos", ruts_validos)
+    formateados = Rut.formatear_lista_ruts(ruts, formato="json", separador_miles=True)
+    print(formateados)
+except RutInvalidoError as e:
+    print(e)

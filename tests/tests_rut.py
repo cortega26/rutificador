@@ -1,114 +1,99 @@
-"""Test suite for the RutBase class.
+from chile_rut.main import Rut
+from chile_rut.main import RutInvalidoError
 
-This module contains tests for the RutBase class from the chile_rut package.
-The tests cover various input scenarios for the RutBase class, including
-valid and invalid base strings, as well as other input conditions such as
-leading zeros, dots as separators, and empty strings.
-"""
 
 import pytest
-from chile_rut.main import RutBase
-from chile_rut.exceptions import RutInvalidoError
 
+class TestRut:
 
-class TestRutBase:
-    """Test suite for the RutBase class."""
+    # create Rut object with valid RUT string
+    def test_valid_rut_string(self):
+        rut = Rut("12345678-5")
+        assert rut.rut_string == "12345678-5"
+        assert rut.base.base == "12345678"
+        assert rut.digito_verificador.digito_verificador == "5"
 
-    def test_valid_base_string(self):
-        """Test RutBase instance with a valid base string.
+    # create Rut object with valid RUT string with leading zeros
+    def test_valid_rut_string_with_leading_zeros(self):
+        rut = Rut("00001234-3")
+        assert rut.rut_string == "00001234-3"
+        assert rut.base.base == "1234"
+        assert rut.digito_verificador.digito_verificador == "3"
 
-        Checks if RutBase instance correctly normalizes valid base strings
-        by removing dots.
-        """
-        base = "12.345.678"
-        rut = RutBase(base)
-        assert rut.base == "12345678"
+    # format RUT with default options
+    def test_format_rut_with_default_options(self):
+        rut = Rut("12345678-5")
+        formatted_rut = rut.formatear()
+        assert formatted_rut == "12345678-5"
 
-    def test_invalid_base_string(self):
-        """Test RutBase instance with an invalid base string.
+    # format RUT with valid RUT
+    def test_format_rut_with_valid_rut(self):
+        rut = Rut("12345678-5")
+        formatted_rut = rut.formatear(separador_miles=True)
+        assert formatted_rut == "12.345.678-5"
 
-        Verifies that an invalid base string raises a RutInvalidoError.
-        """
-        base = "123.456.7890"
+    # format RUT with mayusculas=True
+    def test_format_rut_with_mayusculas_true(self):
+        rut = Rut("999999-k")
+        formatted_rut = rut.formatear(mayusculas=True)
+        assert formatted_rut == "999999-K"
+
+    # format RUT with separador_miles=True and mayusculas=True
+    def test_format_rut_with_separador_miles_and_mayusculas(self):
+        rut = Rut("999999-k")
+        formatted_rut = rut.formatear(separador_miles=True, mayusculas=True)
+        assert formatted_rut == "999.999-K"
+
+    # validate a list of valid RUT strings
+    def test_validate_list_of_valid_rut_strings(self):
+        ruts = ["12345678-5", "98765432-5", "11111111-1"]
+        result = Rut.validar_lista_ruts(ruts)
+        assert result['validos'] == ["12345678-5", "98765432-5", "11111111-1"]
+
+    # validate a list of valid and invalid RUT strings
+    def test_validate_list_of_ruts(self):
+        ruts = ["12345678-9", "98765432-1", "11111111-1", "22222222-2", "33333333-3"]
+        expected_valid = ['11111111-1', '22222222-2', '33333333-3']
+        expected_invalid = [('12345678-9', "El dígito verificador '9' no coincide con el dígito verificador calculado '5'."), ('98765432-1', "El dígito verificador '1' no coincide con el dígito verificador calculado '5'.")]
+
+        result = Rut.validar_lista_ruts(ruts)
+
+        assert result['validos'] == expected_valid
+        assert result['invalidos'] == expected_invalid
+
+    # create Rut object with invalid RUT string with invalid format
+    def test_invalid_rut_string_with_invalid_format(self):
         with pytest.raises(RutInvalidoError):
-            RutBase(base)
+            Rut("12345.67")
 
-    def test_str_method_returns_normalized_base_string(self):
-        """Test str() method of RutBase instance.
-
-        Confirms that str() returns the normalized base string.
-        """
-        base = "12.345.678"
-        rut = RutBase(base)
-        assert str(rut) == "12345678"
-
-    def test_remove_leading_zeros(self):
-        """Test RutBase instance with base string containing leading zeros.
-
-        Ensures leading zeros are removed from the normalized base string.
-        """
-        base = "000.123.456"
-        rut = RutBase(base)
-        assert rut.base == "123456"
-
-    def test_remove_dots_from_base_string(self):
-        """Test RutBase instance with base string containing dots.
-
-        Confirms dots are removed from the normalized base string.
-        """
-        base = "12.345.678"
-        rut = RutBase(base)
-        assert rut.base == "12345678"
-
-    def test_invalid_base_string_non_digits(self):
-        """Test RutBase instance with invalid base string containing non-digit characters.
-
-        Ensures invalid base string with non-digit characters raises RutInvalidoError.
-        """
-        base = "12.3a5.678"
+    # create Rut object with invalid RUT string with invalid base
+    def test_invalid_rut_string_with_invalid_base(self):
         with pytest.raises(RutInvalidoError):
-            RutBase(base)
+            Rut("123456789")
 
-    def test_invalid_base_string_with_only_dots(self):
-        """Test RutBase instance with base string containing only dots.
+    # format RUT with formato='csv'
+    def test_format_rut_csv(self):
+        ruts = ["12345678-5", "98765432-5", "1-9"]
+        expected_output = "RUTs válidos:\nrut\n12345678-5\n98765432-5\n1-9\n\n"
 
-        Verifies RutInvalidoError is raised for base string with only dots.
-        """
-        base = "........"
-        with pytest.raises(RutInvalidoError):
-            RutBase(base)
+        result = Rut.formatear_lista_ruts(ruts, formato="csv")
 
-    def test_invalid_base_string_with_dot_followed_by_less_than_3_digits(self):
-        """Test RutBase instance with base string containing dot followed by less than 3 digits.
+        assert result == expected_output
 
-        Ensures RutInvalidoError is raised for base string with dot followed by less than 3 digits.
-        """
-        base = "12.34"
-        with pytest.raises(RutInvalidoError):
-            RutBase(base)
+    # format RUT with formato='xml'
+    def test_format_rut_xml(self):
+        ruts = ["12345678-5", "98765432-5", "1-9"]
+        expected_output = "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n"
 
-    def test_invalid_base_string_with_dot_followed_by_more_than_3_digits(self):
-        """Test RutBase instance with base string containing dot followed by more than 3 digits.
+        result = Rut.formatear_lista_ruts(ruts, formato="xml")
 
-        Confirms RutInvalidoError is raised for base string with dot followed by more than 3 digits.
-        """
-        base = "12.345.6789"
-        with pytest.raises(RutInvalidoError):
-            RutBase(base)
+        assert result == expected_output
 
-    def test_valid_base_string_with_dot_followed_by_3_digits(self):
-        """Test RutBase instance with base string containing dot followed by exactly 3 digits.
+    # format RUT with formato='json'
+    def test_format_rut_with_json_formato(self):
+        ruts = ["12345678-5", "98765432-5", "11111111-1"]
+        expected_output = 'RUTs válidos:\n[{"rut": "12345678-5"}, {"rut": "98765432-5"}, {"rut": "11111111-1"}]\n\n'
 
-        Checks if RutBase instance normalizes base strings with dot followed by exactly 3 digits.
-        """
-        base = "12.345.678"
-        rut = RutBase(base)
-        assert rut.base == "12345678"
+        result = Rut.formatear_lista_ruts(ruts, formato="json")
 
-    def test_empty_base_string(self):
-        """Test RutBase instance with empty base string.
-
-        Confirms RutInvalidoError is raised for empty base string.
-        """
-        with pytest.raises(RutInvalidoError):
-            RutBase("")
+        assert result == expected_output.replace('"', "'")

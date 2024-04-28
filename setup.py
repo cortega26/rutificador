@@ -13,7 +13,7 @@ setuptools.setup(
     description="Librería para validar y formatear el RUT utilizado en Chile.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="por definir aun",
+    url="https://github.com/cortega26/chile-rut",
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
