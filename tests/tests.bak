@@ -275,6 +275,24 @@ class TestRut:
         assert rut.base.base == "12345678"
         assert rut.digito_verificador.digito_verificador == "5"
 
+    def test_valid_rut_string_with_leading_zeros(self):
+        """
+        Test that a Rut object is correctly created with a valid RUT string containing
+        leading zeros in the base.
+        """
+        rut = Rut("00001234-3")
+        assert rut.rut_string == "00001234-3"
+        assert rut.base.base == "1234"
+        assert rut.digito_verificador.digito_verificador == "3"
+
+    def test_format_rut_with_default_options(self):
+        """
+        Test that the formatear() method correctly formats a RUT string with default options.
+        """
+        rut = Rut("12345678-5")
+        formatted_rut = rut.formatear()
+        assert formatted_rut == "12345678-5"
+
     def test_format_rut_with_separador_miles(self):
         """
         Test that the formatear() method correctly formats a RUT string with
@@ -325,7 +343,6 @@ class TestRut:
         assert result['validos'] == expected_valid
         assert result['invalidos'] == expected_invalid
 
-
     def test_invalid_rut_string_with_invalid_format(self):
         """
         Test that a RutInvalidoError is raised when attempting to create a Rut object
@@ -371,4 +388,3 @@ class TestRut:
         expected_output = 'RUTs válidos:\n[{"rut": "12345678-5"}, {"rut": "98765432-5"}, {"rut": "11111111-1"}]\n\n'
         result = Rut.formatear_lista_ruts(ruts, formato="json")
         assert result == expected_output.replace('"', "'")
-
