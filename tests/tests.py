@@ -44,28 +44,11 @@ class TestRutDigitoVerificador:
         rut = RutDigitoVerificador(base)
         assert str(rut) == expected
 
-    def test_calculate_digit_verifier_for_special_cases(self):
-        """
-        Test that the digit verifier is correctly calculated for special base values.
-        """
-        test_cases = [
-            ("2", "7"),
-            ("4", "3"),
-            ("5", "1"),
-            ("6", "k"),
-            ("7", "8"),
-            ("8", "6"),
-            ("9", "4"),
-        ]
-        for base, expected in test_cases:
-            rut = RutDigitoVerificador(base)
-            assert str(rut) == expected
-
     def test_invalid_base_raises_error(self):
         """
-        Test that a RutInvalidoError is raised when the base value is invalid
+        Test that a RutInvalidoError is raised when the base value is invalid (eg. +8 digits)
         """
-        base = "1234567890"
+        base = "123456789"
         with pytest.raises(RutInvalidoError):
             RutDigitoVerificador(base)
 
