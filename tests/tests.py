@@ -10,7 +10,7 @@ to ensure the robustness and correctness of the classes and their methods.
 import pytest
 from chile_rut.main import Rut, RutDigitoVerificador, RutBase, RutInvalidoError
 
-
+# pylint: disable=R0904
 class TestRutDigitoVerificador:
     """
     Test suite for the RutDigitoVerificador class.
@@ -310,6 +310,7 @@ class TestRut:
         result = Rut.validar_lista_ruts(ruts)
         assert result['validos'] == ["12345678-5", "98765432-5", "11111111-1"]
 
+    # pylint: disable=C0301
     def test_validate_list_of_ruts(self):
         """
         Test that the validar_lista_ruts() method correctly validates a list of valid and
