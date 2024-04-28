@@ -67,7 +67,7 @@ class TestRutDigitoVerificador:
         """
         base = "1234567890"
         with pytest.raises(RutInvalidoError):
-           RutDigitoVerificador(base)
+            RutDigitoVerificador(base)
 
 
 class TestRutBase:
@@ -168,7 +168,7 @@ class TestRutBase:
         base = "12.3a4.678"
         with pytest.raises(RutInvalidoError):
             RutBase(base)
- 
+
     def test_empty_base_string_raises_error(self):
         """
         Test that a RutInvalidoError is raised when the base string is empty.
@@ -342,6 +342,7 @@ class TestRut:
         with pytest.raises(RutInvalidoError):
             Rut("123456789")
 
+    # pylint: disable=C0301
     def test_format_rut_csv(self):
         """
         Test that the formatear_lista_ruts() method correctly formats a list of RUT strings
@@ -352,6 +353,7 @@ class TestRut:
         result = Rut.formatear_lista_ruts(ruts, formato="csv")
         assert result == expected_output
 
+    # pylint: disable=C0301
     def test_format_rut_xml(self):
         """
         Test that the formatear_lista_ruts() method correctly formats a list of RUT strings
@@ -362,6 +364,7 @@ class TestRut:
         result = Rut.formatear_lista_ruts(ruts, formato="xml")
         assert result == expected_output
 
+    # pylint: disable=C0301
     def test_format_rut_json(self):
         """
         Test that the formatear_lista_ruts() method correctly formats a list of RUT strings
@@ -371,4 +374,3 @@ class TestRut:
         expected_output = 'RUTs válidos:\n[{"rut": "12345678-5"}, {"rut": "98765432-5"}, {"rut": "11111111-1"}]\n\n'
         result = Rut.formatear_lista_ruts(ruts, formato="json")
         assert result == expected_output.replace('"', "'")
-
