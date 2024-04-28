@@ -238,7 +238,7 @@ class Rut:
 
         resultado = ''
         if ruts_validos:
-            ruts_validos_formateados = [Rut(rut).formatear(separador_miles, mayusculas) 
+            ruts_validos_formateados = [Rut(rut).formatear(separador_miles, mayusculas)
                                         for rut in ruts_validos]
             resultado += 'RUTs válidos:\n'
             if formato in ('csv', 'xml', 'json'):
