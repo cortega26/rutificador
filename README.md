@@ -111,7 +111,7 @@ print(xml_ruts)
 
 ## Contribuciones
 
-Las contribuciones son bienvenidas. Por favor, sigue las pautas de contribución descritas en el archivo CONTRIBUTING.md.
+Las contribuciones son bienvenidas. Para colaborar solo debes abrir un 'issue' con el aporte deseado.
 
 ## Licencia
 
