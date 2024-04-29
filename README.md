@@ -79,29 +79,34 @@ print(Rut.formatear_lista_ruts(ruts_validos, separador_miles=True, mayusculas=Tr
 
 
 # En formato csv
-ruts = ['12.345.678', '9876543-4', '1.234.567-3', '18005183']
+ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 csv_ruts = Rut.formatear_lista_ruts(ruts, formato='csv')
 print(csv_ruts)
 # Salida
 rut
-12345678-9
-9876543-4
-1234567-3
-18005183-0
+12345678-5
+9876543-3
+1234567-4
+18005183-k
 
 # En formato json
-ruts = ['12.345.678', '9876543-4', '1.234.567-3', '18005183']
+ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 json_ruts = Rut.formatear_lista_ruts(ruts, formato='json')
 print(json_ruts)
 # Salida
-[{"rut": "12345678-9"},{"rut": "9876543-4"},{"rut": "1234567-3"},{"rut": "18005183-0"}]
+[{"rut": "12345678-5"}, {"rut": "9876543-3"}, {"rut": "1234567-4"}, {"rut": "18005183-k"}]
 
 # En formato xml
-ruts = ['12.345.678', '9876543-4', '1.234.567-3', '18005183']
+ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 xml_ruts = Rut.formatear_lista_ruts(ruts, formato='xml')
 print(xml_ruts)
 # Salida
-<root><rut>12345678-9</rut><rut>9876543-4</rut><rut>1234567-3</rut><rut>18005183-0</rut></root>
+<root>
+    <rut>12345678-5</rut>
+    <rut>9876543-3</rut>
+    <rut>1234567-4</rut>
+    <rut>18005183-k</rut>
+</root>
 ```
 
 ## Contribuciones

@@ -253,3 +253,43 @@ class Rut:
                 resultado += f'{rut} - {error}\n'
 
         return resultado
+
+"""
+ruts = [
+    "25.030.096",
+    "1234567-4",
+    "9.876.543-3",
+    "0004",
+    "1 ",
+    " 2",
+    " 3 ",
+    "25005183",
+    "11.222.333",
+    "1234",
+    "11000999",
+    "000.123.456",
+    "00.111.111",
+    "98765432",
+    "22222222",
+    "12.345.670",
+    12,
+    "123",
+    "1234",
+    "12345",
+    "123456",
+    "1234567",
+    "12345678",
+    #'123999-',
+    #'888.888.885-5',
+    "999999 ",
+    "999999-k",
+]
+"""
+ruts = ['12.345.678', '9876543-4', '1.234.567-3', '18005183']
+try:
+    ruts_validos = Rut.validar_lista_ruts(ruts)
+    #print(ruts_validos)
+    formateados = Rut.formatear_lista_ruts(ruts, formato='xml', separador_miles=True)
+    print(formateados)
+except RutInvalidoError as e:
+    print(e)
