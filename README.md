@@ -13,6 +13,8 @@ Una biblioteca Python para validar y formatear RUTs (Rol Único Tributario) chil
 - Formateo del RUT con diferentes opciones (separador de miles, mayúsculas, formato de salida).
 - Validación y formateo de listas de RUTs.
 - Manejo de excepciones personalizadas.
+- **Procesamiento de lotes de RUTs:** Permite procesar lotes de RUTs en lugar de hacerlo individualmente, lo que agiliza el trabajo con grandes cantidades de datos.
+- **Separación de resultados:** Los resultados de los lotes se entregan por separado, mostrando RUTs válidos e inválidos, y pueden exportarse en varios formatos, incluidos CSV, XML y JSON.
 
 ## Instalación
 
