@@ -29,24 +29,24 @@ Puedes instalar la librería utilizando pip:
 ### Importar la clase Rut
 
 ```python
-from ***** import Rut
+from rutificador import Rut
 ```
 
 ## Crear Un Objeto
 
 ```python
 rut1 = Rut('12345678-5')
-rut2 = Rut('12345670-k')
+rut2 = Rut('12.345.670')
 ```
 
 ## Validar un RUT
 
-La validación del RUT se realiza automáticamente al crear un objeto `Rut`. Si el RUT ingresado no es válido, se lanzará una excepción `RutInvalidoError`.
+La validación del RUT se realiza automáticamente al crear un objeto `Rut`. La clase 'Rut' acepta RUTs con y sin dígito verificador así como RUTs con y sin separador de miles. Si el RUT ingresado no es válido, se lanzará una excepción `RutInvalidoError`.
 
 ## Calcular el Dígito Verificador de un RUT
 
 ```python
-from ***** import RutDigitoVerificador
+from rutificador import RutDigitoVerificador
 
 digito_verificador = RutDigitoVerificador('12345678').digito_verificador
 print(digito_verificador)  # Salida: 5
@@ -56,13 +56,13 @@ print(digito_verificador)  # Salida: 5
 
 ```python
 # Formato predeterminado
-print(rut1.formatear())  # Salida: 12345678-9
+print(rut1.formatear())  # Salida: 12345678-5
 
 # Con separador de miles
-print(rut1.formatear(separador_miles=True))  # Salida: 12.345.678-9
+print(rut1.formatear(separador_miles=True))  # Salida: 12.345.678-5
 
-# En mayúsculas
-print(rut2.formatear(mayusculas=True))  # Salida: 12345670-K
+# Formato predeterminado (Rut con dígito verificador = 'k')
+print(rut2.formatear())  # Salida: 12345670-k
 
 # Con separador de miles y en mayúsculas
 print(rut2.formatear(separador_miles=True, mayusculas=True))  # Salida: 12.345.670-K
@@ -76,8 +76,8 @@ ruts = ['12345678-5', '12345670-k', '98765432-1']
 ruts_validos = Rut.validar_lista_ruts(ruts)
 print(Rut.formatear_lista_ruts(ruts_validos, separador_miles=True, mayusculas=True))
 # Salida: [12.345.678-5, 12.345.670-K, 98.765.432-1]
-# En caso de que hayan RUTs inválidos, el método validar_lista_ruts creará dos listas:
-# una con los RUTs válidos (en el formato especificado) y otra con los inválidos.
+# En caso de que hayan RUTs inválidos, el método validar_lista_ruts creará un diccionario dos listas:
+# una lista con los RUTs válidos (en el formato especificado) y otra con los inválidos.
 
 
 # En formato csv
@@ -85,6 +85,7 @@ ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 csv_ruts = Rut.formatear_lista_ruts(ruts, formato='csv')
 print(csv_ruts)
 # Salida
+RUTs válidos:
 rut
 12345678-5
 9876543-3
@@ -96,6 +97,7 @@ ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 json_ruts = Rut.formatear_lista_ruts(ruts, formato='json')
 print(json_ruts)
 # Salida
+RUTs válidos:
 [{"rut": "12345678-5"}, {"rut": "9876543-3"}, {"rut": "1234567-4"}, {"rut": "18005183-k"}]
 
 # En formato xml
@@ -103,12 +105,24 @@ ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 xml_ruts = Rut.formatear_lista_ruts(ruts, formato='xml')
 print(xml_ruts)
 # Salida
+RUTs válidos:
 <root>
     <rut>12345678-5</rut>
     <rut>9876543-3</rut>
     <rut>1234567-4</rut>
     <rut>18005183-k</rut>
 </root>
+
+# Formato predeterminado (formato = None)
+ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
+sin_formato_ruts = Rut.formatear_lista_ruts(ruts, formato=None)
+print(sin_formato_ruts)
+# Salida
+RUTs válidos:
+12345678-5
+9876543-3
+1234567-4
+18005183-k
 ```
 
 ## Contribuciones

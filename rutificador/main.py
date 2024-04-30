@@ -253,6 +253,7 @@ class Rut:
             if formato in ('csv', 'xml', 'json'):
                 resultado += formato_salida[formato](ruts_validos_formateados)
             else:
+                #resultado += '\n'.join(ruts_validos_formateados)
                 resultado += '\n'.join(ruts_validos_formateados)
             resultado += '\n\n'
 
