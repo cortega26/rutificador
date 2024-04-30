@@ -127,8 +127,8 @@ class Rut:
         Valida el dígito verificador del RUT.
         """
         match = Rut.PATRON_RUT.fullmatch(self.rut_string)
-        digito_verificador_input: str = match.group(3).lower() if match.group(3) else None
-        digito_verificador_calculado: str = RutDigitoVerificador(self.base_string).digito_verificador
+        digito_verificador_input = match.group(3).lower() if match.group(3) else None
+        digito_verificador_calculado = RutDigitoVerificador(self.base_string).digito_verificador
 
         if digito_verificador_input and digito_verificador_input != digito_verificador_calculado:
             raise RutInvalidoError(
