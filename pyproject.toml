@@ -19,4 +19,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.classifiers]
-Development Status :: 5 - Production/Stable
+Development Status = "5 - Production/Stable"
