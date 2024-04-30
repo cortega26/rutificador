@@ -61,6 +61,3 @@ Thumbs.db
 *.dll
 *.so
 *.dylib
-
-# Examples
-ejemplos.py
