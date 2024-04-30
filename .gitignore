@@ -47,6 +47,7 @@ dist/
 *.swp
 *.swo
 .DS_Store
+temp/
 
 # Package files
 *.egg

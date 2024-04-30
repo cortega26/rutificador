@@ -8,7 +8,7 @@ RUT_REGEX = r"^(\d{1,8}(?:.\d{3})*)(-([0-9kK]))?$"
 
 
 class RutInvalidoError(Exception):
-    """Lanzada cuando el formato del RUT ingresado es inválido."""
+    """Lanzada cuando el RUT ingresado es inválido."""
 
 
 class RutBase:
@@ -75,38 +75,26 @@ class Rut:
     PATRON_RUT = re.compile(RUT_REGEX)
 
     def __init__(self, rut: str):
-        """
-        Inicializa un objeto Rut.
-
-        Args:
-            rut (str): El RUT en formato string o numérico.
-
-        Raises:
-            RutInvalidoError: Si el formato del RUT ingresado es inválido.
-        """
         self.rut_string = str(rut).strip()
         self._validar_formato_rut()
+        self._validar_digito_verificador()
         self.base = RutBase(self.base_string)
         self.digito_verificador = RutDigitoVerificador(self.base_string)
 
     def _validar_formato_rut(self):
-        """Valida el formato del RUT ingresado."""
         match = Rut.PATRON_RUT.fullmatch(self.rut_string)
         if not match:
             raise RutInvalidoError(
                 f"El formato del RUT '{self.rut_string}' es inválido."
             )
-
         self.base_string = match.group(1)
-        digito_verificador_input = match.group(3).lower() if match.group(3) else None
-        digito_verificador_calculado = RutDigitoVerificador(
-            self.base_string
-        ).digito_verificador
 
-        if (
-            digito_verificador_input
-            and digito_verificador_input != digito_verificador_calculado
-        ):
+    def _validar_digito_verificador(self):
+        match = Rut.PATRON_RUT.fullmatch(self.rut_string)
+        digito_verificador_input = match.group(3).lower() if match.group(3) else None
+        digito_verificador_calculado = RutDigitoVerificador(self.base_string).digito_verificador
+
+        if digito_verificador_input and digito_verificador_input != digito_verificador_calculado:
             raise RutInvalidoError(
                 f"El dígito verificador '{digito_verificador_input}' no coincide con "
                 f"el dígito verificador calculado '{digito_verificador_calculado}'."
@@ -116,16 +104,7 @@ class Rut:
         return f"{self.base}-{self.digito_verificador}"
 
     def formatear(self, separador_miles=False, mayusculas=False):
-        """
-        Formatea el RUT según las opciones especificadas.
-
-        Args:
-            separador_miles (bool, opcional): Si se deben agregar separadores de miles (puntos).
-            mayusculas (bool, opcional): Si el D.V. debe ser mayúscula cuando este sea 'k'.
-
-        Returns:
-            str: El RUT formateado según las opciones especificadas.
-        """
+        """Formatea el RUT según las opciones especificadas."""
         rut = str(self)
         if separador_miles:
             rut = (
@@ -153,11 +132,8 @@ class Rut:
             ruts (List[str]): Una lista de RUTs en formato string o numérico.
 
         Returns:
-            dict: Un diccionario con dos claves: 'validos' y 'invalidos',
+            dict: Un diccionario con dos claves: 'validos' e 'invalidos',
                   cada una conteniendo una lista de RUTs válidos e inválidos respectivamente.
-
-        Raises:
-            RutInvalidoError: Si alguno de los RUTs en la lista es inválido.
         """
         validos = []
         invalidos = []
@@ -201,15 +177,11 @@ class Rut:
         ruts (List[str]): Una lista de RUTs en formato string o numérico.
         separador_miles (bool): Si se deben agregar separadores de miles (puntos).
         mayusculas (bool): Si los RUTs deben estar en mayúsculas.
-        formato (str, opcional): El formato de salida deseado (csv, json, xml, etc.).
+        formato (str, opcional): El formato de salida deseado (csv, json, xml, None).
 
         Returns:
             str: Una cadena con los RUTs válidos e inválidos formateados según las opciones
                 especificadas.
-
-        Raises:
-            RutInvalidoError: Si alguno de los RUTs en la lista es inválido.
-            ValueError: Si se especifica un formato no válido.
         """
         formato_salida = {
             "csv": Rut._formatear_csv,
