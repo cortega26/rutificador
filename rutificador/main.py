@@ -1,20 +1,4 @@
-"""
-Este módulo proporciona clases y funciones para validar, formatear y manipular RUTs chilenos.
-
-Clases:
-- RutBase: Representa el número base de un RUT chileno.
-- RutDigitoVerificador: Calcula y representa el dígito verificador de un RUT chileno.
-- Rut: Representa un RUT chileno completo y proporciona métodos para validarlo y formatearlo.
-
-Funciones:
-- calcular_digito_verificador: Calcula el dígito verificador de un RUT.
-- validar_lista_ruts(ruts): Valida una lista de RUTs.
-- formatear_lista_ruts(ruts, separador_miles=False, mayusculas=False, formato=None):
-    Formatea una lista de RUTs chilenos según las opciones especificadas.
-
-Excepciones:
-- RutInvalidoError: Excepción lanzada cuando se encuentra un RUT inválido.
-"""
+# pylint: disable=missing-module-docstring
 
 import re
 
