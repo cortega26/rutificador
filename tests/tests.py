@@ -8,7 +8,7 @@ to ensure the robustness and correctness of the classes and their methods.
 """
 
 import pytest
-from rutificador.rut import Rut, RutDigitoVerificador, RutBase, RutInvalidoError
+from rutificador.rutificador import Rut, RutDigitoVerificador, RutBase, RutInvalidoError
 
 # pylint: disable=R0904
 class TestRutDigitoVerificador:
