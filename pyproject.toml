@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Rutificador"
-version = "1.0.0"
+version = "0.0.1"
 description = "Esta librería proporciona una implementación en Python para validar y formatear el Rol Único Tributario (RUT) utilizado en Chile."
 authors = ["Carlos Ortega González <carlosortega77@gmail.com>"]
 license = "MIT"
