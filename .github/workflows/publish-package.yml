@@ -9,9 +9,8 @@ jobs:
   pypi-publish:
     name: upload release to Pypi
     runs-on: ubuntu-latest
-    environment: release
-    #permissions:
-    #  id-token: write
+    permissions:
+      id-token: write
 
     steps:
     - uses: actions/checkout@v4
@@ -31,7 +30,7 @@ jobs:
 
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-       user: cortega
-       password: ${{ secrets.rutificador }}
+      #with:
+      # user: cortega
+      # password: ${{ secrets.rutificador }}
 
