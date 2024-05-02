@@ -21,7 +21,7 @@ Una biblioteca Python para validar y formatear RUTs (Rol Único Tributario) chil
 Puedes instalar la librería utilizando pip:
 
 ```python
-!pip install rutificador
+pip install rutificador
 ```
 
 ## Uso
