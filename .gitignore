@@ -34,10 +34,6 @@ dist/
 *.orig
 *.tmp
 
-# Hidden directories (e.g., config, logs)
-.*
-!.gitignore
-
 # Log files
 *.log
 
