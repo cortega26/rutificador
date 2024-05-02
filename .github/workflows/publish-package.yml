@@ -10,8 +10,8 @@ jobs:
     name: upload release to Pypi
     runs-on: ubuntu-latest
     environment: release
-    permissions:
-      id-token: write
+    #permissions:
+    #  id-token: write
 
     steps:
     - uses: actions/checkout@v4
