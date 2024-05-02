@@ -75,7 +75,10 @@ print(rut2.formatear(separador_miles=True, mayusculas=True))  # Salida: 12.345.6
 ruts = ['12345678-5', '12345670-k', '98765432-1']
 ruts_validos = Rut.validar_lista_ruts(ruts)
 print(Rut.formatear_lista_ruts(ruts_validos, separador_miles=True, mayusculas=True))
-# Salida: [12.345.678-5, 12.345.670-K, 98.765.432-1]
+# Salida: 
+# 12.345.678-5
+# 12.345.670-K
+# 98.765.432-1
 # En caso de que hayan RUTs inválidos, el método validar_lista_ruts creará un diccionario dos listas:
 # una lista con los RUTs válidos (en el formato especificado) y otra con los inválidos.
 
