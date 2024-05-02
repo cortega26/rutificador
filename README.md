@@ -130,7 +130,7 @@ RUTs válidos:
 
 ## Contribuciones
 
-Las contribuciones son bienvenidas. Para colaborar solo debes abrir un 'issue' con el aporte deseado.
+Las contribuciones son bienvenidas. Para colaborar solo debes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, hacer el commit, el push y el pull request para migrar los cambios al 'master'. Finalmente, asegúrate de describir los cambios que realizaste y por qué crees son necesarios.
 
 ## Licencia
 
