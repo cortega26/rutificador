@@ -75,12 +75,13 @@ print(rut2.formatear(separador_miles=True, mayusculas=True))  # Salida: 12.345.6
 ruts = ['12345678-5', '12345670-k', '98765432-1']
 ruts_validos = Rut.validar_lista_ruts(ruts)
 print(Rut.formatear_lista_ruts(ruts_validos, separador_miles=True, mayusculas=True))
-# Salida: 
+# Salida:
+# RUTs válidos:
 # 12.345.678-5
 # 12.345.670-K
 # 98.765.432-1
-# En caso de que hayan RUTs inválidos, el método validar_lista_ruts creará un diccionario con dos
-# listas: una lista con los RUTs válidos (en el formato especificado) y otra con los inválidos.
+# En caso de que hayan RUTs inválidos, el método validar_lista_ruts creará un diccionario con
+# dos listas: una con los RUTs válidos (en el formato especificado) y otra con los inválidos.
 
 
 # En formato csv
@@ -115,17 +116,6 @@ RUTs válidos:
     <rut>1234567-4</rut>
     <rut>18005183-k</rut>
 </root>
-
-# Formato predeterminado (formato = None)
-ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
-sin_formato_ruts = Rut.formatear_lista_ruts(ruts, formato=None)
-print(sin_formato_ruts)
-# Salida
-RUTs válidos:
-12345678-5
-9876543-3
-1234567-4
-18005183-k
 ```
 
 ## Contribuciones
