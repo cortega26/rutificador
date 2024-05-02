@@ -79,8 +79,8 @@ print(Rut.formatear_lista_ruts(ruts_validos, separador_miles=True, mayusculas=Tr
 # 12.345.678-5
 # 12.345.670-K
 # 98.765.432-1
-# En caso de que hayan RUTs inválidos, el método validar_lista_ruts creará un diccionario dos listas:
-# una lista con los RUTs válidos (en el formato especificado) y otra con los inválidos.
+# En caso de que hayan RUTs inválidos, el método validar_lista_ruts creará un diccionario con dos
+# listas: una lista con los RUTs válidos (en el formato especificado) y otra con los inválidos.
 
 
 # En formato csv
