@@ -100,7 +100,7 @@ class Rut:
         formatear_lista_ruts: Formatea una lista de RUTs según las opciones especificadas.
     """
 
-    PATRON_RUT: re.Pattern = re.compile(RUT_REGEX)
+    PATRON_RUT = re.compile(RUT_REGEX)
 
     def __init__(self, rut: str):
         """
