@@ -29,4 +29,4 @@ jobs:
         ls
         cd tests
         ls
-        pytest tests.py
+        python -m pytest tests.py
