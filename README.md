@@ -78,10 +78,10 @@ ruts = ['12345678-5', '12345670-k', '98765432-1']
 ruts_validos = Rut.validar_lista_ruts(ruts)
 print(Rut.formatear_lista_ruts(ruts_validos, separador_miles=True, mayusculas=True))
 # Salida:
-# RUTs válidos:
-# 12.345.678-5
-# 12.345.670-K
-# 98.765.432-1
+RUTs válidos:
+12.345.678-5
+12.345.670-K
+98.765.432-1
 
 # En formato csv
 ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
@@ -119,7 +119,7 @@ RUTs válidos:
 
 ## Contribuciones
 
-Las contribuciones son bienvenidas. Para colaborar solo debes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, hacer el commit, el push y el pull request para migrar los cambios al 'master'. Finalmente, asegúrate de describir los cambios que realizaste y por qué crees son necesarios.
+Las contribuciones son bienvenidas. Para colaborar puedes abrir un issue o si lo deseas puedes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, hacer el commit, el push y el pull request para migrar los cambios al 'master'. Finalmente, asegúrate de describir los cambios que realizaste y por qué crees son necesarios.
 
 ## Licencia
 
