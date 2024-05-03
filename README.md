@@ -34,18 +34,18 @@ pip install rutificador
 from rutificador import Rut
 ```
 
-## Crear Un Objeto
+### Crear Un Objeto
 
 ```python
 rut1 = Rut('12345678-5')
 rut2 = Rut('12.345.670')
 ```
 
-## Validar un RUT
+### Validar un RUT
 
 La validación del RUT se realiza automáticamente al crear un objeto `Rut`. La clase 'Rut' acepta RUTs con y sin dígito verificador así como RUTs con y sin separador de miles. Si el RUT ingresado no es válido, se lanzará una excepción `RutInvalidoError`.
 
-## Calcular el Dígito Verificador de un RUT
+### Calcular el Dígito Verificador de un RUT
 
 ```python
 from rutificador import RutDigitoVerificador
@@ -54,7 +54,7 @@ digito_verificador = RutDigitoVerificador('12345678').digito_verificador
 print(digito_verificador)  # Salida: 5
 ```
 
-## Formatear un RUT
+### Formatear un RUT
 
 ```python
 # Formato predeterminado
@@ -70,7 +70,7 @@ print(rut2.formatear())  # Salida: 12345670-k
 print(rut2.formatear(separador_miles=True, mayusculas=True))  # Salida: 12.345.670-K
 ```
 
-## Validar y Formatear una lista de RUTs con y sin formato
+### Validar y Formatear una lista de RUTs con y sin formato
 
 ```python
 # Sin formato
