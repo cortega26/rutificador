@@ -10,6 +10,7 @@ to ensure the robustness and correctness of the classes and their methods.
 import pytest
 from rutificador.main import Rut, RutDigitoVerificador, RutBase, RutInvalidoError
 
+
 # pylint: disable=R0904
 class TestRutDigitoVerificador:
     """
@@ -291,7 +292,7 @@ class TestRut:
         """
         ruts = ["12345678-5", "98765432-5", "11111111-1"]
         result = Rut.validar_lista_ruts(ruts)
-        assert result['validos'] == ["12345678-5", "98765432-5", "11111111-1"]
+        assert result["validos"] == ["12345678-5", "98765432-5", "11111111-1"]
 
     # pylint: disable=C0301
     def test_validate_list_of_ruts(self):
@@ -300,15 +301,20 @@ class TestRut:
         invalid RUT strings.
         """
         ruts = ["12345678-9", "98765432-1", "11111111-1", "22222222-2", "33333333-3"]
-        expected_valid = ['11111111-1', '22222222-2', '33333333-3']
+        expected_valid = ["11111111-1", "22222222-2", "33333333-3"]
         expected_invalid = [
-            ('12345678-9', "El dígito verificador '9' no coincide con el dígito verificador calculado '5'."),
-            ('98765432-1', "El dígito verificador '1' no coincide con el dígito verificador calculado '5'.")
-            ]
+            (
+                "12345678-9",
+                "El dígito verificador '9' no coincide con el dígito verificador calculado '5'.",
+            ),
+            (
+                "98765432-1",
+                "El dígito verificador '1' no coincide con el dígito verificador calculado '5'.",
+            ),
+        ]
         result = Rut.validar_lista_ruts(ruts)
-        assert result['validos'] == expected_valid
-        assert result['invalidos'] == expected_invalid
-
+        assert result["validos"] == expected_valid
+        assert result["invalidos"] == expected_invalid
 
     def test_invalid_rut_string_with_invalid_format(self):
         """

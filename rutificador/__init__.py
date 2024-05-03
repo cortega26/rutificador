@@ -1,2 +1,2 @@
 # pylint: disable=missing-module-docstring
-from .main import Rut, RutDigitoVerificador # noqa: F401
+from .main import Rut, RutDigitoVerificador  # noqa: F401

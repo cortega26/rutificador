@@ -6,8 +6,10 @@ FACTORES_DIGITO_VERIFICADOR: list[int] = [2, 3, 4, 5, 6, 7]
 MODULO_DIGITO_VERIFICADOR: int = 11
 RUT_REGEX: str = r"^(\d{1,8}(?:.\d{3})*)(-([0-9kK]))?$"
 
+
 class RutInvalidoError(Exception):
     """Lanzada cuando el RUT ingresado es inválido."""
+
 
 class RutBase:
     """Representa el número base de un RUT chileno."""
@@ -49,6 +51,7 @@ class RutBase:
     def __str__(self) -> str:
         return self.base
 
+
 class RutDigitoVerificador(RutBase):
     """Calcula y representa el dígito verificador de un RUT chileno."""
 
@@ -80,6 +83,7 @@ class RutDigitoVerificador(RutBase):
 
     def __str__(self) -> str:
         return self.digito_verificador
+
 
 class Rut:
     """
@@ -128,9 +132,14 @@ class Rut:
         """
         match = Rut.PATRON_RUT.fullmatch(self.rut_string)
         digito_verificador_input = match.group(3).lower() if match.group(3) else None
-        digito_verificador_calculado = RutDigitoVerificador(self.base_string).digito_verificador
+        digito_verificador_calculado = RutDigitoVerificador(
+            self.base_string
+        ).digito_verificador
 
-        if digito_verificador_input and digito_verificador_input != digito_verificador_calculado:
+        if (
+            digito_verificador_input
+            and digito_verificador_input != digito_verificador_calculado
+        ):
             raise RutInvalidoError(
                 f"El dígito verificador '{digito_verificador_input}' no coincide con "
                 f"el dígito verificador calculado '{digito_verificador_calculado}'."
@@ -196,7 +205,7 @@ class Rut:
                 validos.append(rut_valido)
             except RutInvalidoError as e:
                 invalidos.append((rut, str(e)))
-        return {'validos': validos, 'invalidos': invalidos}
+        return {"validos": validos, "invalidos": invalidos}
 
     @staticmethod
     def _formatear_csv(ruts_formateados: list[str]) -> str:
@@ -205,7 +214,7 @@ class Rut:
 
     @staticmethod
     def _formatear_xml(ruts_formateados: list[str]) -> str:
-        xml_lines:list[str] = ["<root>"]
+        xml_lines: list[str] = ["<root>"]
         for rut in ruts_formateados:
             xml_lines.append(f"    <rut>{rut}</rut>")
         xml_lines.append("</root>")
@@ -221,7 +230,7 @@ class Rut:
         ruts: list[str],
         separador_miles: bool = False,
         mayusculas: bool = False,
-        formato = None,
+        formato=None,
     ) -> str:
         """
         Formatea una lista de RUTs según las opciones especificadas.
@@ -242,24 +251,25 @@ class Rut:
             "json": Rut._formatear_json,
         }
         ruts_validos_invalidos: dict[str, list[str]] = Rut.validar_lista_ruts(ruts)
-        ruts_validos: list[str] = ruts_validos_invalidos['validos']
-        ruts_invalidos: list[tuple[str, str]] = ruts_validos_invalidos['invalidos']
+        ruts_validos: list[str] = ruts_validos_invalidos["validos"]
+        ruts_invalidos: list[tuple[str, str]] = ruts_validos_invalidos["invalidos"]
 
-        resultado: str = ''
+        resultado: str = ""
         if ruts_validos:
-            ruts_validos_formateados: list[str] = [Rut(rut).formatear(separador_miles, mayusculas)
-                                                   for rut in ruts_validos]
-            resultado += 'RUTs válidos:\n'
-            if formato in ('csv', 'xml', 'json'):
+            ruts_validos_formateados: list[str] = [
+                Rut(rut).formatear(separador_miles, mayusculas) for rut in ruts_validos
+            ]
+            resultado += "RUTs válidos:\n"
+            if formato in ("csv", "xml", "json"):
                 resultado += formato_salida[formato](ruts_validos_formateados)
             else:
-                #resultado += '\n'.join(ruts_validos_formateados)
-                resultado += '\n'.join(ruts_validos_formateados)
-            resultado += '\n\n'
+                # resultado += '\n'.join(ruts_validos_formateados)
+                resultado += "\n".join(ruts_validos_formateados)
+            resultado += "\n\n"
 
         if ruts_invalidos:
-            resultado += 'RUTs inválidos:\n'
+            resultado += "RUTs inválidos:\n"
             for rut, error in ruts_invalidos:
-                resultado += f'{rut} - {error}\n'
+                resultado += f"{rut} - {error}\n"
 
         return resultado
