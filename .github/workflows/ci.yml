@@ -24,9 +24,10 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements-dev.txt
 
+    - name: Install rutificador
+      run: |
+        pip install -e .
+
     - name: Run tests
       run: |
-        ls
-        cd tests
-        ls
-        python -m pytest tests.py
+        python -m pytest -v tests/
