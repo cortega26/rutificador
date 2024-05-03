@@ -26,6 +26,5 @@ jobs:
 
     - name: Run tests
       run: |
-        cd ..
         cd tests
         pytest --debug -v
