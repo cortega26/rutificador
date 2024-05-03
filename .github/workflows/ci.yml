@@ -26,5 +26,7 @@ jobs:
 
     - name: Run tests
       run: |
+        ls
         cd tests
+        ls
         pytest tests.py
