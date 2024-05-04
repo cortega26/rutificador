@@ -33,8 +33,8 @@ cadenas_base_invalidas = [
     "12.32",  # Menos de 3 dígitos luego del punto
     "12.3a5.678",  # Letras en el RUT base
     "",  # RUT base vacío
-    " ",  # RUT base sin número
-    "-1",  # RUT base negativo
+    " ",  # RUT base sin dígitos
+    "-1",  # RUT base negativo o dígito verificador sin base
 ]
 
 # Datos de prueba para Rut
@@ -45,14 +45,8 @@ cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "123456789"]
 # Datos de prueba para formatear_lista_ruts
 datos_test_formato = [
     ("csv", "RUTs válidos:\nrut\n12345678-5\n98765432-5\n1-9\n\n"),
-    (
-        "xml",
-        "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n",
-    ),
-    (
-        "json",
-        "RUTs válidos:\n[{'rut': '12345678-5'}, {'rut': '98765432-5'}, {'rut': '1-9'}]\n\n",
-    ),
+    ("xml", "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n"),
+    ("json", "RUTs válidos:\n[{'rut': '12345678-5'}, {'rut': '98765432-5'}, {'rut': '1-9'}]\n\n"),
 ]
 
 
