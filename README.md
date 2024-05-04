@@ -117,7 +117,7 @@ RUTs válidos:
 </root>
 ```
 
-## Requerimientos
+## Problemas o Requerimientos
 
 ¿Te gustaría reportar algún error, solicitar alguna modificación o característica adicional en esta librería? Solo debes abrir un 'issue' y describir tu petición de la forma más precisa y clara posible.
 
