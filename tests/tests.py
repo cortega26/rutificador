@@ -41,6 +41,7 @@ cadenas_base_invalidas = [
 cadenas_rut_validas = ["12345678-5", "98765432-5", "11111111-1"]
 cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "123456789"]
 
+# pylint: disable=C0301
 # Datos de prueba para formatear_lista_ruts
 datos_test_formato = [
     ("csv", "RUTs válidos:\nrut\n12345678-5\n98765432-5\n1-9\n\n"),
@@ -55,6 +56,7 @@ datos_test_formato = [
 ]
 
 
+# pylint: disable=R0904
 class TestsRutDigitoVerificador:
     """
     Suite de pruebas para la clase RutDigitoVerificador.
@@ -131,6 +133,7 @@ class TestsRut:
         resultado = Rut.formatear_lista_ruts(ruts, formato=formato)
         assert resultado == esperado
 
+    # pylint: disable=C0301
     def test_formatear_rut_con_separador_miles(self, rut_valido):
         """
         Prueba que el método formatear formatee correctamente una cadena RUT con separador_miles=True.
@@ -145,6 +148,7 @@ class TestsRut:
         rut_formateado = rut_valido.formatear(mayusculas=False)
         assert rut_formateado == "12345678-5"
 
+    # pylint: disable=C0301
     def test_formatear_rut_con_separador_miles_y_mayusculas(self, rut_valido):
         """
         Prueba que el método formatear formatee correctamente una cadena RUT con separador_miles=True y mayusculas=True.
