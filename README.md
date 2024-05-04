@@ -117,9 +117,13 @@ RUTs válidos:
 </root>
 ```
 
+## Requerimientos
+
+¿Te gustaría reportar algún error, solicitar alguna modificación o característica adicional en esta librería? Solo debes abrir un 'issue' y describir tu petición de la forma más precisa y clara posible.
+
 ## Contribuciones
 
-Las contribuciones son bienvenidas. Para colaborar puedes abrir un issue o si lo deseas puedes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, hacer el commit, el push y el pull request para migrar los cambios al 'master'. Finalmente, asegúrate de describir los cambios que realizaste y por qué crees son necesarios.
+Las contribuciones son bienvenidas. Solo debes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, y finalmente el push y el pull request para migrar los cambios al 'master'.
 
 ## Licencia
 
