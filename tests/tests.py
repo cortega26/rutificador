@@ -56,7 +56,7 @@ datos_test_formato = [
 ]
 
 
-# pylint: disable=R0904
+# pylint: disable=R0903
 class TestsRutDigitoVerificador:
     """
     Suite de pruebas para la clase RutDigitoVerificador.
