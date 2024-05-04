@@ -6,7 +6,7 @@ authors = ["Carlos Ortega González <carlosortega77@gmail.com>"]
 license = "MIT"
 homepage = "https://pypi.org/project/rutificador/"
 repository = "https://github.com/cortega26/Rutificador"
-keywords = ["RUT", "Chile", "validación", "formateo"]
+keywords = ["RUT", "Chile", "validación", "formateo", "librería", "id", "rutificador", "rut-chile"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
