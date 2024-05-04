@@ -56,6 +56,7 @@ format_test_data = [
 ]
 
 
+# pylint: disable=too-few-public-methods
 class TestRutDigitoVerificador:
     """
     Test suite for the RutDigitoVerificador class.
