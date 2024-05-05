@@ -9,6 +9,10 @@ cadenas_test_digito_verificador = [
     ("1", "9"),
     ("999", "7"),
     ("999999", "k"),
+    ("22.791.914", "0"),
+    ("8.670.089", "1"),
+    ("10.535.006", "6"),
+    ("84.920.968", "k"),
     ("123-", RutInvalidoError),  # Con guión pero sin dígito verificador
     ("1234567-1", RutInvalidoError),  # Con dígito verificador erróneo
 ]
