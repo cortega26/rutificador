@@ -71,17 +71,21 @@ print(rut2.formatear())  # Salida: 12345670-k
 print(rut2.formatear(separador_miles=True, mayusculas=True))  # Salida: 12.345.670-K
 ```
 
-### Validar y Formatear una lista de RUTs con y sin formato
+### Validar y Formatear una lista de RUTs en diversos formatos
+
+Al igual que con los RUTs individuales, al utilizar el método `formatear_lista_ruts` la validación se hace de forma automática cuando se trata de listas de RUTs, la diferencia es que en vez de mostrar una excepción `RunInvalidoError` separará los RUTs válidos de los inválidos. Veamos algunos ejemplos:
 
 ```python
 # Sin formato
 ruts = ['12345678-5', '12345670-k', '98765432-1']
-print(Rut.formatear_lista_ruts(ruts, separador_miles=True, mayusculas=True))
+print(Rut.formatear_lista_ruts(ruts, separador_miles=True, mayusculas=True, formato=None))
 # Salida:
 RUTs válidos:
 12.345.678-5
 12.345.670-K
-98.765.432-1
+
+RUTs inválidos:
+98765432-1 - El dígito verificador '1' no coincide con el dígito verificador calculado '5'.
 
 # En formato csv
 ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
