@@ -96,7 +96,6 @@ class Rut:
 
     Métodos:
         formatear: Formatea el RUT según las opciones especificadas.
-        validar_lista_ruts: Valida una lista de RUTs.
         formatear_lista_ruts: Formatea una lista de RUTs según las opciones especificadas.
     """
 
@@ -186,17 +185,7 @@ class Rut:
         return f"{int(numero):,}".replace(",", ".")
 
     @staticmethod
-    def validar_lista_ruts(ruts: list[str]) -> dict[str, list[str]]:
-        """
-        Valida una lista de RUTs.
-
-        Args:
-            ruts (list[str]): Una lista de RUTs en formato string o numérico.
-
-        Returns:
-            dict[str, list[str]]: Un diccionario con dos claves: 'validos' e 'invalidos',
-                  cada una conteniendo una lista de RUTs válidos e inválidos respectivamente.
-        """
+    def _validar_lista_ruts(ruts: list[str]) -> dict[str, list[str]]:
         validos: list[str] = []
         invalidos: list[tuple[str, str]] = []
         for rut in ruts:
@@ -250,7 +239,7 @@ class Rut:
             "xml": Rut._formatear_xml,
             "json": Rut._formatear_json,
         }
-        ruts_validos_invalidos: dict[str, list[str]] = Rut.validar_lista_ruts(ruts)
+        ruts_validos_invalidos: dict[str, list[str]] = Rut._validar_lista_ruts(ruts)
         ruts_validos: list[str] = ruts_validos_invalidos["validos"]
         ruts_invalidos: list[tuple[str, str]] = ruts_validos_invalidos["invalidos"]
 
