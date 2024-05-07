@@ -15,12 +15,6 @@ class RutBase:
     """Representa el número base de un RUT chileno."""
 
     def __init__(self, base: str):
-        """
-        Inicializa la instancia de RutBase.
-
-        Args:
-            base (str): El número base del RUT.
-        """
         self.rut_original: str = base
         self.base: str = self.validar_y_normalizar_base(base)
 
@@ -56,12 +50,6 @@ class RutDigitoVerificador(RutBase):
     """Calcula y representa el dígito verificador de un RUT chileno."""
 
     def __init__(self, base: str):
-        """
-        Inicializa la instancia de RutDigitoVerificador.
-
-        Args:
-            base (str): El número base del RUT.
-        """
         super().__init__(base)
         self.digito_verificador: str = self.calcular_digito_verificador()
 
@@ -102,12 +90,6 @@ class Rut:
     PATRON_RUT = re.compile(RUT_REGEX)
 
     def __init__(self, rut: str):
-        """
-        Inicializa la instancia de Rut.
-
-        Args:
-            rut (str): El RUT en formato string.
-        """
         self.rut_string: str = str(rut).strip()
         self._validar_formato_rut()
         self._validar_digito_verificador()
@@ -115,9 +97,6 @@ class Rut:
         self.digito_verificador = RutDigitoVerificador(self.base_string)
 
     def _validar_formato_rut(self) -> None:
-        """
-        Valida el formato del RUT.
-        """
         match = Rut.PATRON_RUT.fullmatch(self.rut_string)
         if not match:
             raise RutInvalidoError(
@@ -126,9 +105,6 @@ class Rut:
         self.base_string: str = match.group(1)
 
     def _validar_digito_verificador(self) -> None:
-        """
-        Valida el dígito verificador del RUT.
-        """
         match = Rut.PATRON_RUT.fullmatch(self.rut_string)
         digito_verificador_input = match.group(3).lower() if match.group(3) else None
         digito_verificador_calculado = RutDigitoVerificador(
@@ -173,15 +149,6 @@ class Rut:
 
     @staticmethod
     def _agregar_separador_miles(numero: str) -> str:
-        """
-        Agrega separadores de miles (puntos) a un número.
-
-        Args:
-            numero (str): El número sin separadores de miles.
-
-        Returns:
-            str: El número con separadores de miles.
-        """
         return f"{int(numero):,}".replace(",", ".")
 
     @staticmethod
