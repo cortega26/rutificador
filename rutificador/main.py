@@ -193,9 +193,9 @@ class Rut:
 
         Args:
             ruts (list[str]): Una lista de RUTs en formato string o numérico.
-            separador_miles (bool, optional): Si se deben agregar separadores de miles (puntos).
-            mayusculas (bool, optional): Si los RUTs deben estar en mayúsculas.
-            formato (str, optional): El formato de salida deseado (csv, json, xml, None).
+            separador_miles (bool, opcional): Si se deben agregar separadores de miles (puntos).
+            mayusculas (bool, opcional): Si los RUTs deben estar en mayúsculas.
+            formato (str, opcional): El formato de salida deseado (csv, json, xml, None).
 
         Returns:
             str: Una cadena con los RUTs válidos e inválidos formateados según las opciones
