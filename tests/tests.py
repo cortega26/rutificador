@@ -42,7 +42,16 @@ cadenas_base_invalidas = [
 ]
 
 # Datos de prueba para Rut
-cadenas_rut_validas = ["12345678-5", "98765432-5", "11111111-1"]
+cadenas_rut_validas = [
+    "12345678-5",  # Formato convencional 
+    " 12345678",  # Con espacio delante
+    "12345679 ",  # Con espacio detrás
+    " 12345680 ",  # Con espacio a ambos lados del RUT
+    " 1-9 ",  # Con D.V. y espacio a ambos lados
+    " 000000001 ",  # Con ceros delante y espacios
+    " 00.000.001",  # Con ceros delante, puntos y espacios
+    " 25.005.183-2 "  # Con puntos, espacios y D.V.
+]
 cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "123456789"]
 
 # pylint: disable=C0301
@@ -112,7 +121,7 @@ class TestsRut:
         Prueba que las cadenas RUT válidas se manejen correctamente.
         """
         rut = Rut(cadena_rut)
-        assert rut.rut_string == cadena_rut
+        assert rut.rut_string == cadena_rut.strip()
 
     @pytest.mark.parametrize("cadena_rut", cadenas_rut_invalidas)
     def test_cadenas_rut_invalidas(self, cadena_rut):
