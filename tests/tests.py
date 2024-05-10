@@ -43,7 +43,7 @@ cadenas_base_invalidas = [
 
 # Datos de prueba para Rut
 cadenas_rut_validas = [
-    "12345678-5",  # Formato convencional 
+    "12345678-5",  # Formato convencional
     " 12345678",  # Con espacio delante
     "12345679 ",  # Con espacio detrás
     " 12345680 ",  # Con espacio a ambos lados del RUT
@@ -54,12 +54,36 @@ cadenas_rut_validas = [
 ]
 cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "123456789"]
 
-# pylint: disable=C0301
 # Datos de prueba para formatear_lista_ruts
 datos_test_formato = [
     ("csv", "RUTs válidos:\nrut\n12345678-5\n98765432-5\n1-9\n\n"),
-    ("xml", "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n"),
-    ("json", "RUTs válidos:\n[{'rut': '12345678-5'}, {'rut': '98765432-5'}, {'rut': '1-9'}]\n\n"),
+    (
+        "xml",
+        "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n"
+        "    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n"
+    ),
+    (
+        "json",
+        "RUTs válidos:\n[{'rut': '12345678-5'}, {'rut': '98765432-5'}, "
+        "{'rut': '1-9'}]\n\n"
+    ),
+]
+
+datos_test_formatear_lista_ruts = [
+    (
+        ["12345678-5", "98765432-5", "1-9"],
+        None,
+        "RUTs válidos:\n12345678-5\n98765432-5\n1-9\n\n"
+    ),
+    (
+        ["12345678-5", "98765432-1", "123456789", "1-9"],
+        None,
+        "RUTs válidos:\n12345678-5\n1-9\n\nRUTs inválidos:\n"
+        "98765432-1 - El dígito verificador '1' no coincide con "
+        "el dígito verificador calculado '5'.\n"
+        "123456789 - El rut '123456789' es inválido ya que contiene "
+        "más de 8 dígitos.\n"
+    ),
 ]
 
 
@@ -137,6 +161,15 @@ class TestsRut:
         Prueba que el método formatear_lista_ruts formatee correctamente una lista de cadenas RUT.
         """
         ruts = ["12345678-5", "98765432-5", "1-9"]
+        resultado = Rut.formatear_lista_ruts(ruts, formato=formato)
+        assert resultado == esperado
+
+    # pylint: disable=C0301
+    @pytest.mark.parametrize("ruts, formato, esperado", datos_test_formatear_lista_ruts)
+    def test_formatear_lista_ruts_sin_formato(self, ruts, formato, esperado):
+        """
+        Prueba que el método formatear_lista_ruts formatee correctamente una lista de RUTs sin un formato específico.
+        """
         resultado = Rut.formatear_lista_ruts(ruts, formato=formato)
         assert resultado == esperado
 
