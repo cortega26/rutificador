@@ -1,30 +1,31 @@
 [tool.poetry]
 name = "rutificador"
-version = "0.2.13"
+version = "0.2.14"
 description = "Esta librería proporciona una implementación en Python para validar y formatear el Rol Único Tributario (RUT) utilizado en Chile."
 authors = ["Carlos Ortega González <carlosortega77@gmail.com>"]
 license = "MIT"
 homepage = "https://pypi.org/project/rutificador/"
-repository = "https://github.com/cortega26/Rutificador"
+repository = "https://github.com/cortega26/rutificador"
 keywords = [
-  "RUT",
-  "Chile",
-  "validación",
-  "formateo",
-  "librería",
-  "id",
-  "rutificador",
-  "rut-chile",
+    "RUT",
+    "Chile",
+    "validación",
+    "formateo",
+    "librería",
+    "id",
+    "rutificador",
+    "rut-chile",
 ]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
-  "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Topic :: Utilities",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 readme = "README.md"
 
