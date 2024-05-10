@@ -33,6 +33,11 @@ jobs:
         pip install pytest-cov
         python -m pytest --cov=./ --cov-report=xml --cov-report=lcov tests/tests.py
 
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+
     - name: Upload coverage to Coveralls
       uses: coverallsapp/github-action@master
       with:
