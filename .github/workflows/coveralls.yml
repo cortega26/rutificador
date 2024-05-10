@@ -1,0 +1,39 @@
+name: Coveralls
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Install rutificador
+      run: |
+        pip install -e .
+
+    - name: Run tests and collect coverage
+      run: |
+        pip install pytest-cov
+        python -m pytest --cov=./ --cov-report=xml tests/tests.py
+
+    - name: Upload coverage to Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
