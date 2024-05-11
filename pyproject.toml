@@ -37,6 +37,7 @@ pytest = "^7.2.1"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["rutificador"]
 addopts = "--import-mode=importlib"
 
 [build-system]
