@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rutificador"
-version = "0.2.14"
+version = "0.2.15"
 description = "Esta librería proporciona una implementación en Python para validar y formatear el Rol Único Tributario (RUT) utilizado en Chile."
 authors = ["Carlos Ortega González <carlosortega77@gmail.com>"]
 license = "MIT"
@@ -37,7 +37,6 @@ pytest = "^7.2.1"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["rutificador"]
 addopts = "--import-mode=importlib"
 
 [build-system]
