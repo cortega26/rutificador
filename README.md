@@ -81,9 +81,9 @@ Al igual que con los RUTs individuales, al utilizar el método `formatear_lista_
 ruts = ['12345678-5', '12345670-k', '98765432-1']
 print(Rut.formatear_lista_ruts(ruts, separador_miles=True, mayusculas=True, formato=None))
 # Salida:
-RUTs válidos:
-12.345.678-5
-12.345.670-K
+# RUTs válidos:
+# 12.345.678-5
+# 12.345.670-K
 
 RUTs inválidos:
 98765432-1 - El dígito verificador '1' no coincide con el dígito verificador calculado '5'.
@@ -93,33 +93,33 @@ ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 csv_ruts = Rut.formatear_lista_ruts(ruts, formato='csv')
 print(csv_ruts)
 # Salida
-RUTs válidos:
-rut
-12345678-5
-9876543-3
-1234567-4
-18005183-k
+# RUTs válidos:
+# rut
+# 12345678-5
+# 9876543-3
+# 1234567-4
+# 18005183-k
 
 # En formato json
 ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 json_ruts = Rut.formatear_lista_ruts(ruts, formato='json')
 print(json_ruts)
 # Salida
-RUTs válidos:
-[{"rut": "12345678-5"}, {"rut": "9876543-3"}, {"rut": "1234567-4"}, {"rut": "18005183-k"}]
+# RUTs válidos:
+# [{"rut": "12345678-5"}, {"rut": "9876543-3"}, {"rut": "1234567-4"}, {"rut": "18005183-k"}]
 
 # En formato xml
 ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
 xml_ruts = Rut.formatear_lista_ruts(ruts, formato='xml')
 print(xml_ruts)
 # Salida
-RUTs válidos:
-<root>
-    <rut>12345678-5</rut>
-    <rut>9876543-3</rut>
-    <rut>1234567-4</rut>
-    <rut>18005183-k</rut>
-</root>
+# RUTs válidos:
+# <root>
+#     <rut>12345678-5</rut>
+#     <rut>9876543-3</rut>
+#     <rut>1234567-4</rut>
+#     <rut>18005183-k</rut>
+# </root>
 ```
 
 ## Problemas o Requerimientos
