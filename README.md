@@ -58,7 +58,7 @@ print(digito_verificador)  # Salida: 5
 
 ### Formatear un RUT
 
-```python
+```"python"
 # Formato predeterminado
 print(rut1.formatear())  # Salida: 12345678-5
 
@@ -128,7 +128,7 @@ RUTs válidos:
 
 ## Contribuciones
 
-Las contribuciones son bienvenidas. Solo debes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, y finalmente el push y el pull request para migrar los cambios al 'master'.
+Las contribuciones son bienvenidas. Solo debes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, y finalmente hacer push y abrir un pull request para migrar los cambios al 'master'.
 
 ## Licencia
 
