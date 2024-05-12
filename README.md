@@ -74,7 +74,7 @@ print(rut2.formatear(separador_miles=True, mayusculas=True))  # Salida: 12.345.6
 
 ### Validar y Formatear una lista de RUTs en diversos formatos
 
-Al igual que con los RUTs individuales, al utilizar el método `formatear_lista_ruts` la validación se hace de forma automática cuando se trata de listas de RUTs, la diferencia es que en vez de mostrar una excepción `RunInvalidoError` separará los RUTs válidos de los inválidos. Veamos algunos ejemplos:
+Al igual que con los RUTs individuales, al utilizar el método `formatear_lista_ruts` la validación se hace de forma automática cuando se trata de listas de RUTs, la diferencia es que en vez de mostrar una excepción `RutInvalidoError` separará los RUTs válidos de los inválidos. Veamos algunos ejemplos:
 
 ```python
 # Sin formato
