@@ -58,7 +58,7 @@ print(digito_verificador)  # Salida: 5
 
 ### Formatear un RUT
 
-```"python"
+```python
 # Formato predeterminado
 print(rut1.formatear())  # Salida: 12345678-5
 
