@@ -124,11 +124,11 @@ print(xml_ruts)
 
 ## Problemas o Requerimientos
 
-¿Te gustaría reportar algún error, solicitar alguna modificación o característica adicional en esta librería? Solo debes abrir un 'issue' y describir tu petición de la forma más precisa y clara posible.
+¿Te gustaría reportar algún error, solicitar alguna modificación o característica adicional en esta librería? Solo debes abrir un `issue` y describir tu petición de la forma más precisa y clara posible.
 
 ## Contribuciones
 
-Las contribuciones son bienvenidas. Solo debes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, y finalmente hacer push y abrir un pull request para migrar los cambios al 'master'.
+Las contribuciones son bienvenidas. Solo debes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, y finalmente hacer push y abrir un pull request para migrar los cambios al `master`.
 
 ## Licencia
 
