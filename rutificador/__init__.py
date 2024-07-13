@@ -14,7 +14,7 @@ Autor: Carlos Ortega González
 Licencia: MIT
 """
 
-__version__ = "0.2.19"
+__version__ = "0.2.20"
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
