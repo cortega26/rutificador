@@ -10,17 +10,17 @@ Clases:
     RutInvalidoError: Excepción personalizada para errores de RUT inválido.
     RutValidador: Valida un RUT chileno.
 
-Versión: 0.2.21
+Versión: 0.2.22
 Autor: Carlos Ortega González
 Licencia: MIT
 """
 
 from typing import List
 
-__version__ = "0.2.21"
+__version__ = "0.2.22"
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
-from .main import Rut, RutDigitoVerificador, RutInvalidoError, RutValidator
+from .main import Rut, RutDigitoVerificador, RutInvalidoError, RutValidador
 
 __all__: List[str] = ["Rut", "RutDigitoVerificador", "RutInvalidoError", "RutValidador"]
