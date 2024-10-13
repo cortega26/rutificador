@@ -8,16 +8,19 @@ Clases:
     Rut: Representa un RUT chileno, con métodos para validación y formateo.
     RutDigitoVerificador: Calcula y representa el dígito verificador de un RUT chileno.
     RutInvalidoError: Excepción personalizada para errores de RUT inválido.
+    RutValidador: Valida un RUT chileno.
 
-Versión: 0.2.19
+Versión: 0.2.21
 Autor: Carlos Ortega González
 Licencia: MIT
 """
 
-__version__ = "0.2.20"
+from typing import List
+
+__version__ = "0.2.21"
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
-from .main import Rut, RutDigitoVerificador, RutInvalidoError
+from .main import Rut, RutDigitoVerificador, RutInvalidoError, RutValidator
 
-__all__ = ["Rut", "RutDigitoVerificador", "RutInvalidoError"]
+__all__: List[str] = ["Rut", "RutDigitoVerificador", "RutInvalidoError", "RutValidador"]
