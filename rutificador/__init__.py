@@ -9,15 +9,11 @@ Clases:
     RutDigitoVerificador: Calcula y representa el dígito verificador de un RUT chileno.
     RutInvalidoError: Excepción personalizada para errores de RUT inválido.
     RutValidador: Valida un RUT chileno.
-
-Versión: 0.2.22
-Autor: Carlos Ortega González
-Licencia: MIT
 """
 
 from typing import List
 
-__version__ = "0.2.22"
+__version__ = "0.2.23"
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 

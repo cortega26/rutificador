@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD041 -->
 [![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -9,6 +10,27 @@
 # Rutificador
 
 Una biblioteca Python para validar y formatear RUTs (Rol Único Tributario) chilenos.
+
+## Tabla de Contenidos
+
+- [Rutificador](#rutificador)
+  - [Tabla de Contenidos](#tabla-de-contenidos)
+  - [Características](#características)
+  - [Instalación](#instalación)
+  - [Uso](#uso)
+    - [Importar la clase Rut](#importar-la-clase-rut)
+    - [Crear Un Objeto](#crear-un-objeto)
+    - [Validar un RUT](#validar-un-rut)
+    - [Calcular el Dígito Verificador de un RUT](#calcular-el-dígito-verificador-de-un-rut)
+    - [Formatear un RUT](#formatear-un-rut)
+    - [Validar y Formatear una lista de RUTs en diversos formatos](#validar-y-formatear-una-lista-de-ruts-en-diversos-formatos)
+  - [Desarrollo](#desarrollo)
+    - [Configuración del Entorno](#configuración-del-entorno)
+    - [Ejecutar Pruebas](#ejecutar-pruebas)
+  - [Problemas o Requerimientos](#problemas-o-requerimientos)
+  - [Contribuciones](#contribuciones)
+  - [Licencia](#licencia)
+  - [Créditos](#créditos)
 
 ## Características
 
@@ -122,6 +144,27 @@ print(xml_ruts)
 # </root>
 ```
 
+## Desarrollo
+
+### Configuración del Entorno
+
+1. Clonar el repositorio:
+   git clone [https://github.com/cortega26/rutificador.git](https://github.com/cortega26/rutificador.git)
+   cd rutificador
+
+2. Crear un entorno virtual:
+   python -m venv venv
+   source venv/bin/activate  # En Windows use venv\Scripts\activate
+
+3. Instalar las dependencias de desarrollo:
+   pip install -r requirements-dev.txt
+
+### Ejecutar Pruebas
+
+Para ejecutar las pruebas, use el siguiente comando:
+
+pytest
+
 ## Problemas o Requerimientos
 
 ¿Te gustaría reportar algún error, solicitar alguna modificación o característica adicional en esta librería? Solo debes abrir un `issue` y describir tu petición de la forma más precisa y clara posible.
@@ -132,7 +175,7 @@ Las contribuciones son bienvenidas. Solo debes hacer un fork del repositorio, cr
 
 ## Licencia
 
-Este proyecto está licenciado bajo la Licencia MIT.
+Este proyecto está licenciado bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
 
 ## Créditos
 
