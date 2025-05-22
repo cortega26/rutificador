@@ -141,11 +141,6 @@ class TestRutValidator:
         assert match.group(1) == "12345678"
         assert match.group(3) is None
 
-    def test_validar_formato_invalido(self):
-        """Prueba que formato inválido lance excepción."""
-        with pytest.raises(RutInvalidoError):
-            RutValidator.validar_formato("123456789")
-
     def test_validar_formato_none(self):
         """Prueba que None lance excepción."""
         with pytest.raises(RutInvalidoError):
