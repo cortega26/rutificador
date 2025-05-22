@@ -274,7 +274,7 @@ class TestRutBase:
         """Prueba que objetos iguales tengan el mismo hash."""
         base1 = RutBase("12345678", "12345678")
         base2 = RutBase("12345678", "12345678")
-        
+
         assert hash(base1) == hash(base2)
 
 
@@ -324,7 +324,7 @@ class TestRut:
         rut1 = Rut("12345678-5")
         rut2 = Rut("12345678-5")
         rut3 = Rut("87654321-4")
-        
+
         assert rut1 == rut2
         assert rut1 != rut3
 
@@ -332,7 +332,7 @@ class TestRut:
         """Prueba que objetos iguales tengan el mismo hash."""
         rut1 = Rut("12345678-5")
         rut2 = Rut("12345678-5")
-        
+
         assert hash(rut1) == hash(rut2)
 
     def test_str_representation(self, rut_valido):
@@ -351,7 +351,7 @@ class TestRutBatchProcessor:
         """Prueba validación de lista con todos los RUTs válidos."""
         ruts = ["12345678-5", "98765432-5", "1-9"]
         resultado = RutBatchProcessor.validar_lista_ruts(ruts)
-        
+
         assert len(resultado["validos"]) == 3
         assert len(resultado["invalidos"]) == 0
 
@@ -359,7 +359,7 @@ class TestRutBatchProcessor:
         """Prueba validación de lista con RUTs válidos e inválidos."""
         ruts = ["12345678-5", "98765432-1", "1-9"]  # El segundo es inválido
         resultado = RutBatchProcessor.validar_lista_ruts(ruts)
-        
+
         assert len(resultado["validos"]) == 2
         assert len(resultado["invalidos"]) == 1
         assert resultado["invalidos"][0][0] == "98765432-1"
@@ -369,10 +369,10 @@ class TestRutBatchProcessor:
         """Prueba formateo de lista con formato específico."""
         ruts = ["12345678-5", "98765432-5", "1-9"]
         resultado = RutBatchProcessor.formatear_lista_ruts(ruts, formato=formato)
-        
+
         # Verificar que contiene el contenido esperado
         assert "RUTs válidos:" in resultado
-        
+
         if formato == "json":
             # Para JSON, verificar que es válido
             json_part = resultado.split("RUTs válidos:\n")[1].split("\n\n")[0]
@@ -404,7 +404,7 @@ class TestCompatibilidadHaciaAtras:
         """Prueba que la función global funcione igual que antes."""
         ruts = ["12345678-5", "98765432-5", "1-9"]
         resultado = formatear_lista_ruts(ruts)
-        
+
         assert "RUTs válidos:" in resultado
         assert "12345678-5" in resultado
         assert "98765432-5" in resultado
@@ -419,7 +419,7 @@ class TestCompatibilidadHaciaAtras:
             mayusculas=True, 
             formato="csv"
         )
-        
+
         assert "12.345.678-5" in resultado
         assert "rut\n" in resultado
 
@@ -471,7 +471,7 @@ class TestIntegracion:
                 json_lines.append(line)
                 if line.strip().endswith(']'):
                     break
-        
+
         json_str = '\n'.join(json_lines)
         json_data = json.loads(json_str)
         assert len(json_data) == 2  # Solo 2 RUTs válidos
