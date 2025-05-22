@@ -202,7 +202,7 @@ class TestFormatters:
         formatter = JSONFormatter()
         ruts = ["12345678-5", "98765432-5"]
         resultado = formatter.format(ruts)
-        
+
         # Verificar que es JSON válido
         json_data = json.loads(resultado)
         assert len(json_data) == 2
@@ -266,7 +266,7 @@ class TestRutBase:
         base1 = RutBase("12345678", "12345678")
         base2 = RutBase("12345678", "12345678")
         base3 = RutBase("87654321", "87654321")
-        
+
         assert base1 == base2
         assert base1 != base3
 
@@ -307,13 +307,13 @@ class TestRut:
         rut_formateado = rut_valido.formatear(separador_miles=True)
         assert rut_formateado == "12.345.678-5"
 
-    def test_formatear_rut_con_mayusculas(self, rut_valido):
+    def test_formatear_rut_con_mayusculas(self): #, rut_valido):
         """Prueba formateo con mayúsculas."""
         rut_k = Rut("999999-k")
         rut_formateado = rut_k.formatear(mayusculas=True)
         assert rut_formateado == "999999-K"
 
-    def test_formatear_rut_con_separador_miles_y_mayusculas(self, rut_valido):
+    def test_formatear_rut_con_separador_miles_y_mayusculas(self): #, rut_valido):
         """Prueba formateo con separador de miles y mayúsculas."""
         rut_k = Rut("999999-k")
         rut_formateado = rut_k.formatear(separador_miles=True, mayusculas=True)
@@ -435,11 +435,11 @@ class TestIntegracion:
         """Prueba el flujo completo para un RUT individual."""
         # Crear RUT
         rut = Rut("12.345.678-5")
-        
+
         # Verificar componentes
         assert str(rut.base) == "12345678"
         assert rut.digito_verificador == "5"
-        
+
         # Formatear
         rut_formateado = rut.formatear(separador_miles=True, mayusculas=True)
         assert rut_formateado == "12.345.678-5"
@@ -447,23 +447,23 @@ class TestIntegracion:
     def test_flujo_completo_batch_processing(self):
         """Prueba el flujo completo de procesamiento por lotes."""
         ruts = ["12.345.678-5", "98.765.432-1", "1-9", "invalid"]
-        
+
         # Procesar
         resultado = RutBatchProcessor.formatear_lista_ruts(
             ruts, 
             separador_miles=True, 
             formato="json"
         )
-        
+
         # Verificar que hay válidos e inválidos
         assert "RUTs válidos:" in resultado
         assert "RUTs inválidos:" in resultado
-        
+
         # Verificar JSON válido en la parte de válidos
         lines = resultado.split('\n')
         json_start = False
         json_lines = []
-        
+
         for line in lines:
             if line.strip().startswith('['):
                 json_start = True

@@ -43,17 +43,17 @@ def calcular_digito_verificador(base_numerica: str) -> str:
 
     if not base_numerica:
         raise RutInvalidoError("La base numérica no puede estar vacía.")
-    
+
     # Iteramos desde el final hacia adelante sin crear string reversed
     for i in range(len(base_numerica) - 1, -1, -1):
         digito: int = int(base_numerica[i])
         suma_parcial += digito * FACTORES_DIGITO_VERIFICADOR[factor_index % 6]
         factor_index += 1
-    
+
     digito_verificador: int = (
         MODULO_DIGITO_VERIFICADOR - suma_parcial % MODULO_DIGITO_VERIFICADOR
     ) % MODULO_DIGITO_VERIFICADOR
-    
+
     return str(digito_verificador) if digito_verificador < 10 else "k"
 
 
@@ -77,20 +77,20 @@ def normalizar_base_rut(base: str) -> str:
 
 class RutValidator:
     """Responsable únicamente de validar RUTs."""
-    
+
     PATRON_RUT = re.compile(RUT_REGEX)
     
     @classmethod
     def validar_formato(cls, rut_string: str) -> re.Match:
         """
         Valida el formato del RUT.
-        
+
         Args:
             rut_string (str): El RUT a validar.
-            
+
         Returns:
             re.Match: El objeto match de la validación.
-            
+
         Raises:
             RutInvalidoError: Si el formato es inválido.
         """
@@ -99,42 +99,42 @@ class RutValidator:
             
         rut_string = rut_string.strip()
         match = cls.PATRON_RUT.fullmatch(rut_string)
-        
+
         if not match:
             raise RutInvalidoError(f"El formato del RUT '{rut_string}' es inválido.")
-            
+
         return match
     
     @classmethod
     def validar_base(cls, base: str, rut_original: str) -> str:
         """
         Valida y normaliza el número base del RUT.
-        
+
         Args:
             base (str): El número base del RUT.
             rut_original (str): El RUT original para mensajes de error.
-            
+
         Returns:
             str: El número base normalizado.
-            
+
         Raises:
             RutInvalidoError: Si el número base es inválido.
         """
         if not base or not isinstance(base, str):
             raise RutInvalidoError(f"El número base '{base}' no es válido.")
-            
+
         if not re.match(r"^\d{1,3}(?:\.\d{3})*$", base) and not base.isdigit():
             raise RutInvalidoError(f"El número base '{base}' no es válido.")
 
         base_normalizada = normalizar_base_rut(base)
-            
+
         if len(base_normalizada) > 8:
             raise RutInvalidoError(
                 f"El rut '{rut_original}' es inválido ya que contiene más de 8 dígitos."
             )
 
         return base_normalizada
-    
+
     @classmethod
     def validar_digito_verificador(
         cls, 
@@ -143,11 +143,11 @@ class RutValidator:
     ) -> None:
         """
         Valida que el dígito verificador proporcionado coincida con el calculado.
-        
+
         Args:
             digito_input: El dígito verificador proporcionado por el usuario.
             digito_calculado: El dígito verificador calculado.
-            
+
         Raises:
             RutInvalidoError: Si el dígito verificador no coincide.
         """
@@ -251,18 +251,18 @@ class Rut:
 
     def __init__(self, rut: str):
         self.rut_string = str(rut).strip()
-        
+
         # Validar formato y extraer componentes
         match_result = RutValidator.validar_formato(self.rut_string)
         self.base_string = match_result.group(1)
         digito_input = match_result.group(3)
-        
+
         # Crear base y calcular dígito verificador
         self.base = RutBase(self.base_string, self.rut_string)
         self.digito_verificador = calcular_digito_verificador(
             normalizar_base_rut(self.base_string)
         )
-        
+
         # Validar dígito verificador si fue proporcionado
         RutValidator.validar_digito_verificador(digito_input, self.digito_verificador)
 
@@ -289,7 +289,7 @@ class Rut:
             str: El RUT formateado.
         """
         rut_str = str(self)
-        
+
         if separador_miles:
             base_formateada = self._agregar_separador_miles(str(self.base))
             rut_str = f"{base_formateada}-{self.digito_verificador}"
@@ -312,7 +312,7 @@ class Rut:
 class RutBatchProcessor:
     """
     Servicio para procesamiento por lotes de RUTs.
-    
+
     Separada de la clase Rut principal para seguir el principio de responsabilidad única.
     """
     
@@ -320,23 +320,23 @@ class RutBatchProcessor:
     def validar_lista_ruts(ruts: List[str]) -> Dict[str, List[Union[str, Tuple[str, str]]]]:
         """
         Valida una lista de RUTs y separa válidos de inválidos.
-        
+
         Args:
             ruts: Lista de RUTs en formato string.
-            
+
         Returns:
             Dict con listas de RUTs válidos e inválidos.
         """
         validos: List[str] = []
         invalidos: List[Tuple[str, str]] = []
-        
+
         for rut_string in ruts:
             try:
                 rut_obj = Rut(rut_string)
                 validos.append(str(rut_obj))
             except RutInvalidoError as e:
                 invalidos.append((rut_string, str(e)))
-                
+
         return {"validos": validos, "invalidos": invalidos}
     
     @staticmethod
@@ -377,7 +377,7 @@ class RutBatchProcessor:
                 except RutInvalidoError:
                     # Este caso no debería ocurrir ya que los RUTs ya fueron validados
                     continue
-                    
+
             resultado += "RUTs válidos:\n"
             
             # Aplicar formato específico si se solicita
@@ -387,10 +387,10 @@ class RutBatchProcessor:
                     resultado += formatter.format(ruts_validos_formateados)
                 else:
                     raise ValueError(f"Formato '{formato}' no soportado. "
-                                   f"Formatos disponibles: {RutFormatterFactory.get_available_formats()}")
+                                    f"Formatos disponibles: {RutFormatterFactory.get_available_formats()}")
             else:
                 resultado += "\n".join(ruts_validos_formateados)
-                
+
             resultado += "\n\n"
 
         # Procesar RUTs inválidos
@@ -415,7 +415,7 @@ def formatear_lista_ruts(
 ) -> str:
     """
     Función de compatibilidad con la API original.
-    
+
     Delegada al nuevo RutBatchProcessor.
     """
     return RutBatchProcessor.formatear_lista_ruts(
