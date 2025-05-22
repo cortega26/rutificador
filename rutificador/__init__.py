@@ -10,12 +10,50 @@ Clases:
     RutInvalidoError: Excepción personalizada para errores de RUT inválido.
 """
 
-from typing import List
+from typing import List, Type, Union
 
-__version__ = "0.2.26"
+# Version info
+__version__ = "0.3.0"
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
-from .main import Rut, RutDigitoVerificador, RutInvalidoError
+# Core classes
+from rutificador.main import (
+    Rut,
+    RutBase,
+    RutInvalidoError,
+    RutValidator,
+)
 
-__all__: List[str] = ["Rut", "RutDigitoVerificador", "RutInvalidoError"]
+# Processing and formatting
+from rutificador.main import (
+    RutBatchProcessor,
+    RutFormatterFactory,
+    CSVFormatter,
+    XMLFormatter,
+    JSONFormatter,
+)
+
+# Utility functions
+from rutificador.main import (
+    calcular_digito_verificador,
+    formatear_lista_ruts,
+)
+
+# Public API
+__all__: List[Union[str, Type]] = [
+    # Core classes
+    'Rut',
+    'RutBase',
+    'RutInvalidoError',
+    'RutValidator',
+    # Processing and formatting
+    'RutBatchProcessor',
+    'RutFormatterFactory',
+    'CSVFormatter',
+    'XMLFormatter',
+    'JSONFormatter',
+    # Utility functions
+    'calcular_digito_verificador',
+    'formatear_lista_ruts',
+]

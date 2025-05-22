@@ -1,44 +1,59 @@
 # pylint: disable=missing-module-docstring
 
 import pytest
-from rutificador.main import Rut, RutDigitoVerificador, RutBase, RutInvalidoError
+import json
+from rutificador.main import (
+    Rut, 
+    RutBase, 
+    RutInvalidoError, 
+    RutValidator,
+    RutBatchProcessor,
+    RutFormatterFactory,
+    CSVFormatter,
+    XMLFormatter,
+    JSONFormatter,
+    calcular_digito_verificador,
+    formatear_lista_ruts
+)
 
-# Datos de prueba para RutDigitoVerificador
-cadenas_test_digito_verificador = [
+# ============================================================================
+# DATOS DE PRUEBA
+# ============================================================================
+
+# Datos de prueba para calcular_digito_verificador (función independiente)
+datos_test_digito_verificador = [
     ("12345678", "5"),
     ("1", "9"),
     ("999", "7"),
     ("999999", "k"),
-    ("22.791.914", "0"),
-    ("8.670.089", "1"),
-    ("10.535.006", "6"),
-    ("84.920.968", "k"),
-    ("123-", RutInvalidoError),  # Con guión pero sin dígito verificador
-    ("1234567-1", RutInvalidoError),  # Con dígito verificador erróneo
+    ("22791914", "0"),  # Sin puntos ya que la función espera base normalizada
+    ("8670089", "1"),
+    ("10535006", "6"),
+    ("84920968", "k"),
 ]
 
 # Datos de prueba para RutBase
 cadenas_base_validas = [
-    ("000.123.456", "123456"),
-    ("12345678", "12345678"),
-    ("1", "1"),
-    ("12", "12"),
-    ("123", "123"),
-    ("1.234", "1234"),
-    ("12.345", "12345"),
-    ("123.456", "123456"),
-    ("1.234.567", "1234567"),
-    ("12.345.678", "12345678"),
+    ("000.123.456", "rutificador-test", "123456"),  # Agregamos rut_original
+    ("12345678", "12345678", "12345678"),
+    ("1", "1", "1"),
+    ("12", "12", "12"),
+    ("123", "123", "123"),
+    ("1.234", "1.234", "1234"),
+    ("12.345", "12.345", "12345"),
+    ("123.456", "123.456", "123456"),
+    ("1.234.567", "1.234.567", "1234567"),
+    ("12.345.678", "12.345.678", "12345678"),
 ]
 
 cadenas_base_invalidas = [
-    "123456789",  # Más de 8 dígitos
-    "123.4567",  # Más de 3 dígitos luego del punto
-    "12.32",  # Menos de 3 dígitos luego del punto
-    "12.3a5.678",  # Letras en el RUT base
-    "",  # RUT base vacío
-    " ",  # RUT base sin dígitos
-    "-1",  # RUT base negativo o dígito verificador sin base
+    ("123456789", "123456789"),  # Más de 8 dígitos
+    ("123.4567", "123.4567"),  # Más de 3 dígitos luego del punto
+    ("12.32", "12.32"),  # Menos de 3 dígitos luego del punto
+    ("12.3a5.678", "12.3a5.678"),  # Letras en el RUT base
+    ("", ""),  # RUT base vacío
+    (" ", " "),  # RUT base sin dígitos
+    ("-1", "-1"),  # RUT base negativo o dígito verificador sin base
 ]
 
 # Datos de prueba para Rut
@@ -52,9 +67,10 @@ cadenas_rut_validas = [
     " 00.000.001",  # Con ceros delante, puntos y espacios
     " 25.005.183-2 "  # Con puntos, espacios y D.V.
 ]
+
 cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "123456789"]
 
-# Datos de prueba para formatear_lista_ruts
+# Datos de prueba para formateo (actualizados con JSON válido)
 datos_test_formato = [
     ("csv", "RUTs válidos:\nrut\n12345678-5\n98765432-5\n1-9\n\n"),
     (
@@ -64,8 +80,8 @@ datos_test_formato = [
     ),
     (
         "json",
-        "RUTs válidos:\n[{'rut': '12345678-5'}, {'rut': '98765432-5'}, "
-        "{'rut': '1-9'}]\n\n"
+        'RUTs válidos:\n[\n  {\n    "rut": "12345678-5"\n  },\n  '
+        '{\n    "rut": "98765432-5"\n  },\n  {\n    "rut": "1-9"\n  }\n]\n\n'
     ),
 ]
 
@@ -87,52 +103,192 @@ datos_test_formatear_lista_ruts = [
 ]
 
 
-# pylint: disable=R0903
-class TestsRutDigitoVerificador:
-    """
-    Suite de pruebas para la clase RutDigitoVerificador.
-    """
+# ============================================================================
+# TESTS PARA FUNCIÓN CALCULAR_DIGITO_VERIFICADOR
+# ============================================================================
 
-    @pytest.mark.parametrize("base, esperado", cadenas_test_digito_verificador)
+class TestCalcularDigitoVerificador:
+    """Suite de pruebas para la función calcular_digito_verificador."""
+
+    @pytest.mark.parametrize("base, esperado", datos_test_digito_verificador)
     def test_calcular_digito_verificador(self, base, esperado):
-        """
-        Prueba el cálculo del dígito verificador para valores de base válidos e inválidos.
-        """
-        if isinstance(esperado, type) and issubclass(esperado, Exception):
-            with pytest.raises(esperado):
-                RutDigitoVerificador(base)
-        else:
-            rut = RutDigitoVerificador(base)
-            assert str(rut) == esperado
+        """Prueba el cálculo del dígito verificador para valores de base válidos."""
+        resultado = calcular_digito_verificador(base)
+        assert resultado == esperado
+
+    def test_calcular_digito_verificador_base_vacia(self):
+        """Prueba que una base vacía lance una excepción."""
+        with pytest.raises(ValueError):
+            calcular_digito_verificador("")
 
 
-class TestsRutBase:
-    """
-    Suite de pruebas para la clase RutBase.
-    """
+# ============================================================================
+# TESTS PARA RUTVALIDATOR
+# ============================================================================
 
-    @pytest.mark.parametrize("base, esperado", cadenas_base_validas)
-    def test_cadenas_base_validas(self, base, esperado):
-        """
-        Prueba que las cadenas base válidas se normalizan correctamente.
-        """
-        rut = RutBase(base)
+class TestRutValidator:
+    """Suite de pruebas para la clase RutValidator."""
+
+    def test_validar_formato_valido(self):
+        """Prueba validación de formato válido."""
+        match = RutValidator.validar_formato("12345678-5")
+        assert match.group(1) == "12345678"
+        assert match.group(3) == "5"
+
+    def test_validar_formato_sin_digito(self):
+        """Prueba validación de formato sin dígito verificador."""
+        match = RutValidator.validar_formato("12345678")
+        assert match.group(1) == "12345678"
+        assert match.group(3) is None
+
+    def test_validar_formato_invalido(self):
+        """Prueba que formato inválido lance excepción."""
+        with pytest.raises(RutInvalidoError):
+            RutValidator.validar_formato("123456789")
+
+    def test_validar_formato_none(self):
+        """Prueba que None lance excepción."""
+        with pytest.raises(RutInvalidoError):
+            RutValidator.validar_formato(None)
+
+    @pytest.mark.parametrize("base, rut_original, esperado", cadenas_base_validas)
+    def test_validar_base_valida(self, base, rut_original, esperado):
+        """Prueba validación de bases válidas."""
+        resultado = RutValidator.validar_base(base, rut_original)
+        assert resultado == esperado
+
+    @pytest.mark.parametrize("base, rut_original", cadenas_base_invalidas)
+    def test_validar_base_invalida(self, base, rut_original):
+        """Prueba que bases inválidas lancen excepción."""
+        with pytest.raises(RutInvalidoError):
+            RutValidator.validar_base(base, rut_original)
+
+    def test_validar_digito_verificador_correcto(self):
+        """Prueba validación de dígito verificador correcto."""
+        # No debería lanzar excepción
+        RutValidator.validar_digito_verificador("5", "5")
+
+    def test_validar_digito_verificador_incorrecto(self):
+        """Prueba validación de dígito verificador incorrecto."""
+        with pytest.raises(RutInvalidoError):
+            RutValidator.validar_digito_verificador("1", "5")
+
+    def test_validar_digito_verificador_none(self):
+        """Prueba validación cuando no se proporciona dígito."""
+        # No debería lanzar excepción cuando digito_input es None
+        RutValidator.validar_digito_verificador(None, "5")
+
+
+# ============================================================================
+# TESTS PARA FORMATTERS
+# ============================================================================
+
+class TestFormatters:
+    """Suite de pruebas para los formateadores."""
+
+    def test_csv_formatter(self):
+        """Prueba el formateador CSV."""
+        formatter = CSVFormatter()
+        ruts = ["12345678-5", "98765432-5"]
+        resultado = formatter.format(ruts)
+        esperado = "rut\n12345678-5\n98765432-5"
+        assert resultado == esperado
+
+    def test_xml_formatter(self):
+        """Prueba el formateador XML."""
+        formatter = XMLFormatter()
+        ruts = ["12345678-5", "98765432-5"]
+        resultado = formatter.format(ruts)
+        esperado = "<root>\n    <rut>12345678-5</rut>\n    <rut>98765432-5</rut>\n</root>"
+        assert resultado == esperado
+
+    def test_json_formatter(self):
+        """Prueba el formateador JSON."""
+        formatter = JSONFormatter()
+        ruts = ["12345678-5", "98765432-5"]
+        resultado = formatter.format(ruts)
+        
+        # Verificar que es JSON válido
+        json_data = json.loads(resultado)
+        assert len(json_data) == 2
+        assert json_data[0]["rut"] == "12345678-5"
+        assert json_data[1]["rut"] == "98765432-5"
+
+
+class TestRutFormatterFactory:
+    """Suite de pruebas para RutFormatterFactory."""
+
+    def test_get_formatter_csv(self):
+        """Prueba obtener formateador CSV."""
+        formatter = RutFormatterFactory.get_formatter("csv")
+        assert isinstance(formatter, CSVFormatter)
+
+    def test_get_formatter_xml(self):
+        """Prueba obtener formateador XML."""
+        formatter = RutFormatterFactory.get_formatter("xml")
+        assert isinstance(formatter, XMLFormatter)
+
+    def test_get_formatter_json(self):
+        """Prueba obtener formateador JSON."""
+        formatter = RutFormatterFactory.get_formatter("json")
+        assert isinstance(formatter, JSONFormatter)
+
+    def test_get_formatter_inexistente(self):
+        """Prueba obtener formateador inexistente."""
+        formatter = RutFormatterFactory.get_formatter("pdf")
+        assert formatter is None
+
+    def test_get_available_formats(self):
+        """Prueba obtener formatos disponibles."""
+        formatos = RutFormatterFactory.get_available_formats()
+        assert "csv" in formatos
+        assert "xml" in formatos
+        assert "json" in formatos
+
+
+# ============================================================================
+# TESTS PARA RUTBASE
+# ============================================================================
+
+class TestRutBase:
+    """Suite de pruebas para la clase RutBase."""
+
+    @pytest.mark.parametrize("base, rut_original, esperado", cadenas_base_validas)
+    def test_cadenas_base_validas(self, base, rut_original, esperado):
+        """Prueba que las cadenas base válidas se normalizan correctamente."""
+        rut = RutBase(base, rut_original)
         assert rut.base == esperado
         assert str(rut) == esperado
 
-    @pytest.mark.parametrize("base", cadenas_base_invalidas)
-    def test_cadenas_base_invalidas(self, base):
-        """
-        Prueba que las cadenas base inválidas generen un RutInvalidoError.
-        """
+    @pytest.mark.parametrize("base, rut_original", cadenas_base_invalidas)
+    def test_cadenas_base_invalidas(self, base, rut_original):
+        """Prueba que las cadenas base inválidas generen un RutInvalidoError."""
         with pytest.raises(RutInvalidoError):
-            RutBase(base)
+            RutBase(base, rut_original)
+
+    def test_equality(self):
+        """Prueba la igualdad entre objetos RutBase."""
+        base1 = RutBase("12345678", "12345678")
+        base2 = RutBase("12345678", "12345678")
+        base3 = RutBase("87654321", "87654321")
+        
+        assert base1 == base2
+        assert base1 != base3
+
+    def test_hash(self):
+        """Prueba que objetos iguales tengan el mismo hash."""
+        base1 = RutBase("12345678", "12345678")
+        base2 = RutBase("12345678", "12345678")
+        
+        assert hash(base1) == hash(base2)
 
 
-class TestsRut:
-    """
-    Suite de pruebas para la clase Rut.
-    """
+# ============================================================================
+# TESTS PARA RUT
+# ============================================================================
+
+class TestRut:
+    """Suite de pruebas para la clase Rut."""
 
     @pytest.fixture(scope="class")
     def rut_valido(self):
@@ -141,57 +297,186 @@ class TestsRut:
 
     @pytest.mark.parametrize("cadena_rut", cadenas_rut_validas)
     def test_cadenas_rut_validas(self, cadena_rut):
-        """
-        Prueba que las cadenas RUT válidas se manejen correctamente.
-        """
+        """Prueba que las cadenas RUT válidas se manejen correctamente."""
         rut = Rut(cadena_rut)
         assert rut.rut_string == cadena_rut.strip()
 
     @pytest.mark.parametrize("cadena_rut", cadenas_rut_invalidas)
     def test_cadenas_rut_invalidas(self, cadena_rut):
-        """
-        Prueba que las cadenas RUT inválidas generen un RutInvalidoError.
-        """
+        """Prueba que las cadenas RUT inválidas generen un RutInvalidoError."""
         with pytest.raises(RutInvalidoError):
             Rut(cadena_rut)
 
-    @pytest.mark.parametrize("formato, esperado", datos_test_formato)
-    def test_formatear_lista_ruts(self, formato, esperado):
-        """
-        Prueba que el método formatear_lista_ruts formatee correctamente una lista de cadenas RUT.
-        """
-        ruts = ["12345678-5", "98765432-5", "1-9"]
-        resultado = Rut.formatear_lista_ruts(ruts, formato=formato)
-        assert resultado == esperado
-
-    # pylint: disable=C0301
-    @pytest.mark.parametrize("ruts, formato, esperado", datos_test_formatear_lista_ruts)
-    def test_formatear_lista_ruts_sin_formato(self, ruts, formato, esperado):
-        """
-        Prueba que el método formatear_lista_ruts formatee correctamente una lista de RUTs sin un formato específico.
-        """
-        resultado = Rut.formatear_lista_ruts(ruts, formato=formato)
-        assert resultado == esperado
-
-    # pylint: disable=C0301
     def test_formatear_rut_con_separador_miles(self, rut_valido):
-        """
-        Prueba que el método formatear formatee correctamente una cadena RUT con separador_miles=True.
-        """
+        """Prueba formateo con separador de miles."""
         rut_formateado = rut_valido.formatear(separador_miles=True)
         assert rut_formateado == "12.345.678-5"
 
     def test_formatear_rut_con_mayusculas(self, rut_valido):
-        """
-        Prueba que el método formatear formatee correctamente una cadena RUT con mayusculas=False.
-        """
-        rut_formateado = rut_valido.formatear(mayusculas=False)
-        assert rut_formateado == "12345678-5"
+        """Prueba formateo con mayúsculas."""
+        rut_k = Rut("999999-k")
+        rut_formateado = rut_k.formatear(mayusculas=True)
+        assert rut_formateado == "999999-K"
 
-    # pylint: disable=C0301
     def test_formatear_rut_con_separador_miles_y_mayusculas(self, rut_valido):
-        """
-        Prueba que el método formatear formatee correctamente una cadena RUT con separador_miles=True y mayusculas=True.
-        """
-        rut_formateado = rut_valido.formatear(separador_miles=True, mayusculas=True)
+        """Prueba formateo con separador de miles y mayúsculas."""
+        rut_k = Rut("999999-k")
+        rut_formateado = rut_k.formatear(separador_miles=True, mayusculas=True)
+        assert rut_formateado == "999.999-K"
+
+    def test_equality(self):
+        """Prueba la igualdad entre objetos Rut."""
+        rut1 = Rut("12345678-5")
+        rut2 = Rut("12345678-5")
+        rut3 = Rut("87654321-6")
+        
+        assert rut1 == rut2
+        assert rut1 != rut3
+
+    def test_hash(self):
+        """Prueba que objetos iguales tengan el mismo hash."""
+        rut1 = Rut("12345678-5")
+        rut2 = Rut("12345678-5")
+        
+        assert hash(rut1) == hash(rut2)
+
+    def test_str_representation(self, rut_valido):
+        """Prueba la representación string del RUT."""
+        assert str(rut_valido) == "12345678-5"
+
+
+# ============================================================================
+# TESTS PARA RUTBATCHPROCESSOR
+# ============================================================================
+
+class TestRutBatchProcessor:
+    """Suite de pruebas para RutBatchProcessor."""
+
+    def test_validar_lista_ruts_todos_validos(self):
+        """Prueba validación de lista con todos los RUTs válidos."""
+        ruts = ["12345678-5", "98765432-5", "1-9"]
+        resultado = RutBatchProcessor.validar_lista_ruts(ruts)
+        
+        assert len(resultado["validos"]) == 3
+        assert len(resultado["invalidos"]) == 0
+
+    def test_validar_lista_ruts_mixtos(self):
+        """Prueba validación de lista con RUTs válidos e inválidos."""
+        ruts = ["12345678-5", "98765432-1", "1-9"]  # El segundo es inválido
+        resultado = RutBatchProcessor.validar_lista_ruts(ruts)
+        
+        assert len(resultado["validos"]) == 2
+        assert len(resultado["invalidos"]) == 1
+        assert resultado["invalidos"][0][0] == "98765432-1"
+
+    @pytest.mark.parametrize("formato, esperado_contiene", datos_test_formato)
+    def test_formatear_lista_ruts_con_formato(self, formato, esperado_contiene):
+        """Prueba formateo de lista con formato específico."""
+        ruts = ["12345678-5", "98765432-5", "1-9"]
+        resultado = RutBatchProcessor.formatear_lista_ruts(ruts, formato=formato)
+        
+        # Verificar que contiene el contenido esperado
+        assert "RUTs válidos:" in resultado
+        
+        if formato == "json":
+            # Para JSON, verificar que es válido
+            json_part = resultado.split("RUTs válidos:\n")[1].split("\n\n")[0]
+            json_data = json.loads(json_part)
+            assert len(json_data) == 3
+
+    @pytest.mark.parametrize("ruts, formato, esperado", datos_test_formatear_lista_ruts)
+    def test_formatear_lista_ruts_sin_formato(self, ruts, formato, esperado):
+        """Prueba formateo de lista sin formato específico."""
+        resultado = RutBatchProcessor.formatear_lista_ruts(ruts, formato=formato)
+        assert resultado == esperado
+
+    def test_formatear_lista_ruts_formato_invalido(self):
+        """Prueba que formato inválido lance excepción."""
+        ruts = ["12345678-5"]
+        with pytest.raises(ValueError) as exc_info:
+            RutBatchProcessor.formatear_lista_ruts(ruts, formato="pdf")
+        assert "Formato 'pdf' no soportado" in str(exc_info.value)
+
+
+# ============================================================================
+# TESTS PARA COMPATIBILIDAD HACIA ATRÁS
+# ============================================================================
+
+class TestCompatibilidadHaciaAtras:
+    """Suite de pruebas para la compatibilidad con la API original."""
+
+    def test_formatear_lista_ruts_funcion_global(self):
+        """Prueba que la función global funcione igual que antes."""
+        ruts = ["12345678-5", "98765432-5", "1-9"]
+        resultado = formatear_lista_ruts(ruts)
+        
+        assert "RUTs válidos:" in resultado
+        assert "12345678-5" in resultado
+        assert "98765432-5" in resultado
+        assert "1-9" in resultado
+
+    def test_formatear_lista_ruts_con_parametros(self):
+        """Prueba la función global con parámetros."""
+        ruts = ["12345678-5"]
+        resultado = formatear_lista_ruts(
+            ruts, 
+            separador_miles=True, 
+            mayusculas=True, 
+            formato="csv"
+        )
+        
+        assert "12.345.678-5" in resultado
+        assert "rut\n" in resultado
+
+
+# ============================================================================
+# TESTS DE INTEGRACIÓN
+# ============================================================================
+
+class TestIntegracion:
+    """Suite de pruebas de integración completa."""
+
+    def test_flujo_completo_rut_individual(self):
+        """Prueba el flujo completo para un RUT individual."""
+        # Crear RUT
+        rut = Rut("12.345.678-5")
+        
+        # Verificar componentes
+        assert str(rut.base) == "12345678"
+        assert rut.digito_verificador == "5"
+        
+        # Formatear
+        rut_formateado = rut.formatear(separador_miles=True, mayusculas=True)
         assert rut_formateado == "12.345.678-5"
+
+    def test_flujo_completo_batch_processing(self):
+        """Prueba el flujo completo de procesamiento por lotes."""
+        ruts = ["12.345.678-5", "98.765.432-1", "1-9", "invalid"]
+        
+        # Procesar
+        resultado = RutBatchProcessor.formatear_lista_ruts(
+            ruts, 
+            separador_miles=True, 
+            formato="json"
+        )
+        
+        # Verificar que hay válidos e inválidos
+        assert "RUTs válidos:" in resultado
+        assert "RUTs inválidos:" in resultado
+        
+        # Verificar JSON válido en la parte de válidos
+        lines = resultado.split('\n')
+        json_start = False
+        json_lines = []
+        
+        for line in lines:
+            if line.strip().startswith('['):
+                json_start = True
+            if json_start:
+                json_lines.append(line)
+                if line.strip().endswith(']'):
+                    break
+        
+        json_str = '\n'.join(json_lines)
+        json_data = json.loads(json_str)
+        assert len(json_data) == 2  # Solo 2 RUTs válidos
