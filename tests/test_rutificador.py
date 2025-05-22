@@ -1,7 +1,7 @@
 # pylint: disable=missing-module-docstring
 
-import pytest
 import json
+import pytest
 from rutificador.main import (
     Rut, 
     RutBase, 
@@ -307,13 +307,13 @@ class TestRut:
         rut_formateado = rut_valido.formatear(separador_miles=True)
         assert rut_formateado == "12.345.678-5"
 
-    def test_formatear_rut_con_mayusculas(self): #, rut_valido):
+    def test_formatear_rut_con_mayusculas(self):
         """Prueba formateo con mayúsculas."""
         rut_k = Rut("999999-k")
         rut_formateado = rut_k.formatear(mayusculas=True)
         assert rut_formateado == "999999-K"
 
-    def test_formatear_rut_con_separador_miles_y_mayusculas(self): #, rut_valido):
+    def test_formatear_rut_con_separador_miles_y_mayusculas(self):
         """Prueba formateo con separador de miles y mayúsculas."""
         rut_k = Rut("999999-k")
         rut_formateado = rut_k.formatear(separador_miles=True, mayusculas=True)
@@ -365,7 +365,7 @@ class TestRutBatchProcessor:
         assert resultado["invalidos"][0][0] == "98765432-1"
 
     @pytest.mark.parametrize("formato, esperado_contiene", datos_test_formato)
-    def test_formatear_lista_ruts_con_formato(self, formato, esperado_contiene):
+    def test_formatear_lista_ruts_con_formato(self, formato):
         """Prueba formateo de lista con formato específico."""
         ruts = ["12345678-5", "98765432-5", "1-9"]
         resultado = RutBatchProcessor.formatear_lista_ruts(ruts, formato=formato)

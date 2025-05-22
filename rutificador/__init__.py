@@ -13,7 +13,7 @@ Clases:
 from typing import List, Type, Union
 
 # Version info
-__version__ = "0.3.05"
+__version__ = "0.3.06"
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
