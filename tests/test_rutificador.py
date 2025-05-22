@@ -328,7 +328,7 @@ class TestRut:
         """Prueba la igualdad entre objetos Rut."""
         rut1 = Rut("12345678-5")
         rut2 = Rut("12345678-5")
-        rut3 = Rut("87654321-6")
+        rut3 = Rut("87654321-4")
         
         assert rut1 == rut2
         assert rut1 != rut3
