@@ -40,6 +40,9 @@ def calcular_digito_verificador(base_numerica: str) -> str:
     """
     suma_parcial: int = 0
     factor_index: int = 0
+
+    if not base_numerica:
+        raise RutInvalidoError("La base numérica no puede estar vacía.")
     
     # Iteramos desde el final hacia adelante sin crear string reversed
     for i in range(len(base_numerica) - 1, -1, -1):

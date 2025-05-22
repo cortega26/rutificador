@@ -118,7 +118,7 @@ class TestCalcularDigitoVerificador:
 
     def test_calcular_digito_verificador_base_vacia(self):
         """Prueba que una base vacía lance una excepción."""
-        with pytest.raises(ValueError):
+        with pytest.raises(RutInvalidoError):
             calcular_digito_verificador("")
 
 
