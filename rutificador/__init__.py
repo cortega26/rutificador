@@ -12,7 +12,7 @@ Clases:
 
 from typing import List
 
-__version__ = "0.2.25"
+__version__ = "0.2.26"
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
