@@ -3,7 +3,7 @@
 import json
 import re
 from abc import ABC, abstractmethod
-from typing import List, Dict, Tuple, Union, Optional, Literal
+from typing import List, Dict, Tuple, Union, Optional, Literal, Any
 
 # ============================================================================
 # CONSTANTS & TYPE DEFINITIONS
@@ -37,12 +37,24 @@ def calcular_digito_verificador(base_numerica: str) -> str:
         
     Returns:
         str: El dígito verificador del RUT.
+        
+    Raises:
+        RutInvalidoError: Si la base numérica es inválida.
     """
+    if not isinstance(base_numerica, str):
+        raise RutInvalidoError(f"La base numérica debe ser un string, recibido: {type(base_numerica)}")
+    
+    if not base_numerica or not base_numerica.strip():
+        raise RutInvalidoError("La base numérica no puede estar vacía.")
+    
+    base_numerica = base_numerica.strip()
+    
+    # Validate that base_numerica contains only digits
+    if not base_numerica.isdigit():
+        raise RutInvalidoError(f"La base numérica '{base_numerica}' debe contener solo dígitos.")
+
     suma_parcial: int = 0
     factor_index: int = 0
-
-    if not base_numerica:
-        raise RutInvalidoError("La base numérica no puede estar vacía.")
 
     # Iteramos desde el final hacia adelante sin crear string reversed
     for i in range(len(base_numerica) - 1, -1, -1):
@@ -66,7 +78,13 @@ def normalizar_base_rut(base: str) -> str:
         
     Returns:
         str: La base normalizada.
+        
+    Raises:
+        RutInvalidoError: Si la base no es válida.
     """
+    if not isinstance(base, str):
+        raise RutInvalidoError(f"La base debe ser un string, recibido: {type(base)}")
+    
     base_normalizada = base.replace(".", "").lstrip("0")
     return base_normalizada if base_normalizada else "0"
 
@@ -78,7 +96,10 @@ def normalizar_base_rut(base: str) -> str:
 class RutValidator:
     """Responsable únicamente de validar RUTs."""
 
+    # Pre-compiled regex patterns for better performance
     PATRON_RUT = re.compile(RUT_REGEX)
+    PATRON_BASE_CON_PUNTOS = re.compile(r"^\d{1,3}(?:\.\d{3})*$")
+    PATRON_BASE_SOLO_DIGITOS = re.compile(r"^\d+$")
     
     @classmethod
     def validar_formato(cls, rut_string: str) -> re.Match:
@@ -94,8 +115,11 @@ class RutValidator:
         Raises:
             RutInvalidoError: Si el formato es inválido.
         """
-        if not rut_string or not isinstance(rut_string, str):
-            raise RutInvalidoError(f"El RUT '{rut_string}' no es válido.")
+        if not isinstance(rut_string, str):
+            raise RutInvalidoError(f"El RUT debe ser un string, recibido: {type(rut_string)}")
+            
+        if not rut_string or not rut_string.strip():
+            raise RutInvalidoError("El RUT no puede estar vacío.")
             
         rut_string = rut_string.strip()
         match = cls.PATRON_RUT.fullmatch(rut_string)
@@ -120,10 +144,16 @@ class RutValidator:
         Raises:
             RutInvalidoError: Si el número base es inválido.
         """
-        if not base or not isinstance(base, str):
-            raise RutInvalidoError(f"El número base '{base}' no es válido.")
+        if not isinstance(base, str):
+            raise RutInvalidoError(f"El número base debe ser un string, recibido: {type(base)}")
 
-        if not re.match(r"^\d{1,3}(?:\.\d{3})*$", base) and not base.isdigit():
+        if not base or not base.strip():
+            raise RutInvalidoError("El número base no puede estar vacío.")
+
+        base = base.strip()
+
+        # Use pre-compiled regex patterns
+        if not (cls.PATRON_BASE_CON_PUNTOS.match(base) or cls.PATRON_BASE_SOLO_DIGITOS.match(base)):
             raise RutInvalidoError(f"El número base '{base}' no es válido.")
 
         base_normalizada = normalizar_base_rut(base)
@@ -151,11 +181,15 @@ class RutValidator:
         Raises:
             RutInvalidoError: Si el dígito verificador no coincide.
         """
-        if digito_input and digito_input.lower() != digito_calculado:
-            raise RutInvalidoError(
-                f"El dígito verificador '{digito_input}' no coincide con "
-                f"el dígito verificador calculado '{digito_calculado}'."
-            )
+        if digito_input is not None:
+            if not isinstance(digito_input, str):
+                raise RutInvalidoError(f"El dígito verificador debe ser un string, recibido: {type(digito_input)}")
+            
+            if digito_input.lower() != digito_calculado:
+                raise RutInvalidoError(
+                    f"El dígito verificador '{digito_input}' no coincide con "
+                    f"el dígito verificador calculado '{digito_calculado}'."
+                )
 
 
 # ============================================================================
@@ -168,14 +202,16 @@ class RutFormatter(ABC):
     @abstractmethod
     def format(self, ruts: List[str]) -> str:
         """Formatea una lista de RUTs."""
-        pass
 
 
 class CSVFormatter(RutFormatter):
     """Formateador CSV para RUTs."""
     
     def format(self, ruts: List[str]) -> str:
-        cadena_ruts = "\n".join(ruts)
+        if not isinstance(ruts, list):
+            raise ValueError(f"Expected list, got {type(ruts)}")
+        
+        cadena_ruts = "\n".join(str(rut) for rut in ruts)
         return f"rut\n{cadena_ruts}"
 
 
@@ -183,9 +219,14 @@ class XMLFormatter(RutFormatter):
     """Formateador XML para RUTs."""
     
     def format(self, ruts: List[str]) -> str:
+        if not isinstance(ruts, list):
+            raise ValueError(f"Expected list, got {type(ruts)}")
+            
         xml_lines = ["<root>"]
         for rut in ruts:
-            xml_lines.append(f"    <rut>{rut}</rut>")
+            # Escape XML special characters
+            rut_escaped = str(rut).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            xml_lines.append(f"    <rut>{rut_escaped}</rut>")
         xml_lines.append("</root>")
         return "\n".join(xml_lines)
 
@@ -194,28 +235,36 @@ class JSONFormatter(RutFormatter):
     """Formateador JSON para RUTs."""
     
     def format(self, ruts: List[str]) -> str:
-        ruts_json = [{"rut": rut} for rut in ruts]
+        if not isinstance(ruts, list):
+            raise ValueError(f"Expected list, got {type(ruts)}")
+            
+        ruts_json = [{"rut": str(rut)} for rut in ruts]
         return json.dumps(ruts_json, indent=2, ensure_ascii=False)
 
 
 class RutFormatterFactory:
     """Factory para crear formateadores de RUT."""
     
-    _formatters: Dict[str, RutFormatter] = {
-        "csv": CSVFormatter(),
-        "xml": XMLFormatter(),
-        "json": JSONFormatter(),
-    }
+    @classmethod
+    def _get_formatters(cls) -> Dict[str, RutFormatter]:
+        """Returns a new instance of formatters dictionary to avoid mutable class variables."""
+        return {
+            "csv": CSVFormatter(),
+            "xml": XMLFormatter(),
+            "json": JSONFormatter(),
+        }
     
     @classmethod
     def get_formatter(cls, formato: str) -> Optional[RutFormatter]:
         """Obtiene un formateador por su nombre."""
-        return cls._formatters.get(formato.lower())
+        if not isinstance(formato, str):
+            return None
+        return cls._get_formatters().get(formato.lower())
     
     @classmethod
     def get_available_formats(cls) -> List[str]:
         """Obtiene la lista de formatos disponibles."""
-        return list(cls._formatters.keys())
+        return list(cls._get_formatters().keys())
 
 
 # ============================================================================
@@ -226,13 +275,16 @@ class RutBase:
     """Representa el número base de un RUT chileno."""
 
     def __init__(self, base: str, rut_original: str):
+        if not isinstance(rut_original, str):
+            raise RutInvalidoError(f"El RUT original debe ser un string, recibido: {type(rut_original)}")
+        
         self.rut_original = rut_original
         self.base = RutValidator.validar_base(base, rut_original)
 
     def __str__(self) -> str:
         return self.base
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, RutBase):
             return False
         return self.base == other.base
@@ -249,8 +301,15 @@ class Rut:
     delegando validación a RutValidator y formateo a RutFormatter.
     """
 
-    def __init__(self, rut: str):
+    def __init__(self, rut: Union[str, int]):
+        # Enhanced input validation with type checking
+        if not isinstance(rut, (str, int)):
+            raise RutInvalidoError(f"El RUT debe ser un string o int, recibido: {type(rut)}")
+        
         self.rut_string = str(rut).strip()
+        
+        if not self.rut_string:
+            raise RutInvalidoError("El RUT no puede estar vacío.")
 
         # Validar formato y extraer componentes
         match_result = RutValidator.validar_formato(self.rut_string)
@@ -269,7 +328,7 @@ class Rut:
     def __str__(self) -> str:
         return f"{self.base}-{self.digito_verificador}"
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Rut):
             return False
         return str(self) == str(other)
@@ -288,6 +347,12 @@ class Rut:
         Returns:
             str: El RUT formateado.
         """
+        if not isinstance(separador_miles, bool):
+            raise ValueError(f"separador_miles debe ser bool, recibido: {type(separador_miles)}")
+        
+        if not isinstance(mayusculas, bool):
+            raise ValueError(f"mayusculas debe ser bool, recibido: {type(mayusculas)}")
+
         rut_str = str(self)
 
         if separador_miles:
@@ -302,7 +367,10 @@ class Rut:
     @staticmethod
     def _agregar_separador_miles(numero: str) -> str:
         """Agrega separadores de miles a un número."""
-        return f"{int(numero):,}".replace(",", ".")
+        try:
+            return f"{int(numero):,}".replace(",", ".")
+        except ValueError as e:
+            raise RutInvalidoError(f"Error al formatear número '{numero}': {e}") from e
 
 
 # ============================================================================
@@ -326,7 +394,13 @@ class RutBatchProcessor:
 
         Returns:
             Dict con listas de RUTs válidos e inválidos.
+            
+        Raises:
+            ValueError: Si ruts no es una lista.
         """
+        if not isinstance(ruts, list):
+            raise ValueError(f"Expected list, got {type(ruts)}")
+        
         validos: List[str] = []
         invalidos: List[Tuple[str, str]] = []
 
@@ -334,8 +408,8 @@ class RutBatchProcessor:
             try:
                 rut_obj = Rut(rut_string)
                 validos.append(str(rut_obj))
-            except RutInvalidoError as e:
-                invalidos.append((rut_string, str(e)))
+            except (RutInvalidoError, ValueError, TypeError) as e:
+                invalidos.append((str(rut_string), str(e)))
 
         return {"validos": validos, "invalidos": invalidos}
     
@@ -357,7 +431,20 @@ class RutBatchProcessor:
 
         Returns:
             str: Una cadena con los RUTs válidos e inválidos formateados.
+            
+        Raises:
+            ValueError: Si los parámetros son inválidos.
         """
+        # Enhanced input validation
+        if not isinstance(ruts, list):
+            raise ValueError(f"ruts debe ser una lista, recibido: {type(ruts)}")
+        
+        if not isinstance(separador_miles, bool):
+            raise ValueError(f"separador_miles debe ser bool, recibido: {type(separador_miles)}")
+            
+        if not isinstance(mayusculas, bool):
+            raise ValueError(f"mayusculas debe ser bool, recibido: {type(mayusculas)}")
+        
         # Validar RUTs
         resultado_validacion = RutBatchProcessor.validar_lista_ruts(ruts)
         ruts_validos = resultado_validacion["validos"]
@@ -374,7 +461,7 @@ class RutBatchProcessor:
                     ruts_validos_formateados.append(
                         rut_obj.formatear(separador_miles, mayusculas)
                     )
-                except RutInvalidoError:
+                except (RutInvalidoError, ValueError, TypeError):
                     # Este caso no debería ocurrir ya que los RUTs ya fueron validados
                     continue
 
@@ -386,8 +473,9 @@ class RutBatchProcessor:
                 if formatter:
                     resultado += formatter.format(ruts_validos_formateados)
                 else:
+                    available_formats = RutFormatterFactory.get_available_formats()
                     raise ValueError(f"Formato '{formato}' no soportado. "
-                                    f"Formatos disponibles: {RutFormatterFactory.get_available_formats()}")
+                                    f"Formatos disponibles: {available_formats}")
             else:
                 resultado += "\n".join(ruts_validos_formateados)
 

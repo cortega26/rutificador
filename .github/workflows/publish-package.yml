@@ -3,33 +3,52 @@ name: Publish Python Package to PyPI
 on:
   push:
     branches: [master]
+    tags:
+      - 'v*'  # Only publish on version tags
+  release:
+    types: [published]
 
 jobs:
-
   pypi-publish:
-    name: upload release to Pypi
+    name: Upload release to PyPI
     runs-on: ubuntu-latest
-    environment: release
+    # Add specific environment for additional security
+    # environment: 
+    #   name: pypi
+    #   url: https://pypi.org/p/rutificador
     permissions:
-      id-token: write
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      contents: read
+    
+    # Only run on tags or releases to prevent accidental publishing
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v4.1.3 - pinned to commit hash
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0 - pinned to commit hash
       with:
-        python-version: 3.9
+        python-version: '3.9'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build
+        pip install build twine
 
     - name: Build package
       run: python -m build
 
+    - name: Verify package
+      run: |
+        python -m twine check dist/*
+
     - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-
-
+      uses: pypa/gh-action-pypi-publish@81e9d935c883d0b210363ab89cf05f3894778450  # v1.8.14 - pinned to commit hash
+      with:
+        # Use trusted publishing - no API tokens needed
+        # Repository must be configured in PyPI with GitHub as trusted publisher
+        repository-url: https://upload.pypi.org/legacy/
+        verbose: true
+        print-hash: true
