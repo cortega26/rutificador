@@ -364,7 +364,7 @@ class TestRutBatchProcessor:
         assert len(resultado["invalidos"]) == 1
         assert resultado["invalidos"][0][0] == "98765432-1"
 
-    @pytest.mark.parametrize("formato, esperado_contiene", datos_test_formato)
+    @pytest.mark.parametrize("formato, esperado, contiene", datos_test_formato)
     def test_formatear_lista_ruts_con_formato(self, formato):
         """Prueba formateo de lista con formato específico."""
         ruts = ["12345678-5", "98765432-5", "1-9"]
