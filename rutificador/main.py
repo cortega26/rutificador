@@ -1160,8 +1160,8 @@ def get_version_info() -> Dict[str, str]:
         Dictionary with version and module metadata.
     """
     return {
-        "version": "1.0.0-enhanced",
-        "author": "Enhanced by Claude",
+        "version": "0.4.01",
+        "author": "Carlos Ortega González",
         "license": "MIT",
         "description": "Enhanced Chilean RUT validation and formatting library",
         "features": [
