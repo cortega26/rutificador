@@ -38,7 +38,10 @@ pytest = "^7.2.1"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--import-mode=importlib"
+# Use default import mode so that local package is discoverable without
+# installing it. This ensures running `pytest` from the project root works
+# as documented in the README.
+addopts = ""
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
