@@ -365,18 +365,20 @@ class TestRutBatchProcessor:
         assert len(resultado.invalid_ruts) == 1
         assert resultado.invalid_ruts[0][0] == "98765432-1"
 
-    # Only the format parameter is needed for this test. Adjust the
-    # parametrization to avoid a collection error when using pytest's
-    # importlib mode.
-    @pytest.mark.parametrize("formato", [f[0] for f in datos_test_formato])
-    def test_formatear_lista_ruts_con_formato(self, formato):
+    # Parametrization uses the expected output to validate the full
+    # formatted string (ignoring statistics lines which vary).  The
+    # dataset provides tuples of ``(formato, esperado)`` where
+    # ``esperado`` contains the initial part of the result up to the
+    # statistics section.
+    @pytest.mark.parametrize("formato, esperado", datos_test_formato)
+    def test_formatear_lista_ruts_con_formato(self, formato, esperado):
         """Prueba formateo de lista con formato específico."""
         ruts = ["12345678-5", "98765432-5", "1-9"]
         processor = RutBatchProcessor()
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
 
-        # Verificar que contiene el contenido esperado
-        assert "Valid RUTs:" in resultado
+        # Verificar que el resultado comience con el texto esperado
+        assert resultado.startswith(esperado)
 
         if formato == "json":
             # Para JSON, verificar que es válido
