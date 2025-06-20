@@ -1021,7 +1021,7 @@ class RutBatchProcessor:
                     logger.warning(f"Formatting failed for valid RUT {rut_string}: {e}")
                     continue
 
-            resultado_parts.append("Valid RUTs:")
+            resultado_parts.append("RUTs válidos:")
             
             # Apply specific format if requested
             if formato:
@@ -1041,7 +1041,7 @@ class RutBatchProcessor:
         if ruts_invalidos:
             if resultado_parts:
                 resultado_parts.append("")  # Empty line separator
-            resultado_parts.append("Invalid RUTs:")
+            resultado_parts.append("RUTs inválidos:")
             for rut, error in ruts_invalidos:
                 resultado_parts.append(f"{rut} - {error}")
 
@@ -1049,12 +1049,12 @@ class RutBatchProcessor:
         if ruts_validos or ruts_invalidos:
             resultado_parts.extend([
                 "",
-                f"Processing Statistics:",
-                f"- Total processed: {resultado_validacion.total_processed}",
-                f"- Valid RUTs: {len(ruts_validos)}",
-                f"- Invalid RUTs: {len(ruts_invalidos)}",
-                f"- Success rate: {resultado_validacion.success_rate:.1f}%",
-                f"- Processing time: {resultado_validacion.processing_time:.4f}s"
+                f"Estadísticas de procesamiento:",
+                f"- Total procesados: {resultado_validacion.total_processed}",
+                f"- RUTs válidos: {len(ruts_validos)}",
+                f"- RUTs inválidos: {len(ruts_invalidos)}",
+                f"- Tasa de éxito: {resultado_validacion.success_rate:.1f}%",
+                f"- Tiempo de procesamiento: {resultado_validacion.processing_time:.4f}s"
             ])
 
         return "\n".join(resultado_parts)

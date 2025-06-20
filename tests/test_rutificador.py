@@ -72,15 +72,15 @@ cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "123456789"]
 
 # Datos de prueba para formateo (actualizados con JSON válido)
 datos_test_formato = [
-    ("csv", "Valid RUTs:\nrut\n12345678-5\n98765432-5\n1-9\n\n"),
+    ("csv", "RUTs válidos:\nrut\n12345678-5\n98765432-5\n1-9\n\n"),
     (
         "xml",
-        "Valid RUTs:\n<root>\n    <rut>12345678-5</rut>\n"
+        "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n"
         "    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n"
     ),
     (
         "json",
-        'Valid RUTs:\n[\n  {\n    "rut": "12345678-5"\n  },\n  '
+        'RUTs válidos:\n[\n  {\n    "rut": "12345678-5"\n  },\n  '
         '{\n    "rut": "98765432-5"\n  },\n  {\n    "rut": "1-9"\n  }\n]\n\n'
     ),
 ]
@@ -376,11 +376,11 @@ class TestRutBatchProcessor:
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
 
         # Verificar que contiene el contenido esperado
-        assert "Valid RUTs:" in resultado
+        assert "RUTs válidos:" in resultado
 
         if formato == "json":
             # Para JSON, verificar que es válido
-            json_part = resultado.split("Valid RUTs:\n")[1].split("\n\n")[0]
+            json_part = resultado.split("RUTs válidos:\n")[1].split("\n\n")[0]
             json_data = json.loads(json_part)
             assert len(json_data) == 3
 
@@ -389,7 +389,7 @@ class TestRutBatchProcessor:
         """Prueba formateo de lista sin formato específico."""
         processor = RutBatchProcessor()
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
-        assert "Valid RUTs:" in resultado
+        assert "RUTs válidos:" in resultado
 
     def test_formatear_lista_ruts_formato_invalido(self):
         """Prueba que formato inválido lance excepción."""
@@ -412,7 +412,7 @@ class TestCompatibilidadHaciaAtras:
         ruts = ["12345678-5", "98765432-5", "1-9"]
         resultado = formatear_lista_ruts(ruts)
 
-        assert "Valid RUTs:" in resultado
+        assert "RUTs válidos:" in resultado
         assert "12345678-5" in resultado
         assert "98765432-5" in resultado
         assert "1-9" in resultado
@@ -464,8 +464,8 @@ class TestIntegracion:
         )
 
         # Verificar que hay válidos e inválidos
-        assert "Valid RUTs:" in resultado
-        assert "Invalid RUTs:" in resultado
+        assert "RUTs válidos:" in resultado
+        assert "RUTs inválidos:" in resultado
 
         # Verificar JSON válido en la parte de válidos
         lines = resultado.split('\n')
