@@ -3,9 +3,9 @@
 import json
 import pytest
 from rutificador.main import (
-    Rut, 
-    RutBase, 
-    RutInvalidoError, 
+    Rut,
+    RutBase,
+    RutInvalidoError,
     RutValidator,
     RutBatchProcessor,
     RutFormatterFactory,
@@ -396,9 +396,9 @@ class TestRutBatchProcessor:
     def test_formatear_lista_ruts_formato_invalido(self):
         """Prueba que formato inválido lance excepción."""
         ruts = ["12345678-5"]
-        with pytest.raises(ValueError) as exc_info:
-            processor = RutBatchProcessor()
-            processor.formatear_lista_ruts(ruts, formato="pdf")
+            ruts,
+            separador_miles=True,
+            mayusculas=True,
         assert "Format 'pdf' not supported" in str(exc_info.value)
 
 
