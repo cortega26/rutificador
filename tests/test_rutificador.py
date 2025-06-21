@@ -3,9 +3,9 @@
 import json
 import pytest
 from rutificador.main import (
-    Rut, 
-    RutBase, 
-    RutInvalidoError, 
+    Rut,
+    RutBase,
+    RutInvalidoError,
     RutValidator,
     RutBatchProcessor,
     RutFormatterFactory,
@@ -423,9 +423,9 @@ class TestCompatibilidadHaciaAtras:
         """Prueba la función global con parámetros."""
         ruts = ["12345678-5"]
         resultado = formatear_lista_ruts(
-            ruts, 
-            separador_miles=True, 
-            mayusculas=True, 
+            ruts,
+            separador_miles=True,
+            mayusculas=True,
             formato="csv"
         )
 
