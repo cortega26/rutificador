@@ -10,24 +10,29 @@ Clases:
     RutInvalidoError: Excepción personalizada para errores de RUT inválido.
 """
 
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11
+    import tomli as tomllib
 from typing import List, Type, Union
 
 # Version info
-__version__ = "0.4.1"
+try:
+    __version__ = version("rutificador")
+except PackageNotFoundError:  # Fallback for local runs without installation
+    with open(Path(__file__).resolve().parent.parent / "pyproject.toml", "rb") as f:
+        __version__ = tomllib.load(f)["tool"]["poetry"]["version"]
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
 # Core classes
-from rutificador.main import (
-    Rut,
-    RutBase,
-    RutInvalidoError,
-    RutValidator,
-)
+from rutificador.main import Rut, RutBase, RutInvalidoError, RutValidator
 
 # Processing and formatting
-from rutificador.main import (
-    RutBatchProcessor,
+from rutificador.main import RutBatchProcessor
+from rutificador.formatter import (
     RutFormatterFactory,
     CSVFormatter,
     XMLFormatter,
