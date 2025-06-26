@@ -56,3 +56,4 @@ Thumbs.db
 *.dll
 *.so
 *.dylib
+.coverage
