@@ -9,7 +9,7 @@
 
 # Rutificador
 
-Una biblioteca Python para validar y formatear RUTs (Rol Único Tributario) chilenos.
+Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributario) chilenos de forma eficiente.
 
 ## Tabla de Contenidos
 
@@ -41,6 +41,7 @@ Una biblioteca Python para validar y formatear RUTs (Rol Único Tributario) chil
 - Manejo de excepciones personalizadas.
 - **Procesamiento de lotes de RUTs:** Permite procesar lotes de RUTs en lugar de hacerlo individualmente, lo que agiliza el trabajo con grandes cantidades de datos.
 - **Separación de resultados:** Los resultados de los lotes se entregan por separado, mostrando RUTs válidos e inválidos, y pueden exportarse en varios formatos, incluidos CSV, XML y JSON.
+- Compatibilidad con Python 3.9 o superior.
 
 ## Instalación
 
