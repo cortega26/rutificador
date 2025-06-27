@@ -3,15 +3,15 @@
 import json
 import pytest
 from rutificador.main import (
-    Rut, 
-    RutBase, 
-    RutInvalidoError, 
+    Rut,
+    RutBase,
+    RutInvalidoError,
     RutValidator,
-    RutBatchProcessor,
-    RutFormatterFactory,
-    CSVFormatter,
-    XMLFormatter,
-    JSONFormatter,
+    ProcesadorLotesRut,
+    FabricaFormateadorRut,
+    FormateadorCSV,
+    FormateadorXML,
+    FormateadorJSON,
     calcular_digito_verificador,
     formatear_lista_ruts
 )
@@ -182,25 +182,25 @@ class TestFormatters:
 
     def test_csv_formatter(self):
         """Prueba el formateador CSV."""
-        formatter = CSVFormatter()
+        formatter = FormateadorCSV()
         ruts = ["12345678-5", "98765432-5"]
-        resultado = formatter.format(ruts)
+        resultado = formatter.formatear(ruts)
         esperado = "rut\n12345678-5\n98765432-5"
         assert resultado == esperado
 
     def test_xml_formatter(self):
         """Prueba el formateador XML."""
-        formatter = XMLFormatter()
+        formatter = FormateadorXML()
         ruts = ["12345678-5", "98765432-5"]
-        resultado = formatter.format(ruts)
+        resultado = formatter.formatear(ruts)
         esperado = "<root>\n    <rut>12345678-5</rut>\n    <rut>98765432-5</rut>\n</root>"
         assert resultado == esperado
 
     def test_json_formatter(self):
         """Prueba el formateador JSON."""
-        formatter = JSONFormatter()
+        formatter = FormateadorJSON()
         ruts = ["12345678-5", "98765432-5"]
-        resultado = formatter.format(ruts)
+        resultado = formatter.formatear(ruts)
 
         # Verificar que es JSON válido
         json_data = json.loads(resultado)
@@ -209,32 +209,32 @@ class TestFormatters:
         assert json_data[1]["rut"] == "98765432-5"
 
 
-class TestRutFormatterFactory:
-    """Suite de pruebas para RutFormatterFactory."""
+class TestFabricaFormateadorRut:
+    """Suite de pruebas para FabricaFormateadorRut."""
 
     def test_get_formatter_csv(self):
         """Prueba obtener formateador CSV."""
-        formatter = RutFormatterFactory.get_formatter("csv")
-        assert isinstance(formatter, CSVFormatter)
+        formatter = FabricaFormateadorRut.obtener_formateador("csv")
+        assert isinstance(formatter, FormateadorCSV)
 
     def test_get_formatter_xml(self):
         """Prueba obtener formateador XML."""
-        formatter = RutFormatterFactory.get_formatter("xml")
-        assert isinstance(formatter, XMLFormatter)
+        formatter = FabricaFormateadorRut.obtener_formateador("xml")
+        assert isinstance(formatter, FormateadorXML)
 
     def test_get_formatter_json(self):
         """Prueba obtener formateador JSON."""
-        formatter = RutFormatterFactory.get_formatter("json")
-        assert isinstance(formatter, JSONFormatter)
+        formatter = FabricaFormateadorRut.obtener_formateador("json")
+        assert isinstance(formatter, FormateadorJSON)
 
     def test_get_formatter_inexistente(self):
         """Prueba obtener formateador inexistente."""
-        formatter = RutFormatterFactory.get_formatter("pdf")
+        formatter = FabricaFormateadorRut.obtener_formateador("pdf")
         assert formatter is None
 
     def test_get_available_formats(self):
         """Prueba obtener formatos disponibles."""
-        formatos = RutFormatterFactory.get_available_formats()
+        formatos = FabricaFormateadorRut.obtener_formatos_disponibles()
         assert "csv" in formatos
         assert "xml" in formatos
         assert "json" in formatos
@@ -343,27 +343,27 @@ class TestRut:
 # TESTS PARA RUTBATCHPROCESSOR
 # ============================================================================
 
-class TestRutBatchProcessor:
-    """Suite de pruebas para RutBatchProcessor."""
+class TestProcesadorLotesRut:
+    """Suite de pruebas para ProcesadorLotesRut."""
 
     def test_validar_lista_ruts_todos_validos(self):
         """Prueba validación de lista con todos los RUTs válidos."""
         ruts = ["12345678-5", "98765432-5", "1-9"]
-        processor = RutBatchProcessor()
+        processor = ProcesadorLotesRut()
         resultado = processor.validar_lista_ruts(ruts)
 
-        assert len(resultado.valid_ruts) == 3
-        assert len(resultado.invalid_ruts) == 0
+        assert len(resultado.ruts_validos) == 3
+        assert len(resultado.ruts_invalidos) == 0
 
     def test_validar_lista_ruts_mixtos(self):
         """Prueba validación de lista con RUTs válidos e inválidos."""
         ruts = ["12345678-5", "98765432-1", "1-9"]  # El segundo es inválido
-        processor = RutBatchProcessor()
+        processor = ProcesadorLotesRut()
         resultado = processor.validar_lista_ruts(ruts)
 
-        assert len(resultado.valid_ruts) == 2
-        assert len(resultado.invalid_ruts) == 1
-        assert resultado.invalid_ruts[0][0] == "98765432-1"
+        assert len(resultado.ruts_validos) == 2
+        assert len(resultado.ruts_invalidos) == 1
+        assert resultado.ruts_invalidos[0][0] == "98765432-1"
 
     # Parametrization uses the expected output to validate the full
     # formatted string (ignoring statistics lines which vary).  The
@@ -374,7 +374,7 @@ class TestRutBatchProcessor:
     def test_formatear_lista_ruts_con_formato(self, formato, esperado):
         """Prueba formateo de lista con formato específico."""
         ruts = ["12345678-5", "98765432-5", "1-9"]
-        processor = RutBatchProcessor()
+        processor = ProcesadorLotesRut()
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
 
         # Verificar que contiene el contenido esperado
@@ -389,7 +389,7 @@ class TestRutBatchProcessor:
     @pytest.mark.parametrize("ruts, formato", datos_test_formatear_lista_ruts)
     def test_formatear_lista_ruts_sin_formato(self, ruts, formato):
         """Prueba formateo de lista sin formato específico."""
-        processor = RutBatchProcessor()
+        processor = ProcesadorLotesRut()
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
         assert "RUTs válidos:" in resultado
 
@@ -397,7 +397,7 @@ class TestRutBatchProcessor:
         """Prueba que formato inválido lance excepción."""
         ruts = ["12345678-5"]
         with pytest.raises(ValueError) as exc_info:
-            processor = RutBatchProcessor()
+            processor = ProcesadorLotesRut()
             processor.formatear_lista_ruts(ruts, formato="pdf")
         assert "Format 'pdf' not supported" in str(exc_info.value)
 
@@ -458,7 +458,7 @@ class TestIntegracion:
         ruts = ["12.345.678-5", "98.765.432-1", "1-9", "invalid"]
 
         # Procesar
-        processor = RutBatchProcessor()
+        processor = ProcesadorLotesRut()
         resultado = processor.formatear_lista_ruts(
             ruts,
             separador_miles=True,

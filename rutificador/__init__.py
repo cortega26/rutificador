@@ -31,12 +31,12 @@ __license__ = "MIT"
 from rutificador.main import Rut, RutBase, RutInvalidoError, RutValidator
 
 # Processing and formatting
-from rutificador.main import RutBatchProcessor
+from rutificador.main import ProcesadorLotesRut
 from rutificador.formatter import (
-    RutFormatterFactory,
-    CSVFormatter,
-    XMLFormatter,
-    JSONFormatter,
+    FabricaFormateadorRut,
+    FormateadorCSV,
+    FormateadorXML,
+    FormateadorJSON,
 )
 
 # Utility functions
@@ -53,11 +53,11 @@ __all__: List[Union[str, Type]] = [
     'RutInvalidoError',
     'RutValidator',
     # Processing and formatting
-    'RutBatchProcessor',
-    'RutFormatterFactory',
-    'CSVFormatter',
-    'XMLFormatter',
-    'JSONFormatter',
+    'ProcesadorLotesRut',
+    'FabricaFormateadorRut',
+    'FormateadorCSV',
+    'FormateadorXML',
+    'FormateadorJSON',
     # Utility functions
     'calcular_digito_verificador',
     'formatear_lista_ruts',

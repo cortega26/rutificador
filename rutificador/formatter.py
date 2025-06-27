@@ -6,16 +6,16 @@ from typing import Any, Dict, List, Optional, Sequence, Type
 logger = logging.getLogger(__name__)
 
 
-class RutFormatter(ABC):
-    """Abstract base class for RUT formatters with validation."""
+class FormateadorRut(ABC):
+    """Clase base abstracta para formateadores de RUT con validación."""
 
     @abstractmethod
-    def format(self, ruts: Sequence[str]) -> str:
-        """Format a sequence of RUTs."""
+    def formatear(self, ruts: Sequence[str]) -> str:
+        """Formatea una secuencia de RUTs."""
         raise NotImplementedError
 
-    def validate_input(self, ruts: Sequence[str]) -> None:
-        """Validate input before formatting."""
+    def validar_entrada(self, ruts: Sequence[str]) -> None:
+        """Valida la entrada antes de formatear."""
         if not isinstance(ruts, (list, tuple)):
             raise TypeError(f"Expected sequence, got {type(ruts).__name__}")
 
@@ -23,36 +23,36 @@ class RutFormatter(ABC):
             logger.warning("Empty RUT sequence provided for formatting")
 
 
-class CSVFormatter(RutFormatter):
-    """Enhanced CSV formatter with configurable options."""
+class FormateadorCSV(FormateadorRut):
+    """Formateador CSV con opciones configurables."""
 
-    def __init__(self, header: str = "rut", delimiter: str = "\n") -> None:
-        self.header = header
-        self.delimiter = delimiter
+    def __init__(self, encabezado: str = "rut", delimitador: str = "\n") -> None:
+        self.encabezado = encabezado
+        self.delimitador = delimitador
 
-    def format(self, ruts: Sequence[str]) -> str:
-        self.validate_input(ruts)
+    def formatear(self, ruts: Sequence[str]) -> str:
+        self.validar_entrada(ruts)
 
         if not ruts:
-            return f"{self.header}{self.delimiter}"
+            return f"{self.encabezado}{self.delimitador}"
 
-        escaped_ruts = [str(rut).replace(',', '\\,') for rut in ruts]
-        cadena_ruts = self.delimiter.join(escaped_ruts)
+        ruts_escapados = [str(rut).replace(',', '\\,') for rut in ruts]
+        cadena_ruts = self.delimitador.join(ruts_escapados)
 
-        return f"{self.header}{self.delimiter}{cadena_ruts}"
+        return f"{self.encabezado}{self.delimitador}{cadena_ruts}"
 
 
-class XMLFormatter(RutFormatter):
-    """Enhanced XML formatter with proper escaping and validation."""
+class FormateadorXML(FormateadorRut):
+    """Formateador XML con escape y validación apropiados."""
 
-    def __init__(self, root_element: str = "root", item_element: str = "rut") -> None:
-        self.root_element = root_element
-        self.item_element = item_element
+    def __init__(self, elemento_raiz: str = "root", elemento_item: str = "rut") -> None:
+        self.elemento_raiz = elemento_raiz
+        self.elemento_item = elemento_item
 
-    def format(self, ruts: Sequence[str]) -> str:
-        self.validate_input(ruts)
+    def formatear(self, ruts: Sequence[str]) -> str:
+        self.validar_entrada(ruts)
 
-        xml_lines = [f"<{self.root_element}>"]
+        xml_lines = [f"<{self.elemento_raiz}>"]
 
         for rut in ruts:
             rut_escaped = (
@@ -63,58 +63,58 @@ class XMLFormatter(RutFormatter):
                 .replace('"', "&quot;")
                 .replace("'", "&#x27;")
             )
-            xml_lines.append(f"    <{self.item_element}>{rut_escaped}</{self.item_element}>")
+            xml_lines.append(f"    <{self.elemento_item}>{rut_escaped}</{self.elemento_item}>")
 
-        xml_lines.append(f"</{self.root_element}>")
+        xml_lines.append(f"</{self.elemento_raiz}>")
         return "\n".join(xml_lines)
 
 
-class JSONFormatter(RutFormatter):
-    """Enhanced JSON formatter with configurable structure."""
+class FormateadorJSON(FormateadorRut):
+    """Formateador JSON con estructura configurable."""
 
-    def __init__(self, key_name: str = "rut", pretty_print: bool = True) -> None:
-        self.key_name = key_name
-        self.pretty_print = pretty_print
+    def __init__(self, nombre_clave: str = "rut", imprimir_bonito: bool = True) -> None:
+        self.nombre_clave = nombre_clave
+        self.imprimir_bonito = imprimir_bonito
 
-    def format(self, ruts: Sequence[str]) -> str:
-        self.validate_input(ruts)
+    def formatear(self, ruts: Sequence[str]) -> str:
+        self.validar_entrada(ruts)
 
-        ruts_json = [{self.key_name: str(rut)} for rut in ruts]
+        ruts_json = [{self.nombre_clave: str(rut)} for rut in ruts]
 
         return json.dumps(
             ruts_json,
-            indent=2 if self.pretty_print else None,
+            indent=2 if self.imprimir_bonito else None,
             ensure_ascii=False,
-            separators=(",", ": ") if self.pretty_print else (",", ":"),
+            separators=(",", ": ") if self.imprimir_bonito else (",", ":"),
         )
 
 
-class RutFormatterFactory:
-    """Factory for creating RUT formatters with configuration support."""
+class FabricaFormateadorRut:
+    """Fábrica para crear formateadores de RUT con soporte de configuración."""
 
-    _formatters: Dict[str, Type[RutFormatter]] = {
-        "csv": CSVFormatter,
-        "xml": XMLFormatter,
-        "json": JSONFormatter,
+    _formatters: Dict[str, Type[FormateadorRut]] = {
+        "csv": FormateadorCSV,
+        "xml": FormateadorXML,
+        "json": FormateadorJSON,
     }
 
     @classmethod
-    def register_formatter(cls, name: str, formatter_class: Type[RutFormatter]) -> None:
-        if not issubclass(formatter_class, RutFormatter):
-            raise TypeError("Formatter must inherit from RutFormatter")
-        cls._formatters[name.lower()] = formatter_class
-        logger.info(f"Registered custom formatter: {name}")
+    def registrar_formateador(cls, nombre: str, clase_formateador: Type[FormateadorRut]) -> None:
+        if not issubclass(clase_formateador, FormateadorRut):
+            raise TypeError("El formateador debe heredar de FormateadorRut")
+        cls._formatters[nombre.lower()] = clase_formateador
+        logger.info(f"Formateador personalizado registrado: {nombre}")
 
     @classmethod
-    def get_formatter(cls, formato: str, **kwargs: Any) -> Optional[RutFormatter]:
+    def obtener_formateador(cls, formato: str, **kwargs: Any) -> Optional[FormateadorRut]:
         if not isinstance(formato, str):
             return None
 
-        formatter_class = cls._formatters.get(formato.lower())
-        if formatter_class:
-            return formatter_class(**kwargs)
+        clase_formateador = cls._formatters.get(formato.lower())
+        if clase_formateador:
+            return clase_formateador(**kwargs)
         return None
 
     @classmethod
-    def get_available_formats(cls) -> List[str]:
+    def obtener_formatos_disponibles(cls) -> List[str]:
         return list(cls._formatters.keys())
