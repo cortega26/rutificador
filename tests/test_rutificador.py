@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring
+# pylint: disable=missing-module-docstring, cyclic-import
 
 import json
 import pytest
@@ -372,6 +372,7 @@ class TestProcesadorLotesRut:
     @pytest.mark.parametrize("formato, esperado", datos_test_formato)
     def test_formatear_lista_ruts_con_formato(self, formato, esperado):
         """Prueba formateo de lista con formato específico."""
+        _ = esperado
         ruts = ["12345678-5", "98765432-5", "1-9"]
         processor = ProcesadorLotesRut()
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
