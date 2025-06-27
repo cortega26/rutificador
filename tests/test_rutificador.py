@@ -365,11 +365,10 @@ class TestProcesadorLotesRut:
         assert len(resultado.ruts_invalidos) == 1
         assert resultado.ruts_invalidos[0][0] == "98765432-1"
 
-    # Parametrization uses the expected output to validate the full
-    # formatted string (ignoring statistics lines which vary).  The
-    # dataset provides tuples of ``(formato, esperado)`` where
-    # ``esperado`` contains the initial part of the result up to the
-    # statistics section.
+    # La parametrización utiliza la salida esperada para validar toda la cadena
+    # formateada (ignorando las líneas de estadísticas que varían). El conjunto
+    # de datos provee tuplas ``(formato, esperado)`` donde ``esperado`` contiene
+    # el inicio del resultado hasta la sección de estadísticas.
     @pytest.mark.parametrize("formato, esperado", datos_test_formato)
     def test_formatear_lista_ruts_con_formato(self, formato, esperado):
         """Prueba formateo de lista con formato específico."""
