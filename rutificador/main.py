@@ -1,9 +1,9 @@
 """
-Enhanced Rutificador main module following industry best practices.
+Módulo principal de Rutificador con mejores prácticas.
 
-This module provides a robust, high-performance implementation for Chilean RUT
-validation and formatting with comprehensive error handling, logging, and
-extensibility features.
+Este módulo ofrece una implementación robusta y de alto rendimiento para la
+validación y formateo del RUT chileno, con manejo exhaustivo de errores,
+registro de eventos y opciones de extensión.
 """
 
 import json
@@ -21,11 +21,11 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .formatter import (
-    RutFormatter,
-    CSVFormatter,
-    XMLFormatter,
-    JSONFormatter,
-    RutFormatterFactory,
+    FormateadorRut,
+    FormateadorCSV,
+    FormateadorXML,
+    FormateadorJSON,
+    FabricaFormateadorRut,
 )
 
 # ============================================================================
@@ -34,8 +34,8 @@ from .formatter import (
 
 logger = logging.getLogger(__name__)
 
-def setup_logging(level: int = logging.WARNING) -> None:
-    """Configure logging for the rutificador module."""
+def configurar_registro_basico(level: int = logging.WARNING) -> None:
+    """Configura el registro para el módulo rutificador."""
     logging.basicConfig(
         level=level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -672,15 +672,15 @@ class Rut:
             ) from e
 
     @classmethod
-    def clear_cache(cls) -> None:
-        """Clear the instance cache."""
+    def limpiar_cache(cls) -> None:
+        """Limpia la caché de instancias."""
         with cls._cache_lock:
             cls._instance_cache.clear()
             logger.info("RUT instance cache cleared")
 
     @classmethod
-    def cache_stats(cls) -> Dict[str, int]:
-        """Get cache statistics."""
+    def estadisticas_cache(cls) -> Dict[str, int]:
+        """Obtiene estadísticas de la caché."""
         with cls._cache_lock:
             return {
                 "cache_size": len(cls._instance_cache),
@@ -692,21 +692,21 @@ class Rut:
 # ============================================================================
 
 @dataclass
-class BatchResult:
-    """Result container for batch processing operations."""
-    valid_ruts: List[str] = field(default_factory=list)
-    invalid_ruts: List[Tuple[str, str]] = field(default_factory=list)
-    processing_time: float = 0.0
-    total_processed: int = 0
+class ResultadoLote:
+    """Contenedor de resultados para operaciones por lotes."""
+    ruts_validos: List[str] = field(default_factory=list)
+    ruts_invalidos: List[Tuple[str, str]] = field(default_factory=list)
+    tiempo_procesamiento: float = 0.0
+    total_procesados: int = 0
     
     @property
-    def success_rate(self) -> float:
-        """Calculate success rate as percentage."""
-        if self.total_processed == 0:
+    def tasa_exito(self) -> float:
+        """Calcula la tasa de éxito como porcentaje."""
+        if self.total_procesados == 0:
             return 0.0
-        return (len(self.valid_ruts) / self.total_processed) * 100
+        return (len(self.ruts_validos) / self.total_procesados) * 100
 
-class RutBatchProcessor:
+class ProcesadorLotesRut:
     """
     Advanced batch processing service with parallel processing capabilities.
     
@@ -729,11 +729,11 @@ class RutBatchProcessor:
         self.validator = validator or RutValidator()
         self.max_workers = max_workers
         self.chunk_size = chunk_size
-        logger.info(f"BatchProcessor initialized with chunk_size={chunk_size}")
+        logger.info(f"Procesador de lotes inicializado con chunk_size={chunk_size}")
     
     @performance_monitor
-    def validar_lista_ruts(self, ruts: Sequence[str], 
-                          parallel: bool = True) -> BatchResult:
+    def validar_lista_ruts(self, ruts: Sequence[str],
+                          parallel: bool = True) -> ResultadoLote:
         """
         Validate a list of RUTs with optional parallel processing.
         
@@ -742,7 +742,7 @@ class RutBatchProcessor:
             parallel: Whether to use parallel processing.
             
         Returns:
-            BatchResult with validation results and statistics.
+            ResultadoLote con los resultados y estadísticas de validación.
             
         Raises:
             RutProcessingError: If batch processing fails.
@@ -759,21 +759,21 @@ class RutBatchProcessor:
             
             if not ruts:
                 logger.warning("Empty RUT sequence provided for validation")
-                return BatchResult(processing_time=time.perf_counter() - start_time)
+                return ResultadoLote(tiempo_procesamiento=time.perf_counter() - start_time)
             
             # Choose processing strategy based on size and parallel flag
             if parallel and len(ruts) > self.chunk_size:
-                result = self._validate_parallel(ruts)
+                result = self._validate_paralelo(ruts)
             else:
-                result = self._validate_sequential(ruts)
+                result = self._validate_secuencial(ruts)
             
-            result.processing_time = time.perf_counter() - start_time
-            result.total_processed = len(ruts)
+            result.tiempo_procesamiento = time.perf_counter() - start_time
+            result.total_procesados = len(ruts)
             
             logger.info(
-                f"Batch validation completed: {len(result.valid_ruts)} valid, "
-                f"{len(result.invalid_ruts)} invalid, "
-                f"success rate: {result.success_rate:.1f}%"
+                f"Validación por lotes completada: {len(result.ruts_validos)} válidos, "
+                f"{len(result.ruts_invalidos)} inválidos, "
+                f"tasa de éxito: {result.tasa_exito:.1f}%"
             )
             
             return result
@@ -786,47 +786,47 @@ class RutBatchProcessor:
                 error_code="BATCH_ERROR"
             ) from e
     
-    def _validate_sequential(self, ruts: Sequence[str]) -> BatchResult:
+    def _validate_secuencial(self, ruts: Sequence[str]) -> ResultadoLote:
         """Sequential validation of RUTs."""
-        result = BatchResult()
+        result = ResultadoLote()
         
         for rut_string in ruts:
             try:
                 rut_obj = Rut(str(rut_string), validator=self.validator)
-                result.valid_ruts.append(str(rut_obj))
+                result.ruts_validos.append(str(rut_obj))
             except (RutError, ValueError, TypeError) as e:
-                result.invalid_ruts.append((str(rut_string), str(e)))
+                result.ruts_invalidos.append((str(rut_string), str(e)))
         
         return result
     
-    def _validate_parallel(self, ruts: Sequence[str]) -> BatchResult:
+    def _validate_paralelo(self, ruts: Sequence[str]) -> ResultadoLote:
         """Parallel validation of RUTs using ThreadPoolExecutor."""
-        result = BatchResult()
+        result = ResultadoLote()
         chunks = [ruts[i:i + self.chunk_size] for i in range(0, len(ruts), self.chunk_size)]
         
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             future_to_chunk = {
-                executor.submit(self._validate_chunk, chunk): chunk 
+                executor.submit(self._validate_lote, chunk): chunk
                 for chunk in chunks
             }
             
             for future in as_completed(future_to_chunk):
                 try:
                     chunk_result = future.result()
-                    result.valid_ruts.extend(chunk_result.valid_ruts)
-                    result.invalid_ruts.extend(chunk_result.invalid_ruts)
+                    result.ruts_validos.extend(chunk_result.ruts_validos)
+                    result.ruts_invalidos.extend(chunk_result.ruts_invalidos)
                 except Exception as e:
                     chunk = future_to_chunk[future]
                     logger.error(f"Chunk processing failed: {e}")
                     # Add all chunk items as invalid
                     for rut_string in chunk:
-                        result.invalid_ruts.append((str(rut_string), f"Processing error: {e}"))
+                        result.ruts_invalidos.append((str(rut_string), f"Error de procesamiento: {e}"))
         
         return result
     
-    def _validate_chunk(self, chunk: Sequence[str]) -> BatchResult:
-        """Validate a chunk of RUTs."""
-        return self._validate_sequential(chunk)
+    def _validate_lote(self, chunk: Sequence[str]) -> ResultadoLote:
+        """Valida un lote de RUTs."""
+        return self._validate_secuencial(chunk)
     
     @performance_monitor
     def formatear_lista_ruts(
@@ -868,8 +868,8 @@ class RutBatchProcessor:
         
         # Validate RUTs
         resultado_validacion = self.validar_lista_ruts(ruts, parallel=parallel)
-        ruts_validos = resultado_validacion.valid_ruts
-        ruts_invalidos = resultado_validacion.invalid_ruts
+        ruts_validos = resultado_validacion.ruts_validos
+        ruts_invalidos = resultado_validacion.ruts_invalidos
         
         resultado_parts = []
         
@@ -892,11 +892,11 @@ class RutBatchProcessor:
             
             # Apply specific format if requested
             if formato:
-                formatter = RutFormatterFactory.get_formatter(formato, **formatter_kwargs)
+                formatter = FabricaFormateadorRut.obtener_formateador(formato, **formatter_kwargs)
                 if formatter:
-                    resultado_parts.append(formatter.format(ruts_validos_formateados))
+                    resultado_parts.append(formatter.formatear(ruts_validos_formateados))
                 else:
-                    available_formats = RutFormatterFactory.get_available_formats()
+                    available_formats = FabricaFormateadorRut.obtener_formatos_disponibles()
                     raise ValueError(
                         f"Format '{formato}' not supported. "
                         f"Available formats: {available_formats}"
@@ -917,11 +917,11 @@ class RutBatchProcessor:
             resultado_parts.extend([
                 "",
                 f"Estadísticas de procesamiento:",
-                f"- Total procesados: {resultado_validacion.total_processed}",
+                f"- Total procesados: {resultado_validacion.total_procesados}",
                 f"- RUTs válidos: {len(ruts_validos)}",
                 f"- RUTs inválidos: {len(ruts_invalidos)}",
-                f"- Tasa de éxito: {resultado_validacion.success_rate:.1f}%",
-                f"- Tiempo de procesamiento: {resultado_validacion.processing_time:.4f}s"
+                f"- Tasa de éxito: {resultado_validacion.tasa_exito:.1f}%",
+                f"- Tiempo de procesamiento: {resultado_validacion.tiempo_procesamiento:.4f}s"
             ])
 
         return "\n".join(resultado_parts)
@@ -932,7 +932,7 @@ class RutBatchProcessor:
 # ============================================================================
 
 # Global batch processor instance for backward compatibility
-_default_processor = RutBatchProcessor()
+_default_processor = ProcesadorLotesRut()
 
 def formatear_lista_ruts(
     ruts: List[str],
@@ -962,7 +962,7 @@ def formatear_lista_ruts(
     # Issue deprecation warning for future migration
     warnings.warn(
         "formatear_lista_ruts function is deprecated. "
-        "Use RutBatchProcessor.formatear_lista_ruts for enhanced functionality.",
+        "Use ProcesadorLotesRut.formatear_lista_ruts para mayor funcionalidad.",
         DeprecationWarning,
         stacklevel=2
     )
@@ -990,41 +990,41 @@ def validar_lista_ruts(ruts: List[str]) -> Dict[str, List[Union[str, Tuple[str, 
     """
     warnings.warn(
         "validar_lista_ruts function is deprecated. "
-        "Use RutBatchProcessor.validar_lista_ruts for enhanced functionality.",
+        "Use ProcesadorLotesRut.validar_lista_ruts para mayor funcionalidad.",
         DeprecationWarning,
         stacklevel=2
     )
     
     result = _default_processor.validar_lista_ruts(ruts, parallel=False)
     return {
-        "validos": result.valid_ruts,
-        "invalidos": result.invalid_ruts
+        "validos": result.ruts_validos,
+        "invalidos": result.ruts_invalidos
     }
 
 # ============================================================================
 # MODULE CONFIGURATION AND SETUP
 # ============================================================================
 
-def configure_logging(level: int = logging.WARNING, 
-                     format_string: Optional[str] = None) -> None:
+def configurar_registro(level: int = logging.WARNING,
+                       format_string: Optional[str] = None) -> None:
     """
-    Configure module-wide logging with enhanced options.
-    
+    Configura el registro del módulo con opciones avanzadas.
+
     Args:
-        level: Logging level (e.g., logging.DEBUG, logging.INFO).
-        format_string: Custom format string for log messages.
+        level: Nivel de log (por ejemplo, logging.DEBUG, logging.INFO).
+        format_string: Cadena de formato personalizada para los mensajes.
     """
     format_string = format_string or '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     logging.basicConfig(level=level, format=format_string, force=True)
     logger.setLevel(level)
-    logger.info(f"Rutificador logging configured at level: {logging.getLevelName(level)}")
+    logger.info(f"Registro configurado al nivel: {logging.getLevelName(level)}")
 
-def get_version_info() -> Dict[str, str]:
+def obtener_informacion_version() -> Dict[str, str]:
     """
-    Get version and module information.
-    
+    Obtiene la información de versión y metadatos del módulo.
+
     Returns:
-        Dictionary with version and module metadata.
+        Diccionario con los metadatos de la versión.
     """
     from . import __version__
 
@@ -1044,17 +1044,17 @@ def get_version_info() -> Dict[str, str]:
         ]
     }
 
-def benchmark_performance(num_ruts: int = 10000, 
-                         parallel: bool = True) -> Dict[str, Any]:
+def evaluar_rendimiento(num_ruts: int = 10000,
+                       parallel: bool = True) -> Dict[str, Any]:
     """
-    Benchmark the performance of RUT processing.
-    
+    Evalúa el rendimiento del procesamiento de RUTs.
+
     Args:
-        num_ruts: Number of test RUTs to generate.
-        parallel: Whether to test parallel processing.
-        
+        num_ruts: Cantidad de RUTs de prueba a generar.
+        parallel: Si se debe probar el procesamiento en paralelo.
+
     Returns:
-        Dictionary with benchmark results.
+        Diccionario con los resultados del benchmark.
     """
     import time
     import random
@@ -1066,7 +1066,7 @@ def benchmark_performance(num_ruts: int = 10000,
         digit = calcular_digito_verificador(base)
         test_ruts.append(f"{base}-{digit}")
     
-    processor = RutBatchProcessor()
+    processor = ProcesadorLotesRut()
     
     # Benchmark validation
     start_time = time.perf_counter()
@@ -1089,8 +1089,8 @@ def benchmark_performance(num_ruts: int = 10000,
         "validation_rate": num_ruts / validation_time,
         "formatting_time": formatting_time,
         "formatting_rate": 1000 / formatting_time,
-        "success_rate": result.success_rate,
-        "cache_stats": Rut.cache_stats()
+        "tasa_exito": result.tasa_exito,
+        "estadisticas_cache": Rut.estadisticas_cache()
     }
 
 # ============================================================================
@@ -1109,14 +1109,14 @@ __all__ = [
     'RutDigitError', 'RutLengthError', 'RutProcessingError',
     'RutInvalidoError',  # Backward compatibility
     # Batch processing
-    'RutBatchProcessor', 'BatchResult',
+    'ProcesadorLotesRut', 'ResultadoLote',
     # Formatting
-    'RutFormatter', 'CSVFormatter', 'XMLFormatter', 'JSONFormatter',
-    'RutFormatterFactory',
+    'FormateadorRut', 'FormateadorCSV', 'FormateadorXML', 'FormateadorJSON',
+    'FabricaFormateadorRut',
     # Utility functions
     'calcular_digito_verificador', 'normalizar_base_rut',
     'formatear_lista_ruts', 'validar_lista_ruts',  # Backward compatibility
     # Configuration
     'RutConfig', 'ValidationStrictness', 'DEFAULT_CONFIG',
-    'configure_logging', 'get_version_info', 'benchmark_performance'
+    'configurar_registro', 'obtener_informacion_version', 'evaluar_rendimiento'
 ]
