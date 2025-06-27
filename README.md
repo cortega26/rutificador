@@ -145,6 +145,66 @@ print(xml_ruts)
 # </root>
 ```
 
+### Personalizar la validación
+
+```python
+from rutificador import Rut, RutValidator, RigorValidacion
+
+validator = RutValidator(mode=RigorValidacion.FLEXIBLE)
+rut = Rut('12.345.678-5', validator=validator)
+print(rut)
+```
+
+### Procesamiento en lotes
+
+```python
+from rutificador import ProcesadorLotesRut
+
+ruts = ['12.345.678-5', '98.765.432-1', '1-9']
+processor = ProcesadorLotesRut()
+resultado = processor.formatear_lista_ruts(ruts, formato='json')
+print(resultado)
+```
+
+### Registro y depuración
+
+```python
+import logging
+from rutificador import configurar_registro
+
+configurar_registro(level=logging.DEBUG)
+```
+
+### Información de versión
+
+```python
+from rutificador import obtener_informacion_version
+
+info = obtener_informacion_version()
+print(info['version'])
+```
+
+### Evaluar rendimiento
+
+```python
+from rutificador import evaluar_rendimiento
+
+resultados = evaluar_rendimiento(num_ruts=1000)
+print(resultados['tasa_exito'])
+```
+
+### Registrar un formateador personalizado
+
+```python
+from rutificador import FormateadorRut, FabricaFormateadorRut
+
+class FormateadorLista(FormateadorRut):
+    def formatear(self, ruts):
+        return ','.join(ruts)
+
+FabricaFormateadorRut.registrar_formateador('lista', FormateadorLista)
+```
+
 ## Desarrollo
 
 ### Configuración del Entorno
