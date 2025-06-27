@@ -6,7 +6,6 @@ validación y formateo del RUT chileno, con manejo exhaustivo de errores,
 registro de eventos y opciones de extensión.
 """
 
-import json
 import logging
 import re
 from contextlib import contextmanager
@@ -15,7 +14,7 @@ from enum import Enum
 from functools import lru_cache, wraps
 from typing import (
     Any, Dict, List, Literal, Optional, Protocol, Sequence,
-    Tuple, Union, runtime_checkable, Iterator, Type
+    Tuple, Union, runtime_checkable, Iterator
 )
 import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -52,7 +51,7 @@ class RutConfig:
     modulo: int = 11
     max_digits: int = 8
     min_digits: int = 1
-    
+
     def __post_init__(self) -> None:
         """Validate configuration parameters."""
         if self.modulo <= 0:
@@ -86,7 +85,7 @@ class RigorValidacion(Enum):
 
 class RutError(Exception):
     """Base exception for all RUT-related errors."""
-    
+
     def __init__(self, message: str, error_code: Optional[str] = None, **kwargs: Any) -> None:
         super().__init__(message)
         self.message = message
@@ -96,11 +95,10 @@ class RutError(Exception):
 
 class RutValidationError(RutError):
     """Base class for validation-related errors."""
-    pass
 
 class RutFormatError(RutValidationError):
     """Raised when RUT format is invalid."""
-    
+
     def __init__(self, rut_value: str, expected_format: str) -> None:
         super().__init__(
             f"Invalid RUT format: '{rut_value}'. Expected format: {expected_format}",
@@ -111,7 +109,7 @@ class RutFormatError(RutValidationError):
 
 class RutDigitError(RutValidationError):
     """Raised when verification digit is incorrect."""
-    
+
     def __init__(self, provided_digit: str, calculated_digit: str) -> None:
         super().__init__(
             f"Verification digit mismatch: provided '{provided_digit}', "
@@ -123,7 +121,7 @@ class RutDigitError(RutValidationError):
 
 class RutLengthError(RutValidationError):
     """Raised when RUT length is invalid."""
-    
+
     def __init__(self, rut_value: str, length: int, max_length: int) -> None:
         super().__init__(
             f"RUT '{rut_value}' exceeds maximum length: {length} > {max_length}",
@@ -135,7 +133,6 @@ class RutLengthError(RutValidationError):
 
 class RutProcessingError(RutError):
     """Raised during batch processing operations."""
-    pass
 
 # Backward compatibility alias
 RutInvalidoError = RutValidationError
@@ -197,15 +194,15 @@ def calcular_digito_verificador(base_numerica: str, config: RutConfig = CONFIGUR
             f"Numeric base must be a string, received: {type(base_numerica).__name__}",
             error_code="TYPE_ERROR"
         )
-    
+
     if not base_numerica or not base_numerica.strip():
         raise RutValidationError(
             "Numeric base cannot be empty",
             error_code="EMPTY_BASE"
         )
-    
+
     base_numerica = base_numerica.strip()
-    
+
     # Validate that base contains only digits
     if not base_numerica.isdigit():
         raise RutValidationError(
@@ -253,7 +250,7 @@ def normalizar_base_rut(base: str) -> str:
             f"Base must be a string, received: {type(base).__name__}",
             error_code="TYPE_ERROR"
         )
-    
+
     # Remove dots and leading zeros efficiently
     base_normalizada = base.replace(".", "").lstrip("0")
     return base_normalizada if base_normalizada else "0"
@@ -265,7 +262,7 @@ def normalizar_base_rut(base: str) -> str:
 @runtime_checkable
 class Validator(Protocol):
     """Protocol for RUT validators."""
-    
+
     def validate(self, rut_string: str) -> bool:
         """Validate a RUT string."""
         ...
@@ -273,7 +270,7 @@ class Validator(Protocol):
 class RutValidator:
     """
     Enhanced RUT validator with configurable strictness levels.
-    
+
     This validator implements multiple validation modes to handle
     different use cases and legacy RUT formats while maintaining
     high performance through compiled regex patterns.
@@ -291,7 +288,7 @@ class RutValidator:
         self.config = config
         self.mode = mode
         logger.debug(f"RutValidator initialized with mode: {mode.value}")
-    
+
     def validar_formato(self, rut_string: str) -> re.Match[str]:
         """
         Validate RUT format with enhanced error reporting.
@@ -304,7 +301,7 @@ class RutValidator:
 
         Raises:
             RutFormatError: If the format is invalid.
-            
+
         Examples:
             >>> validator = RutValidator()
             >>> match = validator.validar_formato("12345678-5")
@@ -316,29 +313,29 @@ class RutValidator:
         # Type validation with specific error
         if not isinstance(rut_string, str):
             raise RutFormatError(
-                str(rut_string), 
+                str(rut_string),
                 "string with format 'XXXXXXXX-X' or 'XX.XXX.XXX-X'"
             )
-            
+
         if not rut_string or not rut_string.strip():
             raise RutFormatError("", "non-empty string")
-            
+
         rut_string = rut_string.strip()
-        
+
         # Preprocesamiento según el modo de validación
         if self.mode == RigorValidacion.FLEXIBLE:
             rut_string = self._normalizar_entrada(rut_string)
-        
+
         match = RUT_REGEX.fullmatch(rut_string)
         if not match:
             raise RutFormatError(
-                rut_string, 
+                rut_string,
                 "XXXXXXXX-X or XX.XXX.XXX-X where X are digits and last X can be 'k'"
             )
 
         logger.debug(f"Successfully validated RUT format: {rut_string}")
         return match
-    
+
     def validar_base(self, base: str, rut_original: str) -> str:
         """
         Validate and normalize RUT base number with enhanced checks.
@@ -376,8 +373,8 @@ class RutValidator:
         return base_normalizada
 
     def validar_digito_verificador(
-        self, 
-        digito_input: Optional[str], 
+        self,
+        digito_input: Optional[str],
         digito_calculado: str
     ) -> None:
         """
@@ -393,14 +390,14 @@ class RutValidator:
         if digito_input is not None:
             if not isinstance(digito_input, str):
                 raise RutFormatError(
-                    str(digito_input), 
+                    str(digito_input),
                     "single character (0-9 or k/K)"
                 )
-            
+
             # Case-insensitive comparison for 'k' digit
             if digito_input.lower() != digito_calculado.lower():
                 raise RutDigitError(digito_input, digito_calculado)
-                
+
         logger.debug(f"Verification digit validated: {digito_input} == {digito_calculado}")
 
     def _normalizar_entrada(self, rut_string: str) -> str:
@@ -424,14 +421,14 @@ class RutValidator:
 class RutBase:
     """
     Immutable representation of a RUT base number.
-    
+
     This class uses dataclass with frozen=True to ensure immutability,
     which provides thread safety and hashability benefits. The validation
     is performed during initialization to ensure data integrity.
     """
     base: str
     rut_original: str
-    
+
     def __post_init__(self) -> None:
         """Validate base after initialization."""
         if not isinstance(self.rut_original, str):
@@ -439,11 +436,11 @@ class RutBase:
                 f"RUT original must be a string, received: {type(self.rut_original).__name__}",
                 error_code="TYPE_ERROR"
             )
-        
+
         # Validate through the enhanced validator
         validator = RutValidator()
         validated_base = validator.validar_base(self.base, self.rut_original)
-        
+
         # Use object.__setattr__ to set the validated value in frozen dataclass
         object.__setattr__(self, 'base', validated_base)
 
@@ -453,7 +450,7 @@ class RutBase:
 class Rut:
     """
     Enhanced representation of a complete Chilean RUT.
-    
+
     This class provides a robust, thread-safe implementation with
     comprehensive validation, performance optimization, and extensive
     error handling capabilities.
@@ -462,21 +459,21 @@ class Rut:
     # Class-level cache for commonly used RUTs
     _instance_cache: Dict[str, 'Rut'] = {}
     _cache_lock = None  # Will be initialized when needed
-    
-    def __init__(self, rut: Union[str, int], 
+
+    def __init__(self, rut: Union[str, int],
                  validator: Optional[RutValidator] = None,
                  enable_caching: bool = True) -> None:
         """
         Initialize a RUT instance with enhanced validation.
-        
+
         Args:
             rut: RUT value as string or integer.
             validator: Custom validator instance.
             enable_caching: Whether to use instance caching.
-            
+
         Raises:
             RutValidationError: If RUT is invalid.
-            
+
         Examples:
             >>> rut = Rut("12345678-5")
             >>> str(rut)
@@ -489,22 +486,22 @@ class Rut:
         if Rut._cache_lock is None:
             import threading
             Rut._cache_lock = threading.RLock()
-        
+
         # Enhanced input validation
         if not isinstance(rut, (str, int)):
             raise RutValidationError(
                 f"RUT must be a string or integer, received: {type(rut).__name__}",
                 error_code="TYPE_ERROR"
             )
-        
+
         self.rut_string = str(rut).strip()
-        
+
         if not self.rut_string:
             raise RutValidationError(
                 "RUT cannot be empty",
                 error_code="EMPTY_RUT"
             )
-        
+
         # Check cache first if enabled
         if enable_caching and self.rut_string in Rut._instance_cache:
             cached_instance = Rut._instance_cache[self.rut_string]
@@ -514,10 +511,10 @@ class Rut:
 
         # Use provided validator or create default
         self.validator = validator or RutValidator()
-        
+
         # Parse and validate RUT components
         self._analizar_y_validar()
-        
+
         # Cache the instance if enabled
         if enable_caching:
             with Rut._cache_lock:
@@ -546,7 +543,7 @@ class Rut:
 
         # Validate verification digit if provided
         self.validator.validar_digito_verificador(digito_input, self.digito_verificador)
-        
+
         logger.debug(f"RUT successfully validated: {self}")
 
     def __str__(self) -> str:
@@ -585,7 +582,7 @@ class Rut:
         finally:
             logger.debug(f"Formateo completado para el RUT: {self}")
 
-    def formatear(self, separador_miles: bool = False, 
+    def formatear(self, separador_miles: bool = False,
                   mayusculas: bool = False,
                   custom_separator: str = ".") -> str:
         """
@@ -614,12 +611,12 @@ class Rut:
             raise ValueError(
                 f"separador_miles must be bool, received: {type(separador_miles).__name__}"
             )
-        
+
         if not isinstance(mayusculas, bool):
             raise ValueError(
                 f"mayusculas must be bool, received: {type(mayusculas).__name__}"
             )
-        
+
         if not isinstance(custom_separator, str) or len(custom_separator) != 1:
             raise ValueError("custom_separator must be a single character")
 
@@ -657,13 +654,13 @@ class Rut:
             # Use string manipulation for better performance on known numeric strings
             if len(numero) <= 3:
                 return numero
-            
+
             # Format from right to left
             reversed_digits = numero[::-1]
             chunks = [reversed_digits[i:i+3] for i in range(0, len(reversed_digits), 3)]
             formatted = separator.join(chunks)
             return formatted[::-1]
-            
+
         except (ValueError, TypeError) as e:
             raise RutValidationError(
                 f"Error formatting number '{numero}': {e}",
@@ -697,7 +694,7 @@ class ResultadoLote:
     ruts_invalidos: List[Tuple[str, str]] = field(default_factory=list)
     tiempo_procesamiento: float = 0.0
     total_procesados: int = 0
-    
+
     @property
     def tasa_exito(self) -> float:
         """Calcula la tasa de éxito como porcentaje."""
@@ -712,7 +709,7 @@ class ProcesadorLotesRut:
     Este servicio ofrece procesamiento de alto rendimiento de RUTs,
     soporte para ejecución paralela y manejo de errores integral.
     """
-    
+
     def __init__(self, validator: Optional[RutValidator] = None,
                  max_trabajadores: Optional[int] = None,
                  tamano_bloque: int = 1000) -> None:
@@ -728,54 +725,54 @@ class ProcesadorLotesRut:
         self.max_trabajadores = max_trabajadores
         self.tamano_bloque = tamano_bloque
         logger.info(f"Procesador de lotes inicializado con tamano_bloque={tamano_bloque}")
-    
+
     @monitor_de_rendimiento
     def validar_lista_ruts(self, ruts: Sequence[str],
                           parallel: bool = True) -> ResultadoLote:
         """
         Validate a list of RUTs with optional parallel processing.
-        
+
         Args:
             ruts: Sequence of RUT strings to validate.
             parallel: Whether to use parallel processing.
-            
+
         Returns:
             ResultadoLote con los resultados y estadísticas de validación.
-            
+
         Raises:
             RutProcessingError: If batch processing fails.
         """
         import time
         start_time = time.perf_counter()
-        
+
         try:
             if not isinstance(ruts, (list, tuple)):
                 raise RutProcessingError(
                     f"Expected sequence, got {type(ruts).__name__}",
                     error_code="TYPE_ERROR"
                 )
-            
+
             if not ruts:
                 logger.warning("Empty RUT sequence provided for validation")
                 return ResultadoLote(tiempo_procesamiento=time.perf_counter() - start_time)
-            
+
             # Choose processing strategy based on size and parallel flag
             if parallel and len(ruts) > self.tamano_bloque:
                 result = self._validar_paralelo(ruts)
             else:
                 result = self._validar_secuencial(ruts)
-            
+
             result.tiempo_procesamiento = time.perf_counter() - start_time
             result.total_procesados = len(ruts)
-            
+
             logger.info(
                 f"Validación por lotes completada: {len(result.ruts_validos)} válidos, "
                 f"{len(result.ruts_invalidos)} inválidos, "
                 f"tasa de éxito: {result.tasa_exito:.1f}%"
             )
-            
+
             return result
-            
+
         except Exception as e:
             processing_time = time.perf_counter() - start_time
             logger.error(f"Batch validation failed after {processing_time:.4f}s: {e}")
@@ -783,20 +780,20 @@ class ProcesadorLotesRut:
                 f"Batch validation failed: {e}",
                 error_code="BATCH_ERROR"
             ) from e
-    
+
     def _validar_secuencial(self, ruts: Sequence[str]) -> ResultadoLote:
         """Validación secuencial de RUTs."""
         result = ResultadoLote()
-        
+
         for rut_string in ruts:
             try:
                 rut_obj = Rut(str(rut_string), validator=self.validator)
                 result.ruts_validos.append(str(rut_obj))
             except (RutError, ValueError, TypeError) as e:
                 result.ruts_invalidos.append((str(rut_string), str(e)))
-        
+
         return result
-    
+
     def _validar_paralelo(self, ruts: Sequence[str]) -> ResultadoLote:
         """Validación paralela de RUTs usando ThreadPoolExecutor."""
         result = ResultadoLote()
@@ -807,7 +804,7 @@ class ProcesadorLotesRut:
                 executor.submit(self._validar_bloque, chunk): chunk
                 for chunk in chunks
             }
-            
+
             for future in as_completed(future_to_chunk):
                 try:
                     chunk_result = future.result()
@@ -819,13 +816,13 @@ class ProcesadorLotesRut:
                     # Add all chunk items as invalid
                     for rut_string in chunk:
                         result.ruts_invalidos.append((str(rut_string), f"Error de procesamiento: {e}"))
-        
+
         return result
-    
+
     def _validar_bloque(self, chunk: Sequence[str]) -> ResultadoLote:
         """Valida un bloque de RUTs."""
         return self._validar_secuencial(chunk)
-    
+
     @monitor_de_rendimiento
     def formatear_lista_ruts(
         self,
@@ -849,7 +846,7 @@ class ProcesadorLotesRut:
 
         Returns:
             Formatted string with valid and invalid RUTs.
-            
+
         Raises:
             ValueError: If parameters are invalid.
             RutProcessingError: If batch processing fails.
@@ -857,20 +854,20 @@ class ProcesadorLotesRut:
         # Enhanced input validation
         if not isinstance(ruts, (list, tuple)):
             raise ValueError(f"ruts must be a sequence, received: {type(ruts).__name__}")
-        
+
         if not isinstance(separador_miles, bool):
             raise ValueError(f"separador_miles must be bool, received: {type(separador_miles).__name__}")
-            
+
         if not isinstance(mayusculas, bool):
             raise ValueError(f"mayusculas must be bool, received: {type(mayusculas).__name__}")
-        
+
         # Validate RUTs
         resultado_validacion = self.validar_lista_ruts(ruts, parallel=parallel)
         ruts_validos = resultado_validacion.ruts_validos
         ruts_invalidos = resultado_validacion.ruts_invalidos
-        
+
         resultado_parts = []
-        
+
         # Process valid RUTs
         if ruts_validos:
             ruts_validos_formateados = []
@@ -878,7 +875,7 @@ class ProcesadorLotesRut:
                 try:
                     rut_obj = Rut(rut_string, validator=self.validator)
                     formatted_rut = rut_obj.formatear(
-                        separador_miles=separador_miles, 
+                        separador_miles=separador_miles,
                         mayusculas=mayusculas
                     )
                     ruts_validos_formateados.append(formatted_rut)
@@ -887,7 +884,7 @@ class ProcesadorLotesRut:
                     continue
 
             resultado_parts.append("RUTs válidos:")
-            
+
             # Apply specific format if requested
             if formato:
                 formatter = FabricaFormateadorRut.obtener_formateador(formato, **formatter_kwargs)
@@ -940,20 +937,20 @@ def formatear_lista_ruts(
 ) -> str:
     """
     Backward compatibility function for the original API.
-    
+
     This function maintains compatibility with the existing API while
     providing access to the enhanced functionality through the new
     batch processor architecture.
-    
+
     Args:
         ruts: List of RUT strings to format.
         separador_miles: Whether to add thousand separators.
         mayusculas: Whether to uppercase RUTs.
         formato: Output format (csv, json, xml, None).
-        
+
     Returns:
         Formatted string with RUTs and validation results.
-        
+
     Raises:
         ValueError: If parameters are invalid.
     """
@@ -964,7 +961,7 @@ def formatear_lista_ruts(
         DeprecationWarning,
         stacklevel=2
     )
-    
+
     return _default_processor.formatear_lista_ruts(
         ruts=ruts,
         separador_miles=separador_miles,
@@ -976,13 +973,13 @@ def formatear_lista_ruts(
 def validar_lista_ruts(ruts: List[str]) -> Dict[str, List[Union[str, Tuple[str, str]]]]:
     """
     Backward compatibility function for RUT list validation.
-    
+
     Args:
         ruts: List of RUT strings to validate.
-        
+
     Returns:
         Dictionary with 'validos' and 'invalidos' keys.
-        
+
     Raises:
         ValueError: If ruts is not a list.
     """
@@ -992,7 +989,7 @@ def validar_lista_ruts(ruts: List[str]) -> Dict[str, List[Union[str, Tuple[str, 
         DeprecationWarning,
         stacklevel=2
     )
-    
+
     result = _default_processor.validar_lista_ruts(ruts, parallel=False)
     return {
         "validos": result.ruts_validos,
@@ -1056,21 +1053,21 @@ def evaluar_rendimiento(num_ruts: int = 10000,
     """
     import time
     import random
-    
+
     # Generate test RUTs
     test_ruts = []
     for _ in range(num_ruts):
         base = str(random.randint(1000000, 99999999))
         digit = calcular_digito_verificador(base)
         test_ruts.append(f"{base}-{digit}")
-    
+
     processor = ProcesadorLotesRut()
-    
+
     # Benchmark validation
     start_time = time.perf_counter()
     result = processor.validar_lista_ruts(test_ruts, parallel=parallel)
     validation_time = time.perf_counter() - start_time
-    
+
     # Benchmark formatting
     start_time = time.perf_counter()
     formatted = processor.formatear_lista_ruts(
@@ -1079,7 +1076,7 @@ def evaluar_rendimiento(num_ruts: int = 10000,
         parallel=parallel
     )
     formatting_time = time.perf_counter() - start_time
-    
+
     return {
         "test_ruts_count": num_ruts,
         "parallel_processing": parallel,
@@ -1101,9 +1098,9 @@ logger.info("Enhanced Rutificador module initialized successfully")
 # Export summary for documentation
 __all__ = [
     # Core classes
-    'Rut', 'RutBase', 'RutValidator', 
+    'Rut', 'RutBase', 'RutValidator',
     # Exceptions
-    'RutError', 'RutValidationError', 'RutFormatError', 
+    'RutError', 'RutValidationError', 'RutFormatError',
     'RutDigitError', 'RutLengthError', 'RutProcessingError',
     'RutInvalidoError',  # Backward compatibility
     # Batch processing

@@ -422,9 +422,9 @@ class TestCompatibilidadHaciaAtras:
         """Prueba la función global con parámetros."""
         ruts = ["12345678-5"]
         resultado = formatear_lista_ruts(
-            ruts, 
-            separador_miles=True, 
-            mayusculas=True, 
+            ruts,
+            separador_miles=True,
+            mayusculas=True,
             formato="csv"
         )
 
