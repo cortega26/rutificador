@@ -1,3 +1,5 @@
+"""Utilities to format lists of Chilean RUT numbers."""
+
 import json
 import logging
 from abc import ABC, abstractmethod
@@ -100,13 +102,15 @@ class FabricaFormateadorRut:
 
     @classmethod
     def registrar_formateador(cls, nombre: str, clase_formateador: Type[FormateadorRut]) -> None:
+        """Register a custom formatter class."""
         if not issubclass(clase_formateador, FormateadorRut):
             raise TypeError("El formateador debe heredar de FormateadorRut")
         cls._formatters[nombre.lower()] = clase_formateador
-        logger.info(f"Formateador personalizado registrado: {nombre}")
+        logger.info("Formateador personalizado registrado: %s", nombre)
 
     @classmethod
     def obtener_formateador(cls, formato: str, **kwargs: Any) -> Optional[FormateadorRut]:
+        """Retrieve a formatter instance by name."""
         if not isinstance(formato, str):
             return None
 
@@ -117,4 +121,5 @@ class FabricaFormateadorRut:
 
     @classmethod
     def obtener_formatos_disponibles(cls) -> List[str]:
+        """Return the list of supported formatter names."""
         return list(cls._formatters.keys())

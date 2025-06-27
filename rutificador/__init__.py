@@ -18,15 +18,6 @@ except ModuleNotFoundError:  # Python < 3.11
     import tomli as tomllib
 from typing import List, Type, Union
 
-# Version info
-try:
-    __version__ = version("rutificador")
-except PackageNotFoundError:  # Fallback for local runs without installation
-    with open(Path(__file__).resolve().parent.parent / "pyproject.toml", "rb") as f:
-        __version__ = tomllib.load(f)["tool"]["poetry"]["version"]
-__author__ = "Carlos Ortega González"
-__license__ = "MIT"
-
 # Core classes
 from rutificador.main import Rut, RutBase, RutInvalidoError, RutValidator
 
@@ -44,6 +35,15 @@ from rutificador.main import (
     calcular_digito_verificador,
     formatear_lista_ruts,
 )
+
+# Version info
+try:
+    __version__ = version("rutificador")
+except PackageNotFoundError:  # Fallback for local runs without installation
+    with open(Path(__file__).resolve().parent.parent / "pyproject.toml", "rb") as f:
+        __version__ = tomllib.load(f)["tool"]["poetry"]["version"]
+__author__ = "Carlos Ortega González"
+__license__ = "MIT"
 
 # Public API
 __all__: List[Union[str, Type]] = [
