@@ -81,10 +81,12 @@ def calcular_digito_verificador(
             f"Numeric base '{base_numerica}' must contain only digits",
             error_code="INVALID_DIGITS",
         )
-    suma_parcial = sum(
-        int(digit) * config.verification_factors[i % len(config.verification_factors)]
-        for i, digit in enumerate(reversed(base_numerica))
-    )
+    # Use itertools.cycle to avoid costly modulo operations inside the loop
+    # and keep the implementation efficient for large bases.
+    from itertools import cycle
+
+    factores = cycle(config.verification_factors)
+    suma_parcial = sum(int(d) * f for d, f in zip(reversed(base_numerica), factores))
     digito_verificador = (config.modulo - suma_parcial % config.modulo) % config.modulo
     return str(digito_verificador) if digito_verificador < 10 else "k"
 
