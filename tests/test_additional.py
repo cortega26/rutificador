@@ -9,14 +9,28 @@ from rutificador.main import (
     configurar_registro,
     evaluar_rendimiento,
     Rut,
+    calcular_digito_verificador,
 )
 from rutificador import __version__
 from rutificador.formatter import FormateadorCSV
+from rutificador.exceptions import RutValidationError
 
 
 def test_normalizar_base_rut():
     assert normalizar_base_rut("12.345.678") == "12345678"
     assert normalizar_base_rut("000001") == "1"
+
+
+def test_calcular_digito_verificador_invalid_inputs():
+    with pytest.raises(RutValidationError):
+        calcular_digito_verificador("ABC123")
+    with pytest.raises(RutValidationError):
+        calcular_digito_verificador(12345678)  # type: ignore[arg-type]
+
+
+def test_normalizar_base_rut_invalid_type():
+    with pytest.raises(RutValidationError):
+        normalizar_base_rut(123)  # type: ignore[arg-type]
 
 
 def test_obtener_informacion_version():
