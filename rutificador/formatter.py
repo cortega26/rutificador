@@ -1,8 +1,9 @@
 """Utilities to format lists of Chilean RUT numbers."""
-
+import csv
 import json
 import logging
 from abc import ABC, abstractmethod
+from io import StringIO
 from typing import Any, Dict, List, Optional, Sequence, Type
 
 logger = logging.getLogger(__name__)
@@ -33,15 +34,29 @@ class FormateadorCSV(FormateadorRut):
         self.delimitador = delimitador
 
     def formatear(self, ruts: Sequence[str]) -> str:
+        """Genera una representación CSV segura de la lista de RUTs.
+
+        Se utiliza :mod:`csv` para garantizar el escapado correcto y se
+        mitiga la inyección de fórmulas en herramientas de hoja de cálculo
+        prefixando con una comilla simple (``'``) los valores que inician con
+        ``=``, ``+``, ``-`` o ``@``.
+        """
+
         self.validar_entrada(ruts)
 
-        if not ruts:
-            return f"{self.encabezado}{self.delimitador}"
+        buffer = StringIO()
+        writer = csv.writer(buffer, lineterminator=self.delimitador)
+        writer.writerow([self.encabezado])
 
-        ruts_escapados = [str(rut).replace(',', '\\,') for rut in ruts]
-        cadena_ruts = self.delimitador.join(ruts_escapados)
+        for rut in ruts:
+            valor = str(rut)
+            if valor and valor[0] in {"=", "+", "-", "@"}:
+                valor = f"'{valor}"
+            writer.writerow([valor])
 
-        return f"{self.encabezado}{self.delimitador}{cadena_ruts}"
+        contenido = buffer.getvalue().rstrip(self.delimitador)
+        buffer.close()
+        return contenido
 
 
 class FormateadorXML(FormateadorRut):

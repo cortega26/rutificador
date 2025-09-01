@@ -11,6 +11,7 @@ from rutificador.main import (
     Rut,
 )
 from rutificador import __version__
+from rutificador.formatter import FormateadorCSV
 
 
 def test_normalizar_base_rut():
@@ -63,3 +64,11 @@ def test_monitor_de_rendimiento_success_and_failure():
     assert sample(3) == 6
     with pytest.raises(ValueError):
         sample_error()
+
+
+def test_formateador_csv_previene_inyeccion():
+    """El formateador CSV debe mitigar la inyección de fórmulas."""
+    formatter = FormateadorCSV()
+    contenido = formatter.formatear(["=2+2"])
+    lineas = contenido.splitlines()
+    assert lineas[1] == "'=2+2"
