@@ -11,8 +11,6 @@ import logging
 import re
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from enum import Enum
-from functools import lru_cache, wraps
 from typing import (
     Any, Dict, List, Literal, Optional, Protocol, Sequence,
     Tuple, Union, runtime_checkable, Iterator
@@ -30,6 +28,22 @@ from .formatter import (
     FormateadorJSON,
     FabricaFormateadorRut,
 )
+from .config import CONFIGURACION_POR_DEFECTO, RutConfig, RigorValidacion
+from .exceptions import (
+    RutError,
+    RutValidationError,
+    RutFormatError,
+    RutDigitError,
+    RutLengthError,
+    RutProcessingError,
+    RutInvalidoError,
+)
+from .utils import (
+    monitor_de_rendimiento,
+    calcular_digito_verificador,
+    normalizar_base_rut,
+)
+
 
 # ============================================================================
 # LOGGING CONFIGURATION
@@ -48,26 +62,6 @@ def configurar_registro_basico(level: int = logging.WARNING) -> None:
 # CONFIGURATION AND CONSTANTS
 # ============================================================================
 
-@dataclass(frozen=True)
-class RutConfig:
-    """Configuration class for RUT validation parameters."""
-    verification_factors: Tuple[int, ...] = (2, 3, 4, 5, 6, 7)
-    modulo: int = 11
-    max_digits: int = 8
-    min_digits: int = 1
-
-    def __post_init__(self) -> None:
-        """Validate configuration parameters."""
-        if self.modulo <= 0:
-            raise ValueError("Modulo must be positive")
-        if self.max_digits <= 0 or self.min_digits <= 0:
-            raise ValueError("Digit limits must be positive")
-        if self.min_digits > self.max_digits:
-            raise ValueError("Min digits cannot exceed max digits")
-
-# Instancia de configuración predeterminada
-CONFIGURACION_POR_DEFECTO = RutConfig()
-
 # Regex patterns - compiled once for performance
 RUT_REGEX = re.compile(r"^(\d{1,8}(?:\.\d{3})*)(-([0-9kK]))?$")
 BASE_WITH_DOTS_REGEX = re.compile(r"^\d{1,3}(?:\.\d{3})*$")
@@ -77,190 +71,6 @@ BASE_DIGITS_ONLY_REGEX = re.compile(r"^\d+$")
 FormatoOutput = Literal["csv", "xml", "json"]
 ModoValidacion = Literal["strict", "lenient", "legacy"]
 
-class RigorValidacion(Enum):
-    """Enumeración de los niveles de rigurosidad de validación."""
-    ESTRICTO = "strict"
-    FLEXIBLE = "lenient"
-    LEGADO = "legacy"
-
-# ============================================================================
-# ENHANCED EXCEPTION HIERARCHY
-# ============================================================================
-
-class RutError(Exception):
-    """Base exception for all RUT-related errors."""
-
-    def __init__(self, message: str, error_code: Optional[str] = None, **kwargs: Any) -> None:
-        super().__init__(message)
-        self.message = message
-        self.error_code = error_code
-        self.context = kwargs
-        logger.error("RUT Error [%s]: %s", error_code, message, extra=kwargs)
-
-class RutValidationError(RutError):
-    """Base class for validation-related errors."""
-
-class RutFormatError(RutValidationError):
-    """Raised when RUT format is invalid."""
-
-    def __init__(self, rut_value: str, expected_format: str) -> None:
-        super().__init__(
-            f"Invalid RUT format: '{rut_value}'. Expected format: {expected_format}",
-            error_code="FORMAT_ERROR",
-            rut_value=rut_value,
-            expected_format=expected_format
-        )
-
-class RutDigitError(RutValidationError):
-    """Raised when verification digit is incorrect."""
-
-    def __init__(self, provided_digit: str, calculated_digit: str) -> None:
-        super().__init__(
-            f"Verification digit mismatch: provided '{provided_digit}', "
-            f"calculated '{calculated_digit}'",
-            error_code="DIGIT_ERROR",
-            provided_digit=provided_digit,
-            calculated_digit=calculated_digit
-        )
-
-class RutLengthError(RutValidationError):
-    """Raised when RUT length is invalid."""
-
-    def __init__(self, rut_value: str, length: int, max_length: int) -> None:
-        super().__init__(
-            f"RUT '{rut_value}' exceeds maximum length: {length} > {max_length}",
-            error_code="LENGTH_ERROR",
-            rut_value=rut_value,
-            length=length,
-            max_length=max_length
-        )
-
-class RutProcessingError(RutError):
-    """Raised during batch processing operations."""
-
-# Backward compatibility alias
-RutInvalidoError = RutValidationError
-
-# ============================================================================
-# PERFORMANCE MONITORING
-# ============================================================================
-
-def monitor_de_rendimiento(func):
-    """Decorador que mide el rendimiento de la función."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        try:
-            result = func(*args, **kwargs)
-            execution_time = time.perf_counter() - start_time
-            logger.debug("%s executed in %.4fs", func.__name__, execution_time)
-            return result
-        except Exception as e:
-            execution_time = time.perf_counter() - start_time
-            logger.error(
-                "%s failed after %.4fs: %s", func.__name__, execution_time, e
-            )
-            raise
-    return wrapper
-
-# ============================================================================
-# CORE UTILITIES WITH ENHANCED PERFORMANCE
-# ============================================================================
-
-@lru_cache(maxsize=1024)
-@monitor_de_rendimiento
-def calcular_digito_verificador(
-    base_numerica: str, config: RutConfig = CONFIGURACION_POR_DEFECTO
-) -> str:
-    """
-    Calcula el dígito verificador de un RUT con alto rendimiento.
-
-    Esta función utiliza memorización (LRU cache) para evitar recalcular
-    dígitos para bases repetidas. El tamaño de caché de 1024 brinda buen
-    desempeño sin consumir demasiada memoria.
-
-    Args:
-        base_numerica: Base numérica del RUT sin puntos ni guion.
-        config: Objeto de configuración con los parámetros de validación.
-
-    Returns:
-        Dígito verificador como cadena ('0'-'9' o 'k').
-
-    Raises:
-        RutValidationError: Si la base numérica es inválida.
-
-    Examples:
-        >>> calcular_digito_verificador("12345678")
-        '5'
-        >>> calcular_digito_verificador("999999")
-        'k'
-    """
-    # Input validation with specific error types
-    if not isinstance(base_numerica, str):
-        raise RutValidationError(
-            f"Numeric base must be a string, received: {type(base_numerica).__name__}",
-            error_code="TYPE_ERROR"
-        )
-
-    if not base_numerica or not base_numerica.strip():
-        raise RutValidationError(
-            "Numeric base cannot be empty",
-            error_code="EMPTY_BASE"
-        )
-
-    base_numerica = base_numerica.strip()
-
-    # Validate that base contains only digits
-    if not base_numerica.isdigit():
-        raise RutValidationError(
-            f"Numeric base '{base_numerica}' must contain only digits",
-            error_code="INVALID_DIGITS"
-        )
-
-    # Optimized calculation using enumerate for better performance
-    suma_parcial = sum(
-        int(digit) * config.verification_factors[i % len(config.verification_factors)]
-        for i, digit in enumerate(reversed(base_numerica))
-    )
-
-    digito_verificador = (
-        config.modulo - suma_parcial % config.modulo
-    ) % config.modulo
-
-    return str(digito_verificador) if digito_verificador < 10 else "k"
-
-def normalizar_base_rut(base: str) -> str:
-    """
-    Normaliza la base de un RUT eliminando puntos y ceros iniciales.
-
-    Esta función maneja variaciones comunes en la entrada del RUT,
-    asegurando una representación interna consistente sin alterar
-    su valor numérico.
-
-    Args:
-        base: Base del RUT a normalizar.
-
-    Returns:
-        Cadena con la base normalizada.
-
-    Raises:
-        RutValidationError: Si la base no es una cadena válida.
-
-    Examples:
-        >>> normalizar_base_rut("12.345.678")
-        '12345678'
-        >>> normalizar_base_rut("000001")
-        '1'
-    """
-    if not isinstance(base, str):
-        raise RutValidationError(
-            f"Base must be a string, received: {type(base).__name__}",
-            error_code="TYPE_ERROR"
-        )
-
-    # Remove dots and leading zeros efficiently
-    base_normalizada = base.replace(".", "").lstrip("0")
-    return base_normalizada if base_normalizada else "0"
 
 # ============================================================================
 # ENHANCED VALIDATION LAYER
