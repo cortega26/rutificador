@@ -1,10 +1,12 @@
 """Utilities to format lists of Chilean RUT numbers."""
+
 import csv
+import html
 import json
 import logging
 from abc import ABC, abstractmethod
 from io import StringIO
-from typing import Any, Dict, List, Optional, Sequence, Type
+from typing import Any, ClassVar, Dict, List, Optional, Sequence, Type
 
 logger = logging.getLogger(__name__)
 
@@ -67,23 +69,19 @@ class FormateadorXML(FormateadorRut):
         self.elemento_item = elemento_item
 
     def formatear(self, ruts: Sequence[str]) -> str:
+        """Genera una representación XML escapando caracteres especiales."""
         self.validar_entrada(ruts)
 
-        xml_lines = [f"<{self.elemento_raiz}>"]
+        lineas_xml = [f"<{self.elemento_raiz}>"]
 
         for rut in ruts:
-            rut_escaped = (
-                str(rut)
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace('"', "&quot;")
-                .replace("'", "&#x27;")
+            rut_escapado = html.escape(str(rut), quote=True).replace("'", "&#x27;")
+            lineas_xml.append(
+                f"    <{self.elemento_item}>{rut_escapado}</{self.elemento_item}>"
             )
-            xml_lines.append(f"    <{self.elemento_item}>{rut_escaped}</{self.elemento_item}>")
 
-        xml_lines.append(f"</{self.elemento_raiz}>")
-        return "\n".join(xml_lines)
+        lineas_xml.append(f"</{self.elemento_raiz}>")
+        return "\n".join(lineas_xml)
 
 
 class FormateadorJSON(FormateadorRut):
@@ -109,14 +107,16 @@ class FormateadorJSON(FormateadorRut):
 class FabricaFormateadorRut:
     """Fábrica para crear formateadores de RUT con soporte de configuración."""
 
-    _formatters: Dict[str, Type[FormateadorRut]] = {
+    _formatters: ClassVar[Dict[str, Type[FormateadorRut]]] = {
         "csv": FormateadorCSV,
         "xml": FormateadorXML,
         "json": FormateadorJSON,
     }
 
     @classmethod
-    def registrar_formateador(cls, nombre: str, clase_formateador: Type[FormateadorRut]) -> None:
+    def registrar_formateador(
+        cls, nombre: str, clase_formateador: Type[FormateadorRut]
+    ) -> None:
         """Register a custom formatter class."""
         if not issubclass(clase_formateador, FormateadorRut):
             raise TypeError("El formateador debe heredar de FormateadorRut")
@@ -124,7 +124,9 @@ class FabricaFormateadorRut:
         logger.info("Formateador personalizado registrado: %s", nombre)
 
     @classmethod
-    def obtener_formateador(cls, formato: str, **kwargs: Any) -> Optional[FormateadorRut]:
+    def obtener_formateador(
+        cls, formato: str, **kwargs: Any
+    ) -> Optional[FormateadorRut]:
         """Retrieve a formatter instance by name."""
         if not isinstance(formato, str):
             return None

@@ -1,38 +1,70 @@
 """Utility helpers for Rutificador."""
+
 import logging
 import time
 from functools import lru_cache, wraps
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 
 from .config import CONFIGURACION_POR_DEFECTO, RutConfig
 from .exceptions import RutValidationError
 
 logger = logging.getLogger(__name__)
 
+# Generic type for decorated function return values
+R = TypeVar("R")
 
-def monitor_de_rendimiento(func: Callable) -> Callable:
-    """Decorator that measures and logs the performance of a function."""
+# Translation table to efficiently remove thousand separators
+_PUNTOS_TRADUCCION = str.maketrans("", "", ".")
+
+
+def monitor_de_rendimiento(func: Callable[..., R]) -> Callable[..., R]:
+    """Decorator that measures and logs the performance of a function.
+
+    Args:
+        func: Function to wrap.
+
+    Returns:
+        Wrapped function preserving the original return type while logging
+        execution time.
+    """
 
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        start_time = time.perf_counter()
+    def envoltura(*args: Any, **kwargs: Any) -> R:
+        tiempo_inicio = time.perf_counter()
         try:
-            result = func(*args, **kwargs)
-            execution_time = time.perf_counter() - start_time
-            logger.debug("%s executed in %.4fs", func.__name__, execution_time)
-            return result
+            resultado: R = func(*args, **kwargs)
+            tiempo_ejecucion = time.perf_counter() - tiempo_inicio
+            logger.debug("%s executed in %.4fs", func.__name__, tiempo_ejecucion)
+            return resultado
         except Exception as exc:  # pragma: no cover - re-raise with logging
-            execution_time = time.perf_counter() - start_time
-            logger.error("%s failed after %.4fs: %s", func.__name__, execution_time, exc)
+            tiempo_ejecucion = time.perf_counter() - tiempo_inicio
+            logger.error(
+                "%s failed after %.4fs: %s", func.__name__, tiempo_ejecucion, exc
+            )
             raise
 
-    return wrapper
+    return envoltura
 
 
 @lru_cache(maxsize=1024)
 @monitor_de_rendimiento
-def calcular_digito_verificador(base_numerica: str, config: RutConfig = CONFIGURACION_POR_DEFECTO) -> str:
-    """Calculate the verification digit for a given RUT base."""
+def calcular_digito_verificador(
+    base_numerica: str, config: RutConfig = CONFIGURACION_POR_DEFECTO
+) -> str:
+    """Calculate the verification digit for a given RUT base.
+
+    Args:
+        base_numerica: Numeric portion of the RUT as a string without the
+            verification digit.
+        config: Configuration parameters controlling the calculation.
+
+    Returns:
+        The verification digit in lowercase. If the computed digit is 10,
+        ``"k"`` is returned.
+
+    Raises:
+        RutValidationError: If ``base_numerica`` is not a valid numeric string.
+    """
     if not isinstance(base_numerica, str):
         raise RutValidationError(
             f"Numeric base must be a string, received: {type(base_numerica).__name__}",
@@ -53,9 +85,7 @@ def calcular_digito_verificador(base_numerica: str, config: RutConfig = CONFIGUR
         int(digit) * config.verification_factors[i % len(config.verification_factors)]
         for i, digit in enumerate(reversed(base_numerica))
     )
-    digito_verificador = (
-        config.modulo - suma_parcial % config.modulo
-    ) % config.modulo
+    digito_verificador = (config.modulo - suma_parcial % config.modulo) % config.modulo
     return str(digito_verificador) if digito_verificador < 10 else "k"
 
 
@@ -66,7 +96,7 @@ def normalizar_base_rut(base: str) -> str:
             f"Base must be a string, received: {type(base).__name__}",
             error_code="TYPE_ERROR",
         )
-    base_normalizada = base.replace(".", "").lstrip("0")
+    base_normalizada = base.translate(_PUNTOS_TRADUCCION).lstrip("0")
     return base_normalizada if base_normalizada else "0"
 
 
