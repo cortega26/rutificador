@@ -1,6 +1,7 @@
 # pylint: disable=missing-module-docstring, cyclic-import
 
 import json
+from typing import List
 import pytest
 from rutificador import (
     Rut,
@@ -400,6 +401,34 @@ class TestProcesadorLotesRut:
             processor = ProcesadorLotesRut()
             processor.formatear_lista_ruts(ruts, formato="pdf")
         assert "Formato 'pdf' no soportado" in str(exc_info.value)
+
+    def test_validar_lista_ruts_parallel(self):
+        """Compara resultados en modo secuencial y paralelo."""
+        ruts = ["12345678-5", "98765432-1", "1-9", "123"]
+        processor = ProcesadorLotesRut()
+        seq = processor.validar_lista_ruts(ruts, parallel=False)
+        par = processor.validar_lista_ruts(ruts, parallel=True)
+        assert seq.ruts_validos == par.ruts_validos
+        assert seq.ruts_invalidos == par.ruts_invalidos
+
+    def test_formatear_lista_ruts_parallel(self):
+        """Verifica que el formateo paralelo preserve el orden."""
+        ruts = ["12345678-5", "98765432-5", "1-9", "123"]
+        processor = ProcesadorLotesRut()
+        seq = processor.formatear_lista_ruts(ruts, parallel=False)
+        par = processor.formatear_lista_ruts(ruts, parallel=True)
+
+        def extraer_validos(texto: str) -> List[str]:
+            lineas = texto.splitlines()
+            inicio = lineas.index("RUTs válidos:") + 1
+            fin = inicio
+            for idx in range(inicio, len(lineas)):
+                if lineas[idx].strip() == "" or lineas[idx].startswith("RUTs inválidos:"):
+                    fin = idx
+                    break
+            return lineas[inicio:fin]
+
+        assert extraer_validos(seq) == extraer_validos(par)
 
 
 # ============================================================================
