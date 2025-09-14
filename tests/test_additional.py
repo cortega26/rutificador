@@ -1,6 +1,6 @@
 import pytest
 
-from rutificador.main import (
+from rutificador import (
     normalizar_base_rut,
     obtener_informacion_version,
     monitor_de_rendimiento,
@@ -10,8 +10,8 @@ from rutificador.main import (
     evaluar_rendimiento,
     Rut,
     calcular_digito_verificador,
+    __version__,
 )
-from rutificador import __version__
 from rutificador.formatter import FormateadorCSV
 from rutificador.exceptions import ErrorValidacionRut
 

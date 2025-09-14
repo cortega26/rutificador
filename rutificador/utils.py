@@ -17,6 +17,40 @@ R = TypeVar("R")
 _PUNTOS_TRADUCCION = str.maketrans("", "", ".")
 
 
+def configurar_registro(
+    level: int = logging.WARNING,
+    formato: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+) -> None:
+    """Configura el sistema de registro del módulo."""
+    logging.basicConfig(level=level, format=formato, force=True)
+    logger.setLevel(level)
+    logger.info("Registro configurado al nivel: %s", logging.getLevelName(level))
+
+
+def asegurar_cadena_no_vacia(valor: Any, nombre: str) -> str:
+    """Verifica que ``valor`` sea una cadena no vacía."""
+    if not isinstance(valor, str):
+        raise ErrorValidacionRut(
+            f"{nombre} debe ser una cadena, se recibió: {type(valor).__name__}",
+            error_code="TYPE_ERROR",
+        )
+    valor = valor.strip()
+    if not valor:
+        raise ErrorValidacionRut(
+            f"{nombre} no puede estar vacío", error_code="EMPTY_STRING"
+        )
+    return valor
+
+
+def asegurar_booleano(valor: Any, nombre: str) -> bool:
+    """Verifica que ``valor`` sea booleano."""
+    if not isinstance(valor, bool):
+        raise ErrorValidacionRut(
+            f"{nombre} debe ser booleano, se recibió: {type(valor).__name__}",
+            error_code="TYPE_ERROR",
+        )
+    return valor
+
 def monitor_de_rendimiento(func: Callable[..., R]) -> Callable[..., R]:
     """Decora una función midiendo y registrando su rendimiento.
 
@@ -107,4 +141,7 @@ __all__ = [
     "monitor_de_rendimiento",
     "calcular_digito_verificador",
     "normalizar_base_rut",
+    "configurar_registro",
+    "asegurar_cadena_no_vacia",
+    "asegurar_booleano",
 ]

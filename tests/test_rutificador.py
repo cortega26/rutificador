@@ -2,7 +2,7 @@
 
 import json
 import pytest
-from rutificador.main import (
+from rutificador import (
     Rut,
     RutBase,
     RutInvalidoError,
@@ -13,7 +13,7 @@ from rutificador.main import (
     FormateadorXML,
     FormateadorJSON,
     calcular_digito_verificador,
-    formatear_lista_ruts
+    formatear_lista_ruts,
 )
 
 # ============================================================================
