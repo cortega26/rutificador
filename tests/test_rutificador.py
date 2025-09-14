@@ -6,7 +6,7 @@ from rutificador.main import (
     Rut,
     RutBase,
     RutInvalidoError,
-    RutValidator,
+    ValidadorRut,
     ProcesadorLotesRut,
     FabricaFormateadorRut,
     FormateadorCSV,
@@ -117,60 +117,60 @@ class TestCalcularDigitoVerificador:
 # TESTS PARA RUTVALIDATOR
 # ============================================================================
 
-class TestRutValidator:
-    """Suite de pruebas para la clase RutValidator."""
+class TestValidadorRut:
+    """Suite de pruebas para la clase ValidadorRut."""
 
     def test_validar_formato_valido(self):
         """Prueba validación de formato válido."""
-        validator = RutValidator()
-        match = validator.validar_formato("12345678-5")
+        validador = ValidadorRut()
+        match = validador.validar_formato("12345678-5")
         assert match.group(1) == "12345678"
         assert match.group(3) == "5"
 
     def test_validar_formato_sin_digito(self):
         """Prueba validación de formato sin dígito verificador."""
-        validator = RutValidator()
-        match = validator.validar_formato("12345678")
+        validador = ValidadorRut()
+        match = validador.validar_formato("12345678")
         assert match.group(1) == "12345678"
         assert match.group(3) is None
 
     def test_validar_formato_none(self):
         """Prueba que None lance excepción."""
-        validator = RutValidator()
+        validador = ValidadorRut()
         with pytest.raises(RutInvalidoError):
-            validator.validar_formato(None)
+            validador.validar_formato(None)
 
     @pytest.mark.parametrize("base, rut_original, esperado", cadenas_base_validas)
     def test_validar_base_valida(self, base, rut_original, esperado):
         """Prueba validación de bases válidas."""
-        validator = RutValidator()
-        resultado = validator.validar_base(base, rut_original)
+        validador = ValidadorRut()
+        resultado = validador.validar_base(base, rut_original)
         assert resultado == esperado
 
     @pytest.mark.parametrize("base, rut_original", cadenas_base_invalidas)
     def test_validar_base_invalida(self, base, rut_original):
         """Prueba que bases inválidas lancen excepción."""
-        validator = RutValidator()
+        validador = ValidadorRut()
         with pytest.raises(RutInvalidoError):
-            validator.validar_base(base, rut_original)
+            validador.validar_base(base, rut_original)
 
     def test_validar_digito_verificador_correcto(self):
         """Prueba validación de dígito verificador correcto."""
         # No debería lanzar excepción
-        validator = RutValidator()
-        validator.validar_digito_verificador("5", "5")
+        validador = ValidadorRut()
+        validador.validar_digito_verificador("5", "5")
 
     def test_validar_digito_verificador_incorrecto(self):
         """Prueba validación de dígito verificador incorrecto."""
-        validator = RutValidator()
+        validador = ValidadorRut()
         with pytest.raises(RutInvalidoError):
-            validator.validar_digito_verificador("1", "5")
+            validador.validar_digito_verificador("1", "5")
 
     def test_validar_digito_verificador_none(self):
         """Prueba validación cuando no se proporciona dígito."""
         # No debería lanzar excepción cuando digito_input es None
-        validator = RutValidator()
-        validator.validar_digito_verificador(None, "5")
+        validador = ValidadorRut()
+        validador.validar_digito_verificador(None, "5")
 
 
 # ============================================================================
@@ -293,7 +293,7 @@ class TestRut:
     def test_cadenas_rut_validas(self, cadena_rut):
         """Prueba que las cadenas RUT válidas se manejen correctamente."""
         rut = Rut(cadena_rut)
-        assert rut.rut_string == cadena_rut.strip()
+        assert rut.cadena_rut == cadena_rut.strip()
 
     @pytest.mark.parametrize("cadena_rut", cadenas_rut_invalidas)
     def test_cadenas_rut_invalidas(self, cadena_rut):
@@ -399,7 +399,7 @@ class TestProcesadorLotesRut:
         with pytest.raises(ValueError) as exc_info:
             processor = ProcesadorLotesRut()
             processor.formatear_lista_ruts(ruts, formato="pdf")
-        assert "Format 'pdf' not supported" in str(exc_info.value)
+        assert "Formato 'pdf' no soportado" in str(exc_info.value)
 
 
 # ============================================================================

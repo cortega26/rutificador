@@ -19,7 +19,7 @@ from typing import List, Type, Union
 from .version import __version__
 
 # Core classes
-from rutificador.main import Rut, RutBase, RutInvalidoError, RutValidator
+from rutificador.main import Rut, RutBase, RutInvalidoError, ValidadorRut, RutValidator
 
 # Processing and formatting
 from rutificador.main import ProcesadorLotesRut
@@ -45,6 +45,7 @@ __all__: List[Union[str, Type]] = [
     "Rut",
     "RutBase",
     "RutInvalidoError",
+    "ValidadorRut",
     "RutValidator",
     # Processing and formatting
     "ProcesadorLotesRut",
