@@ -1,60 +1,73 @@
-"""
-Rutificador: Una biblioteca Python para validar y formatear RUTs chilenos.
-
-Este módulo proporciona herramientas para trabajar con RUTs chilenos
-(Rol Único Tributario), incluyendo validación, formateo y verificación
-de dígitos.
-
-Clases:
-    Rut: Representa un RUT chileno, con métodos para validación y
-        formateo.
-    RutDigitoVerificador: Calcula y representa el dígito verificador
-        de un RUT chileno.
-    RutInvalidoError: Excepción personalizada para errores de RUT
-        inválido.
-"""
+"""Rutificador: utilidades para validar y formatear RUTs chilenos."""
 
 from typing import List, Type, Union
 
-from .version import __version__
-
-# Core classes
-from rutificador.main import Rut, RutBase, RutInvalidoError, ValidadorRut, RutValidator
-
-# Processing and formatting
-from rutificador.main import ProcesadorLotesRut
-from rutificador.formatter import (
+from .version import __version__, obtener_informacion_version
+from .validador import Validador, ValidadorRut, RutValidator
+from .rut import Rut, RutBase, obtener_rut
+from .procesador import (
+    ProcesadorLotesRut,
+    ResultadoLote,
+    formatear_lista_ruts,
+    validar_lista_ruts,
+    evaluar_rendimiento,
+)
+from .formatter import (
     FabricaFormateadorRut,
     FormateadorCSV,
     FormateadorXML,
     FormateadorJSON,
 )
-
-# Utility functions
-from rutificador.main import (
+from .utils import (
+    monitor_de_rendimiento,
     calcular_digito_verificador,
-    formatear_lista_ruts,
+    normalizar_base_rut,
+    configurar_registro,
+    asegurar_cadena_no_vacia,
+    asegurar_booleano,
+)
+from .exceptions import (
+    ErrorRut,
+    ErrorValidacionRut,
+    ErrorFormatoRut,
+    ErrorDigitoRut,
+    ErrorLongitudRut,
+    ErrorProcesamientoRut,
+    RutInvalidoError,
 )
 
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
-# Public API
 __all__: List[Union[str, Type]] = [
-    # Core classes
     "Rut",
     "RutBase",
-    "RutInvalidoError",
+    "obtener_rut",
+    "Validador",
     "ValidadorRut",
     "RutValidator",
-    # Processing and formatting
     "ProcesadorLotesRut",
+    "ResultadoLote",
     "FabricaFormateadorRut",
     "FormateadorCSV",
     "FormateadorXML",
     "FormateadorJSON",
-    # Utility functions
+    "monitor_de_rendimiento",
     "calcular_digito_verificador",
+    "normalizar_base_rut",
     "formatear_lista_ruts",
+    "validar_lista_ruts",
+    "configurar_registro",
+    "evaluar_rendimiento",
+    "asegurar_cadena_no_vacia",
+    "asegurar_booleano",
+    "obtener_informacion_version",
+    "ErrorRut",
+    "ErrorValidacionRut",
+    "ErrorFormatoRut",
+    "ErrorDigitoRut",
+    "ErrorLongitudRut",
+    "ErrorProcesamientoRut",
+    "RutInvalidoError",
     "__version__",
 ]
