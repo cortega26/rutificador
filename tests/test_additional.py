@@ -5,7 +5,9 @@ from rutificador import (
     obtener_informacion_version,
     monitor_de_rendimiento,
     formatear_lista_ruts as formatear_lista_ruts_global,
+    formatear_stream_ruts as formatear_stream_ruts_global,
     validar_lista_ruts as validar_lista_ruts_global,
+    validar_stream_ruts as validar_stream_ruts_global,
     configurar_registro,
     evaluar_rendimiento,
     Rut,
@@ -54,6 +56,24 @@ def test_global_validar_y_formatear():
     texto = formatear_lista_ruts_global(ruts, formato="csv")
     assert "rut" in texto
     assert "12345678-5" in texto
+
+
+def test_validar_stream_ruts_con_generador():
+    ruts = (r for r in ["12345678-5", "12345679-3", "12345678-9"])
+    resultados = list(validar_stream_ruts_global(ruts))
+    assert resultados[0] == (True, "12345678-5")
+    assert resultados[1] == (True, "12345679-3")
+    assert resultados[2][0] is False
+    assert resultados[2][1][0] == "12345678-9"
+
+
+def test_formatear_stream_ruts_con_generador():
+    ruts = (r for r in ["12345678-5", "12345679-3", "12345678-9"])
+    resultados = list(formatear_stream_ruts_global(ruts, separador_miles=True))
+    assert resultados[0] == (True, "12.345.678-5")
+    assert resultados[1] == (True, "12.345.679-3")
+    assert resultados[2][0] is False
+    assert resultados[2][1][0] == "12345678-9"
 
 
 def test_configurar_registro():

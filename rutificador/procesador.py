@@ -3,7 +3,7 @@ import random
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
 
 from .exceptions import ErrorRut
 from .formatter import FabricaFormateadorRut
@@ -167,6 +167,41 @@ def formatear_lista_ruts(
     )
 
 
+def validar_stream_ruts(
+    ruts: Iterable[str],
+) -> Iterator[Tuple[bool, Union[str, Tuple[str, str]]]]:
+    """Valida RUTs desde cualquier iterable y produce resultados uno a uno."""
+
+    procesador = ProcesadorLotesRut()
+    for rut in ruts:
+        resultado = procesador.validar_lista_ruts([rut], parallel=False)
+        if resultado.ruts_validos:
+            yield True, resultado.ruts_validos[0]
+        else:
+            yield False, resultado.ruts_invalidos[0]
+
+
+def formatear_stream_ruts(
+    ruts: Iterable[str],
+    separador_miles: bool = False,
+    mayusculas: bool = False,
+) -> Iterator[Tuple[bool, Union[str, Tuple[str, str]]]]:
+    """Valida y formatea RUTs provenientes de cualquier iterable."""
+
+    asegurar_booleano(separador_miles, "separador_miles")
+    asegurar_booleano(mayusculas, "mayusculas")
+    procesador = ProcesadorLotesRut()
+    for rut in ruts:
+        resultado = procesador.validar_lista_ruts([rut], parallel=False)
+        if resultado.ruts_validos:
+            rut_obj = Rut(resultado.ruts_validos[0], validador=procesador.validador)
+            yield True, rut_obj.formatear(
+                separador_miles=separador_miles, mayusculas=mayusculas
+            )
+        else:
+            yield False, resultado.ruts_invalidos[0]
+
+
 def evaluar_rendimiento(num_ruts: int = 10000, parallel: bool = True) -> Dict[str, Any]:
     pruebas = []
     for _ in range(num_ruts):
@@ -200,5 +235,7 @@ __all__ = [
     "ProcesadorLotesRut",
     "validar_lista_ruts",
     "formatear_lista_ruts",
+    "validar_stream_ruts",
+    "formatear_stream_ruts",
     "evaluar_rendimiento",
 ]

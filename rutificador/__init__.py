@@ -9,7 +9,9 @@ from .procesador import (
     ProcesadorLotesRut,
     ResultadoLote,
     formatear_lista_ruts,
+    formatear_stream_ruts,
     validar_lista_ruts,
+    validar_stream_ruts,
     evaluar_rendimiento,
 )
 from .formatter import (
@@ -56,7 +58,9 @@ __all__: List[Union[str, Type]] = [
     "calcular_digito_verificador",
     "normalizar_base_rut",
     "formatear_lista_ruts",
+    "formatear_stream_ruts",
     "validar_lista_ruts",
+    "validar_stream_ruts",
     "configurar_registro",
     "evaluar_rendimiento",
     "asegurar_cadena_no_vacia",
