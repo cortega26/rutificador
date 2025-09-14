@@ -7,5 +7,6 @@ Este repositorio utiliza las siguientes convenciones y prácticas:
 - **Calidad del código:** Ejecuta pruebas y linters antes de realizar un commit.
 - **Versionado:** Incrementa la versión en cada cambio.
   - Se sigue el esquema de versionado semántico `MAJOR.MINOR.PATCH`.
-  - La versión se define en `pyproject.toml` (`tool.poetry.version`) y se expone en `rutificador/__init__.py` como `__version__`.
+  - La versión se define en `rutificador/version.py` y se expone en `rutificador/__init__.py` como `__version__`.
+  - `pyproject.toml` obtiene la versión desde ese archivo mediante `poetry-dynamic-versioning`.
 - **Comprobaciones:** Usa `pre-commit` para linting y `pytest` para las pruebas.

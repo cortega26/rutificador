@@ -177,6 +177,16 @@ configurar_registro(level=logging.DEBUG)
 
 ### Información de versión
 
+La versión del paquete se define en `rutificador/version.py` y puede consultarse directamente:
+
+```python
+from rutificador import __version__
+
+print(__version__)
+```
+
+También puedes obtener metadatos adicionales:
+
 ```python
 from rutificador import obtener_informacion_version
 
