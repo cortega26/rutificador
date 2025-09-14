@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -42,12 +43,28 @@ class ProcesadorLotesRut:
         inicio = time.perf_counter()
         resultado = ResultadoLote()
 
-        for cadena in ruts:
+        def crear_rut(cadena: str) -> Tuple[bool, Union[str, Tuple[str, str]]]:
             try:
                 rut_obj = Rut(cadena, validador=self.validador)
-                resultado.ruts_validos.append(str(rut_obj))
+                return True, str(rut_obj)
             except (ErrorRut, ValueError, TypeError) as exc:
-                resultado.ruts_invalidos.append((str(cadena), str(exc)))
+                return False, (str(cadena), str(exc))
+
+        if parallel:
+            with ThreadPoolExecutor() as executor:
+                resultados = list(executor.map(crear_rut, ruts))
+            for es_valido, valor in resultados:
+                if es_valido:
+                    resultado.ruts_validos.append(valor)  # type: ignore[arg-type]
+                else:
+                    resultado.ruts_invalidos.append(valor)  # type: ignore[arg-type]
+        else:
+            for cadena in ruts:
+                es_valido, valor = crear_rut(cadena)
+                if es_valido:
+                    resultado.ruts_validos.append(valor)  # type: ignore[arg-type]
+                else:
+                    resultado.ruts_invalidos.append(valor)  # type: ignore[arg-type]
 
         resultado.total_procesados = len(ruts)
         resultado.tiempo_procesamiento = time.perf_counter() - inicio
@@ -73,14 +90,22 @@ class ProcesadorLotesRut:
         resultado_validacion = self.validar_lista_ruts(ruts, parallel=parallel)
         partes: List[str] = ["RUTs válidos:"]
 
-        ruts_formateados = []
-        for cadena in resultado_validacion.ruts_validos:
+        def formatear_cadena(cadena: str) -> str:
             rut_obj = Rut(cadena, validador=self.validador)
-            ruts_formateados.append(
-                rut_obj.formatear(
-                    separador_miles=separador_miles, mayusculas=mayusculas
-                )
+            return rut_obj.formatear(
+                separador_miles=separador_miles, mayusculas=mayusculas
             )
+
+        if parallel:
+            with ThreadPoolExecutor() as executor:
+                ruts_formateados = list(
+                    executor.map(formatear_cadena, resultado_validacion.ruts_validos)
+                )
+        else:
+            ruts_formateados = [
+                formatear_cadena(cadena)
+                for cadena in resultado_validacion.ruts_validos
+            ]
 
         if formato:
             formatter = FabricaFormateadorRut.obtener_formateador(
