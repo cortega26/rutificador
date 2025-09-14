@@ -54,7 +54,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: security-reports
+        name: security-reports-${{ matrix.python-version }}
         path: |
           bandit-report.json
           safety-report.json
