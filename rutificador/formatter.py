@@ -1,4 +1,4 @@
-"""Utilities to format lists of Chilean RUT numbers."""
+"""Utilidades para formatear listas de números RUT chilenos."""
 
 import csv
 import html
@@ -22,10 +22,12 @@ class FormateadorRut(ABC):
     def validar_entrada(self, ruts: Sequence[str]) -> None:
         """Valida la entrada antes de formatear."""
         if not isinstance(ruts, (list, tuple)):
-            raise TypeError(f"Expected sequence, got {type(ruts).__name__}")
+            raise TypeError(
+                f"Se esperaba una secuencia, se recibió {type(ruts).__name__}"
+            )
 
         if not ruts:
-            logger.warning("Empty RUT sequence provided for formatting")
+            logger.warning("Se proporcionó una secuencia vacía de RUTs para formateo")
 
 
 class FormateadorCSV(FormateadorRut):
@@ -117,7 +119,7 @@ class FabricaFormateadorRut:
     def registrar_formateador(
         cls, nombre: str, clase_formateador: Type[FormateadorRut]
     ) -> None:
-        """Register a custom formatter class."""
+        """Registra una clase formateadora personalizada."""
         if not issubclass(clase_formateador, FormateadorRut):
             raise TypeError("El formateador debe heredar de FormateadorRut")
         cls._formatters[nombre.lower()] = clase_formateador
@@ -127,7 +129,7 @@ class FabricaFormateadorRut:
     def obtener_formateador(
         cls, formato: str, **kwargs: Any
     ) -> Optional[FormateadorRut]:
-        """Retrieve a formatter instance by name."""
+        """Obtiene una instancia de formateador por nombre."""
         if not isinstance(formato, str):
             return None
 
@@ -138,5 +140,5 @@ class FabricaFormateadorRut:
 
     @classmethod
     def obtener_formatos_disponibles(cls) -> List[str]:
-        """Return the list of supported formatter names."""
+        """Devuelve la lista de nombres de formateadores soportados."""
         return list(cls._formatters.keys())

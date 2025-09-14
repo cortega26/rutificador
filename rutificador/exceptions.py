@@ -1,76 +1,91 @@
-"""Custom exception hierarchy for Rutificador."""
+"""Jerarquía de excepciones personalizadas para Rutificador."""
 import logging
 from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
 
-class RutError(Exception):
-    """Base exception for all RUT-related errors."""
+class ErrorRut(Exception):
+    """Excepción base para todos los errores relacionados con RUT."""
 
-    def __init__(self, message: str, error_code: Optional[str] = None, **kwargs: Any) -> None:
+    def __init__(
+        self, message: str, error_code: Optional[str] = None, **kwargs: Any
+    ) -> None:
         super().__init__(message)
         self.message = message
         self.error_code = error_code
-        self.context = kwargs
-        logger.error("RUT Error [%s]: %s", error_code, message, extra=kwargs)
+        self.contexto = kwargs
+        logger.error("Error de RUT [%s]: %s", error_code, message, extra=kwargs)
 
 
-class RutValidationError(RutError):
-    """Base class for validation-related errors."""
+class ErrorValidacionRut(ErrorRut):
+    """Excepción base para errores relacionados con la validación."""
 
 
-class RutFormatError(RutValidationError):
-    """Raised when RUT format is invalid."""
+class ErrorFormatoRut(ErrorValidacionRut):
+    """Se lanza cuando el formato del RUT es inválido."""
 
-    def __init__(self, rut_value: str, expected_format: str) -> None:
+    def __init__(self, valor_rut: str, formato_esperado: str) -> None:
         super().__init__(
-            f"Invalid RUT format: '{rut_value}'. Expected format: {expected_format}",
+            f"Formato de RUT inválido: '{valor_rut}'. Formato esperado: {formato_esperado}",
             error_code="FORMAT_ERROR",
-            rut_value=rut_value,
-            expected_format=expected_format,
+            rut_value=valor_rut,
+            expected_format=formato_esperado,
         )
 
 
-class RutDigitError(RutValidationError):
-    """Raised when verification digit is incorrect."""
+class ErrorDigitoRut(ErrorValidacionRut):
+    """Se lanza cuando el dígito verificador es incorrecto."""
 
-    def __init__(self, provided_digit: str, calculated_digit: str) -> None:
+    def __init__(self, digito_entregado: str, digito_calculado: str) -> None:
         super().__init__(
-            f"Verification digit mismatch: provided '{provided_digit}', calculated '{calculated_digit}'",
+            f"Dígito verificador no coincide: se entregó '{digito_entregado}', se calculó '{digito_calculado}'",
             error_code="DIGIT_ERROR",
-            provided_digit=provided_digit,
-            calculated_digit=calculated_digit,
+            provided_digit=digito_entregado,
+            calculated_digit=digito_calculado,
         )
 
 
-class RutLengthError(RutValidationError):
-    """Raised when RUT length is invalid."""
+class ErrorLongitudRut(ErrorValidacionRut):
+    """Se lanza cuando la longitud del RUT es inválida."""
 
-    def __init__(self, rut_value: str, length: int, max_length: int) -> None:
+    def __init__(self, valor_rut: str, longitud: int, longitud_maxima: int) -> None:
         super().__init__(
-            f"RUT '{rut_value}' exceeds maximum length: {length} > {max_length}",
+            f"El RUT '{valor_rut}' excede la longitud máxima: {longitud} > {longitud_maxima}",
             error_code="LENGTH_ERROR",
-            rut_value=rut_value,
-            length=length,
-            max_length=max_length,
+            rut_value=valor_rut,
+            length=longitud,
+            max_length=longitud_maxima,
         )
 
 
-class RutProcessingError(RutError):
-    """Raised during batch processing operations."""
+class ErrorProcesamientoRut(ErrorRut):
+    """Se lanza durante operaciones de procesamiento por lotes."""
 
 
-# Backward compatibility alias
-RutInvalidoError = RutValidationError
+# Alias para compatibilidad retroactiva
+RutInvalidoError = ErrorValidacionRut
+RutError = ErrorRut
+RutValidationError = ErrorValidacionRut
+RutFormatError = ErrorFormatoRut
+RutDigitError = ErrorDigitoRut
+RutLengthError = ErrorLongitudRut
+RutProcessingError = ErrorProcesamientoRut
 
 
 __all__ = [
+    "ErrorRut",
+    "ErrorValidacionRut",
+    "ErrorFormatoRut",
+    "ErrorDigitoRut",
+    "ErrorLongitudRut",
+    "ErrorProcesamientoRut",
+    "RutInvalidoError",
+    # Alias legados
     "RutError",
     "RutValidationError",
     "RutFormatError",
     "RutDigitError",
     "RutLengthError",
     "RutProcessingError",
-    "RutInvalidoError",
 ]

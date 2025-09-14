@@ -13,7 +13,7 @@ from rutificador.main import (
 )
 from rutificador import __version__
 from rutificador.formatter import FormateadorCSV
-from rutificador.exceptions import RutValidationError
+from rutificador.exceptions import ErrorValidacionRut
 
 
 def test_normalizar_base_rut():
@@ -22,14 +22,14 @@ def test_normalizar_base_rut():
 
 
 def test_calcular_digito_verificador_invalid_inputs():
-    with pytest.raises(RutValidationError):
+    with pytest.raises(ErrorValidacionRut):
         calcular_digito_verificador("ABC123")
-    with pytest.raises(RutValidationError):
+    with pytest.raises(ErrorValidacionRut):
         calcular_digito_verificador(12345678)  # type: ignore[arg-type]
 
 
 def test_normalizar_base_rut_invalid_type():
-    with pytest.raises(RutValidationError):
+    with pytest.raises(ErrorValidacionRut):
         normalizar_base_rut(123)  # type: ignore[arg-type]
 
 

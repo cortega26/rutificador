@@ -1,31 +1,31 @@
-"""Utility helpers for Rutificador."""
+"""Funciones utilitarias para Rutificador."""
 
 import logging
 import time
 from functools import lru_cache, wraps
 from typing import Any, Callable, TypeVar
 
-from .config import CONFIGURACION_POR_DEFECTO, RutConfig
-from .exceptions import RutValidationError
+from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut
+from .exceptions import ErrorValidacionRut
 
 logger = logging.getLogger(__name__)
 
-# Generic type for decorated function return values
+# Tipo genérico para el valor de retorno de funciones decoradas
 R = TypeVar("R")
 
-# Translation table to efficiently remove thousand separators
+# Tabla de traducción para eliminar separadores de miles de forma eficiente
 _PUNTOS_TRADUCCION = str.maketrans("", "", ".")
 
 
 def monitor_de_rendimiento(func: Callable[..., R]) -> Callable[..., R]:
-    """Decorator that measures and logs the performance of a function.
+    """Decora una función midiendo y registrando su rendimiento.
 
     Args:
-        func: Function to wrap.
+        func: Función a envolver.
 
     Returns:
-        Wrapped function preserving the original return type while logging
-        execution time.
+        Función envuelta que preserva el tipo de retorno original mientras
+        registra el tiempo de ejecución.
     """
 
     @wraps(func)
@@ -34,12 +34,12 @@ def monitor_de_rendimiento(func: Callable[..., R]) -> Callable[..., R]:
         try:
             resultado: R = func(*args, **kwargs)
             tiempo_ejecucion = time.perf_counter() - tiempo_inicio
-            logger.debug("%s executed in %.4fs", func.__name__, tiempo_ejecucion)
+            logger.debug("%s ejecutada en %.4fs", func.__name__, tiempo_ejecucion)
             return resultado
-        except Exception as exc:  # pragma: no cover - re-raise with logging
+        except Exception as exc:  # pragma: no cover - se relanza con registro
             tiempo_ejecucion = time.perf_counter() - tiempo_inicio
             logger.error(
-                "%s failed after %.4fs: %s", func.__name__, tiempo_ejecucion, exc
+                "%s falló tras %.4fs: %s", func.__name__, tiempo_ejecucion, exc
             )
             raise
 
@@ -49,53 +49,54 @@ def monitor_de_rendimiento(func: Callable[..., R]) -> Callable[..., R]:
 @lru_cache(maxsize=1024)
 @monitor_de_rendimiento
 def calcular_digito_verificador(
-    base_numerica: str, config: RutConfig = CONFIGURACION_POR_DEFECTO
+    base_numerica: str, configuracion: ConfiguracionRut = CONFIGURACION_POR_DEFECTO
 ) -> str:
-    """Calculate the verification digit for a given RUT base.
+    """Calcula el dígito verificador para una base de RUT dada.
 
     Args:
-        base_numerica: Numeric portion of the RUT as a string without the
-            verification digit.
-        config: Configuration parameters controlling the calculation.
+        base_numerica: Parte numérica del RUT sin el dígito verificador.
+        configuracion: Parámetros de configuración que controlan el cálculo.
 
     Returns:
-        The verification digit in lowercase. If the computed digit is 10,
-        ``"k"`` is returned.
+        El dígito verificador en minúsculas. Si el dígito calculado es 10,
+        se retorna ``"k"``.
 
     Raises:
-        RutValidationError: If ``base_numerica`` is not a valid numeric string.
+        ErrorValidacionRut: Si ``base_numerica`` no es una cadena numérica válida.
     """
     if not isinstance(base_numerica, str):
-        raise RutValidationError(
-            f"Numeric base must be a string, received: {type(base_numerica).__name__}",
+        raise ErrorValidacionRut(
+            f"La base numérica debe ser una cadena, se recibió: {type(base_numerica).__name__}",
             error_code="TYPE_ERROR",
         )
     if not base_numerica or not base_numerica.strip():
-        raise RutValidationError(
-            "Numeric base cannot be empty",
+        raise ErrorValidacionRut(
+            "La base numérica no puede estar vacía",
             error_code="EMPTY_BASE",
         )
     base_numerica = base_numerica.strip()
     if not base_numerica.isdigit():
-        raise RutValidationError(
-            f"Numeric base '{base_numerica}' must contain only digits",
+        raise ErrorValidacionRut(
+            f"La base numérica '{base_numerica}' debe contener solo dígitos",
             error_code="INVALID_DIGITS",
         )
-    # Use itertools.cycle to avoid costly modulo operations inside the loop
-    # and keep the implementation efficient for large bases.
+    # Se utiliza itertools.cycle para evitar operaciones costosas de módulo
+    # dentro del bucle y mantener eficiente la implementación para bases grandes.
     from itertools import cycle
 
-    factores = cycle(config.verification_factors)
+    factores = cycle(configuracion.factores_verificacion)
     suma_parcial = sum(int(d) * f for d, f in zip(reversed(base_numerica), factores))
-    digito_verificador = (config.modulo - suma_parcial % config.modulo) % config.modulo
+    digito_verificador = (
+        configuracion.modulo - suma_parcial % configuracion.modulo
+    ) % configuracion.modulo
     return str(digito_verificador) if digito_verificador < 10 else "k"
 
 
 def normalizar_base_rut(base: str) -> str:
-    """Normalize a RUT base by removing dots and leading zeros."""
+    """Normaliza una base de RUT eliminando puntos y ceros iniciales."""
     if not isinstance(base, str):
-        raise RutValidationError(
-            f"Base must be a string, received: {type(base).__name__}",
+        raise ErrorValidacionRut(
+            f"La base debe ser una cadena, se recibió: {type(base).__name__}",
             error_code="TYPE_ERROR",
         )
     base_normalizada = base.translate(_PUNTOS_TRADUCCION).lstrip("0")

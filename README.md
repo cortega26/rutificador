@@ -148,10 +148,10 @@ print(xml_ruts)
 ### Personalizar la validación
 
 ```python
-from rutificador import Rut, RutValidator, RigorValidacion
+from rutificador import Rut, ValidadorRut, RigorValidacion
 
-validator = RutValidator(mode=RigorValidacion.FLEXIBLE)
-rut = Rut('12.345.678-5', validator=validator)
+validador = ValidadorRut(modo=RigorValidacion.FLEXIBLE)
+rut = Rut('12.345.678-5', validador=validador)
 print(rut)
 ```
 

@@ -1,42 +1,45 @@
-"""Configuration definitions for Rutificador."""
+"""Definiciones de configuración para Rutificador."""
 from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple
 
 
 @dataclass(frozen=True)
-class RutConfig:
-    """Configuration class for RUT validation parameters."""
+class ConfiguracionRut:
+    """Clase de configuración para los parámetros de validación del RUT."""
 
-    verification_factors: Tuple[int, ...] = (2, 3, 4, 5, 6, 7)
+    factores_verificacion: Tuple[int, ...] = (2, 3, 4, 5, 6, 7)
     modulo: int = 11
-    max_digits: int = 8
-    min_digits: int = 1
+    max_digitos: int = 8
+    min_digitos: int = 1
 
     def __post_init__(self) -> None:
-        """Validate configuration parameters."""
+        """Valida los parámetros de configuración."""
         if self.modulo <= 0:
-            raise ValueError("Modulo must be positive")
-        if self.max_digits <= 0 or self.min_digits <= 0:
-            raise ValueError("Digit limits must be positive")
-        if self.min_digits > self.max_digits:
-            raise ValueError("Min digits cannot exceed max digits")
+            raise ValueError("El módulo debe ser positivo")
+        if self.max_digitos <= 0 or self.min_digitos <= 0:
+            raise ValueError("Los límites de dígitos deben ser positivos")
+        if self.min_digitos > self.max_digitos:
+            raise ValueError("El mínimo de dígitos no puede exceder al máximo")
 
 
-# Default configuration instance
-CONFIGURACION_POR_DEFECTO = RutConfig()
+# Instancia de configuración predeterminada
+CONFIGURACION_POR_DEFECTO = ConfiguracionRut()
 
 
 class RigorValidacion(Enum):
-    """Enumeration of validation strictness levels."""
+    """Enumeración de niveles de rigurosidad de validación."""
 
-    ESTRICTO = "strict"
-    FLEXIBLE = "lenient"
-    LEGADO = "legacy"
+    ESTRICTO = "estricto"
+    FLEXIBLE = "flexible"
+    LEGADO = "legado"
 
 
 __all__ = [
-    "RutConfig",
+    "ConfiguracionRut",
     "CONFIGURACION_POR_DEFECTO",
     "RigorValidacion",
 ]
+
+# Alias para compatibilidad retroactiva
+RutConfig = ConfiguracionRut
