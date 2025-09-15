@@ -13,10 +13,8 @@ jobs:
   pypi-publish:
     name: Subir lanzamiento a PyPI
     runs-on: ubuntu-latest
-    # Agregar entorno específico para mayor seguridad
-    # environment:
-    #   name: pypi
-    #   url: https://pypi.org/p/rutificador
+    environment:
+      name: release
     permissions:
       id-token: write  # IMPORTANTE: este permiso es obligatorio para publicación confiable
       contents: read
