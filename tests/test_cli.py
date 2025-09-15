@@ -2,12 +2,11 @@
 
 import subprocess
 import sys
-import argparse
 import tracemalloc
 from pathlib import Path
 from typing import Optional
 
-import rutificador.cli as cli
+from rutificador import cli
 
 
 def ejecutar_cli(
@@ -51,11 +50,11 @@ def test_memoria_validar_archivo_grande(tmp_path: Path, monkeypatch):
 
     monkeypatch.setattr(cli, "validar_stream_ruts", _consumir)
 
-    args = argparse.Namespace(archivo=str(archivo))
     tracemalloc.start()
-    cli._comando_validar(args)
+    codigo_salida = cli.main(["validar", str(archivo)])
     _, pico = tracemalloc.get_traced_memory()
     tracemalloc.stop()
+    assert codigo_salida == 0
     assert pico < 20 * 1024 * 1024
 
 
@@ -64,17 +63,16 @@ def test_memoria_formatear_archivo_grande(tmp_path: Path, monkeypatch):
     archivo.write_text("12345678-5\n" * 500_000, encoding="utf-8")
 
     def _consumir(ruts, separador_miles, mayusculas):
+        del separador_miles, mayusculas
         for _ in ruts:
             pass
         return []
 
     monkeypatch.setattr(cli, "formatear_stream_ruts", _consumir)
 
-    args = argparse.Namespace(
-        archivo=str(archivo), separador_miles=False, mayusculas=False
-    )
     tracemalloc.start()
-    cli._comando_formatear(args)
+    codigo_salida = cli.main(["formatear", str(archivo)])
     _, pico = tracemalloc.get_traced_memory()
     tracemalloc.stop()
+    assert codigo_salida == 0
     assert pico < 20 * 1024 * 1024
