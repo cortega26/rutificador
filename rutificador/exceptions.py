@@ -27,7 +27,8 @@ class ErrorFormatoRut(ErrorValidacionRut):
 
     def __init__(self, valor_rut: str, formato_esperado: str) -> None:
         super().__init__(
-            f"Formato de RUT inválido: '{valor_rut}'. Formato esperado: {formato_esperado}",
+            f"Formato de RUT inválido: '{valor_rut}'. "
+            f"Formato esperado: {formato_esperado}",
             error_code="FORMAT_ERROR",
             rut_value=valor_rut,
             expected_format=formato_esperado,
@@ -39,7 +40,8 @@ class ErrorDigitoRut(ErrorValidacionRut):
 
     def __init__(self, digito_entregado: str, digito_calculado: str) -> None:
         super().__init__(
-            f"Dígito verificador no coincide: se entregó '{digito_entregado}', se calculó '{digito_calculado}'",
+            f"Dígito verificador no coincide: se entregó '{digito_entregado}', "
+            f"se calculó '{digito_calculado}'",
             error_code="DIGIT_ERROR",
             provided_digit=digito_entregado,
             calculated_digit=digito_calculado,
@@ -51,7 +53,8 @@ class ErrorLongitudRut(ErrorValidacionRut):
 
     def __init__(self, valor_rut: str, longitud: int, longitud_maxima: int) -> None:
         super().__init__(
-            f"El RUT '{valor_rut}' excede la longitud máxima: {longitud} > {longitud_maxima}",
+            f"El RUT '{valor_rut}' excede la longitud máxima: "
+            f"{longitud} > {longitud_maxima}",
             error_code="LENGTH_ERROR",
             rut_value=valor_rut,
             length=longitud,
