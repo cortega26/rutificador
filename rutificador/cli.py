@@ -2,7 +2,11 @@ import argparse
 import sys
 from typing import Iterator, Optional, List
 
-from .procesador import validar_stream_ruts, formatear_stream_ruts
+from .procesador import (
+    validar_stream_ruts,
+    formatear_stream_ruts,
+    ProcesadorLotesRut,
+)
 
 
 def _leer_ruts(ruta_archivo: Optional[str]) -> Iterator[str]:
@@ -33,6 +37,19 @@ def _comando_validar(args: argparse.Namespace) -> int:
 
 
 def _comando_formatear(args: argparse.Namespace) -> int:
+    if getattr(args, "formato", None):
+        ruts = list(_leer_ruts(args.archivo))
+        procesador = ProcesadorLotesRut()
+        salida = procesador.formatear_lista_ruts(
+            ruts,
+            separador_miles=args.separador_miles,
+            mayusculas=args.mayusculas,
+            formato=args.formato,
+        )
+        print(salida)
+        resultado_validacion = procesador.validar_lista_ruts(ruts)
+        return 0 if not resultado_validacion.ruts_invalidos else 1
+
     codigo_salida = 0
     for es_valido, resultado in formatear_stream_ruts(
         _leer_ruts(args.archivo),
@@ -76,6 +93,11 @@ def _crear_parser() -> argparse.ArgumentParser:
         "--mayusculas",
         action="store_true",
         help="Convierte el resultado a mayúsculas",
+    )
+    parser_formatear.add_argument(
+        "--formato",
+        choices=["csv", "xml", "json"],
+        help="Genera salida agregada en el formato indicado",
     )
     parser_formatear.set_defaults(func=_comando_formatear)
 

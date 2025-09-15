@@ -39,6 +39,28 @@ def test_formatear_desde_archivo(tmp_path: Path):
     assert resultado.returncode == 0
 
 
+def test_formatear_formato_csv():
+    entrada = "12345678-5\n12345678-9\n"
+    resultado = ejecutar_cli("formatear", "--formato", "csv", entrada=entrada)
+    assert "rut\n12345678-5" in resultado.stdout
+    assert "12345678-9" in resultado.stdout
+    assert resultado.returncode == 1
+
+
+def test_formatear_formato_json():
+    entrada = "12345678-5\n"
+    resultado = ejecutar_cli("formatear", "--formato", "json", entrada=entrada)
+    assert '"rut": "12345678-5"' in resultado.stdout
+    assert resultado.returncode == 0
+
+
+def test_formatear_formato_xml():
+    entrada = "12345678-5\n"
+    resultado = ejecutar_cli("formatear", "--formato", "xml", entrada=entrada)
+    assert "<rut>12345678-5</rut>" in resultado.stdout
+    assert resultado.returncode == 0
+
+
 def test_memoria_validar_archivo_grande(tmp_path: Path, monkeypatch):
     archivo = tmp_path / "ruts.txt"
     archivo.write_text("12345678-5\n" * 500_000, encoding="utf-8")

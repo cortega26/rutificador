@@ -222,7 +222,7 @@ FabricaFormateadorRut.registrar_formateador('lista', FormateadorLista)
 El paquete incluye un comando de consola llamado `rutificador` con dos subcomandos:
 
 - `rutificador validar [archivo]`: valida RUTs recibidos por `stdin` o desde un archivo.
-- `rutificador formatear [archivo]`: valida y formatea los RUTs; acepta las opciones `--separador-miles` y `--mayusculas`.
+- `rutificador formatear [archivo]`: valida y formatea los RUTs; acepta `--separador-miles`, `--mayusculas` y `--formato {csv,xml,json}` para generar una salida agregada.
 
 Ejemplos:
 
@@ -232,6 +232,14 @@ $ echo "12345678-5" | rutificador validar
 
 $ echo "12345678-5" | rutificador formatear --separador-miles
 12.345.678-5
+
+$ echo "12345678-5" | rutificador formatear --formato json
+RUTs válidos:
+[
+  {
+    "rut": "12345678-5"
+  }
+]
 ```
 
 ## Desarrollo
