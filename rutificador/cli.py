@@ -1,22 +1,28 @@
 import argparse
 import sys
-from typing import List, Optional
+from typing import Iterator, Optional, List
 
 from .procesador import validar_stream_ruts, formatear_stream_ruts
 
 
-def _leer_ruts(ruta_archivo: Optional[str]) -> List[str]:
+def _leer_ruts(ruta_archivo: Optional[str]) -> Iterator[str]:
     """Lee RUTs desde un archivo o desde la entrada estándar."""
     if ruta_archivo:
-        with open(ruta_archivo, encoding="utf-8") as archivo:
-            return [linea.strip() for linea in archivo if linea.strip()]
-    return [linea.strip() for linea in sys.stdin if linea.strip()]
+
+        def _desde_archivo() -> Iterator[str]:
+            with open(ruta_archivo, encoding="utf-8") as archivo:
+                for linea in archivo:
+                    linea = linea.strip()
+                    if linea:
+                        yield linea
+
+        return _desde_archivo()
+    return (linea.strip() for linea in sys.stdin if linea.strip())
 
 
 def _comando_validar(args: argparse.Namespace) -> int:
-    ruts = _leer_ruts(args.archivo)
     codigo_salida = 0
-    for es_valido, resultado in validar_stream_ruts(ruts):
+    for es_valido, resultado in validar_stream_ruts(_leer_ruts(args.archivo)):
         if es_valido:
             print(resultado)
         else:
@@ -27,10 +33,9 @@ def _comando_validar(args: argparse.Namespace) -> int:
 
 
 def _comando_formatear(args: argparse.Namespace) -> int:
-    ruts = _leer_ruts(args.archivo)
     codigo_salida = 0
     for es_valido, resultado in formatear_stream_ruts(
-        ruts,
+        _leer_ruts(args.archivo),
         separador_miles=args.separador_miles,
         mayusculas=args.mayusculas,
     ):
