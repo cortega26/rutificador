@@ -3,6 +3,7 @@
 import logging
 import time
 from functools import lru_cache, wraps
+from itertools import cycle
 from typing import Any, Callable, TypeVar
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut
@@ -50,6 +51,7 @@ def asegurar_booleano(valor: Any, nombre: str) -> bool:
             error_code="TYPE_ERROR",
         )
     return valor
+
 
 def monitor_de_rendimiento(func: Callable[..., R]) -> Callable[..., R]:
     """Decora una función midiendo y registrando su rendimiento.
@@ -100,7 +102,8 @@ def calcular_digito_verificador(
     """
     if not isinstance(base_numerica, str):
         raise ErrorValidacionRut(
-            f"La base numérica debe ser una cadena, se recibió: {type(base_numerica).__name__}",
+            f"La base numérica debe ser una cadena, se recibió: "
+            f"{type(base_numerica).__name__}",
             error_code="TYPE_ERROR",
         )
     if not base_numerica or not base_numerica.strip():
@@ -116,7 +119,6 @@ def calcular_digito_verificador(
         )
     # Se utiliza itertools.cycle para evitar operaciones costosas de módulo
     # dentro del bucle y mantener eficiente la implementación para bases grandes.
-    from itertools import cycle
 
     factores = cycle(configuracion.factores_verificacion)
     suma_parcial = sum(int(d) * f for d, f in zip(reversed(base_numerica), factores))

@@ -3,10 +3,11 @@
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 
 def ejecutar_cli(
-    *args: str, entrada: str | None = None
+    *args: str, entrada: Optional[str] = None
 ) -> subprocess.CompletedProcess[str]:
     comando = [sys.executable, "-m", "rutificador.cli", *args]
     return subprocess.run(
