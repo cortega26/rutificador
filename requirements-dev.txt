@@ -1,5 +1,6 @@
 pytest
 pytest-cov
+pytest-asyncio
 black
 coveralls
 tomli
