@@ -215,6 +215,23 @@ class FormateadorLista(FormateadorRut):
 FabricaFormateadorRut.registrar_formateador('lista', FormateadorLista)
 ```
 
+### Uso desde la línea de comandos
+
+El paquete incluye un comando de consola llamado `rutificador` con dos subcomandos:
+
+- `rutificador validar [archivo]`: valida RUTs recibidos por `stdin` o desde un archivo.
+- `rutificador formatear [archivo]`: valida y formatea los RUTs; acepta las opciones `--separador-miles` y `--mayusculas`.
+
+Ejemplos:
+
+```bash
+$ echo "12345678-5" | rutificador validar
+12345678-5
+
+$ echo "12345678-5" | rutificador formatear --separador-miles
+12.345.678-5
+```
+
 ## Desarrollo
 
 ### Configuración del Entorno

@@ -37,6 +37,9 @@ tomli = { version = "^2.0", python = "<3.11" }
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.1"
 
+[tool.poetry.scripts]
+rutificador = "rutificador.cli:main"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Use default import mode so that local package is discoverable without
