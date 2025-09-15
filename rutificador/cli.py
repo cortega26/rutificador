@@ -2,7 +2,7 @@ import argparse
 import sys
 from typing import Iterator, Optional, List
 
-from .procesador import validar_stream_ruts, formatear_stream_ruts
+from .procesador import DetalleError, validar_stream_ruts, formatear_stream_ruts
 
 
 def _leer_ruts(ruta_archivo: Optional[str]) -> Iterator[str]:
@@ -20,6 +20,11 @@ def _leer_ruts(ruta_archivo: Optional[str]) -> Iterator[str]:
     return (linea.strip() for linea in sys.stdin if linea.strip())
 
 
+def _formatear_error(detalle: DetalleError) -> str:
+    codigo = detalle.codigo or "SIN_CODIGO"
+    return f"{detalle.rut} [{codigo}] - {detalle.mensaje}"
+
+
 def _comando_validar(args: argparse.Namespace) -> int:
     codigo_salida = 0
     for es_valido, resultado in validar_stream_ruts(_leer_ruts(args.archivo)):
@@ -27,8 +32,11 @@ def _comando_validar(args: argparse.Namespace) -> int:
             print(resultado)
         else:
             codigo_salida = 1
-            rut, error = resultado
-            print(f"{rut} - {error}", file=sys.stderr)
+            if isinstance(resultado, DetalleError):
+                print(_formatear_error(resultado), file=sys.stderr)
+            else:
+                rut, error = resultado
+                print(f"{rut} - {error}", file=sys.stderr)
     return codigo_salida
 
 
@@ -43,8 +51,11 @@ def _comando_formatear(args: argparse.Namespace) -> int:
             print(resultado)
         else:
             codigo_salida = 1
-            rut, error = resultado
-            print(f"{rut} - {error}", file=sys.stderr)
+            if isinstance(resultado, DetalleError):
+                print(_formatear_error(resultado), file=sys.stderr)
+            else:
+                rut, error = resultado
+                print(f"{rut} - {error}", file=sys.stderr)
     return codigo_salida
 
 
