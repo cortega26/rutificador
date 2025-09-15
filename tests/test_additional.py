@@ -60,6 +60,7 @@ def test_global_validar_y_formatear():
     texto = formatear_lista_ruts_global(ruts, formato="csv")
     assert "rut" in texto
     assert "12345678-5" in texto
+    assert "[FORMAT_ERROR]" in texto
 
 
 def test_validar_stream_ruts_con_generador():

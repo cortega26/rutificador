@@ -403,6 +403,8 @@ class TestProcesadorLotesRut:
         processor = ProcesadorLotesRut()
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
         assert "RUTs válidos:" in resultado
+        if "98765432-1" in ruts:
+            assert "[DIGIT_ERROR]" in resultado
 
     def test_formatear_lista_ruts_formato_invalido(self):
         """Prueba que formato inválido lance excepción."""

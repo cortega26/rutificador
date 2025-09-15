@@ -28,6 +28,7 @@ def test_validar_desde_stdin():
     resultado = ejecutar_cli("validar", entrada=entrada)
     assert "12345678-5" in resultado.stdout
     assert "12345678-9" in resultado.stderr
+    assert "[DIGIT_ERROR]" in resultado.stderr
     assert resultado.returncode == 1
 
 
