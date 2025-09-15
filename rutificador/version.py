@@ -2,7 +2,7 @@
 
 from typing import Dict
 
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 
 
 def obtener_informacion_version() -> Dict[str, str]:
@@ -11,7 +11,7 @@ def obtener_informacion_version() -> Dict[str, str]:
         "version": __version__,
         "author": "Carlos Ortega González",
         "license": "MIT",
-        "description": "Enhanced Chilean RUT validation and formatting library",
+        "description": ("Librería mejorada para validar y formatear RUT chileno"),
         "features": [
             "High-performance validation with caching",
             "Parallel batch processing",
