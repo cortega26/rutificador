@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class DetalleError:
-    """Representa un error asociado a un RUT específico."""
+    """Representa un error asociado a un RUT específico, incluyendo su código."""
 
     rut: str
     codigo: Optional[str]
@@ -72,22 +72,19 @@ class ProcesadorLotesRut:
         inicio = time.perf_counter()
         resultado = ResultadoLote()
 
+        def construir_detalle_error(
+            cadena: str, codigo: Optional[str], exc: Exception
+        ) -> DetalleError:
+            return DetalleError(rut=str(cadena), codigo=codigo, mensaje=str(exc))
+
         def crear_rut(cadena: str) -> Tuple[bool, Union[str, DetalleError]]:
             try:
                 rut_obj = Rut(cadena, validador=self.validador)
                 return True, str(rut_obj)
             except ErrorRut as exc:
-                return False, DetalleError(
-                    rut=str(cadena),
-                    codigo=exc.error_code,
-                    mensaje=str(exc),
-                )
+                return False, construir_detalle_error(cadena, exc.error_code, exc)
             except (ValueError, TypeError) as exc:
-                return False, DetalleError(
-                    rut=str(cadena),
-                    codigo=None,
-                    mensaje=str(exc),
-                )
+                return False, construir_detalle_error(cadena, None, exc)
 
         if parallel:
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
