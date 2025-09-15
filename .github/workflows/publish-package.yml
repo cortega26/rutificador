@@ -22,7 +22,7 @@ jobs:
       contents: read
 
     # Only run on tags or releases to prevent accidental publishing
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
