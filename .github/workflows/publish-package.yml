@@ -1,4 +1,4 @@
-name: Publish Python Package to PyPI
+name: Publicar paquete de Python en PyPI
 
 on:
   push:
@@ -7,16 +7,16 @@ on:
       - "v*" # Only publish on version tags
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   pypi-publish:
     name: Upload release to PyPI
-    runs-on:
-      ubuntu-latest
-      # Add specific environment for additional security
-    environment:
-      name: release
-      url: https://pypi.org/project/rutificador
+    runs-on: ubuntu-latest
+    # Add specific environment for additional security
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/rutificador
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
       contents: read
