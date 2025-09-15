@@ -3,7 +3,12 @@ import re
 from typing import Optional, Protocol, runtime_checkable, Match
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut, RigorValidacion
-from .exceptions import ErrorFormatoRut, ErrorDigitoRut, ErrorLongitudRut, ErrorValidacionRut
+from .exceptions import (
+    ErrorFormatoRut,
+    ErrorDigitoRut,
+    ErrorLongitudRut,
+    ErrorValidacionRut,
+)
 from .utils import normalizar_base_rut, asegurar_cadena_no_vacia
 
 logger = logging.getLogger(__name__)
@@ -46,7 +51,10 @@ class ValidadorRut:
         if not match:
             raise ErrorFormatoRut(
                 cadena_rut,
-                "XXXXXXXX-X o XX.XXX.XXX-X donde X son dígitos y el último puede ser 'k'",
+                (
+                    "XXXXXXXX-X o XX.XXX.XXX-X donde X son dígitos "
+                    "y el último puede ser 'k'"
+                ),
             )
         logger.debug("Formato de RUT validado correctamente: %s", cadena_rut)
         return match
@@ -55,10 +63,7 @@ class ValidadorRut:
         """Valida y normaliza el número base del RUT."""
         base = asegurar_cadena_no_vacia(base, "base")
 
-        if not (
-            BASE_WITH_DOTS_REGEX.match(base)
-            or BASE_DIGITS_ONLY_REGEX.match(base)
-        ):
+        if not (BASE_WITH_DOTS_REGEX.match(base) or BASE_DIGITS_ONLY_REGEX.match(base)):
             raise ErrorFormatoRut(
                 base, "cadena numérica con separadores de miles opcionales"
             )

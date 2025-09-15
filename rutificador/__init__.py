@@ -6,6 +6,7 @@ from .version import __version__, obtener_informacion_version
 from .validador import Validador, ValidadorRut, RutValidator
 from .rut import Rut, RutBase, obtener_rut
 from .procesador import (
+    DetalleError,
     ProcesadorLotesRut,
     ResultadoLote,
     formatear_lista_ruts,
@@ -48,6 +49,7 @@ __all__: List[Union[str, Type]] = [
     "Validador",
     "ValidadorRut",
     "RutValidator",
+    "DetalleError",
     "ProcesadorLotesRut",
     "ResultadoLote",
     "FabricaFormateadorRut",

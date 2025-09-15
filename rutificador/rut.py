@@ -34,7 +34,9 @@ class RutBase:
 class Rut:
     """Representación de un RUT chileno completo."""
 
-    def __init__(self, rut: Union[str, int], validador: Optional[ValidadorRut] = None) -> None:
+    def __init__(
+        self, rut: Union[str, int], validador: Optional[ValidadorRut] = None
+    ) -> None:
         if not isinstance(rut, (str, int)):
             raise ErrorValidacionRut(
                 f"El RUT debe ser cadena o entero, se recibió: {type(rut).__name__}",
@@ -42,7 +44,9 @@ class Rut:
             )
         self.cadena_rut = str(rut).strip()
         if not self.cadena_rut:
-            raise ErrorValidacionRut("El RUT no puede estar vacío", error_code="EMPTY_RUT")
+            raise ErrorValidacionRut(
+                "El RUT no puede estar vacío", error_code="EMPTY_RUT"
+            )
         self.validador = validador or ValidadorRut()
         self._analizar_y_validar()
 
@@ -57,7 +61,9 @@ class Rut:
 
         self.base = RutBase(self.cadena_base, self.cadena_rut)
         self.digito_verificador = calcular_digito_verificador(self.base.base)
-        self.validador.validar_digito_verificador(digito_ingresado, self.digito_verificador)
+        self.validador.validar_digito_verificador(
+            digito_ingresado, self.digito_verificador
+        )
         logger.debug("RUT validado correctamente: %s", self)
 
     def __str__(self) -> str:  # pragma: no cover - trivial
@@ -90,7 +96,10 @@ class Rut:
     ) -> str:
         asegurar_booleano(separador_miles, "separador_miles")
         asegurar_booleano(mayusculas, "mayusculas")
-        if not isinstance(separador_personalizado, str) or len(separador_personalizado) != 1:
+        if (
+            not isinstance(separador_personalizado, str)
+            or len(separador_personalizado) != 1
+        ):
             raise ErrorValidacionRut(
                 "separador_personalizado debe ser un único carácter",
                 error_code="FORMAT_ERROR",
@@ -112,7 +121,10 @@ class Rut:
         if len(numero) <= 3:
             return numero
         invertido = numero[::-1]
-        grupos = [invertido[i : i + 3] for i in range(0, len(invertido), 3)]
+        grupos = [
+            invertido[slice(inicio, inicio + 3)]
+            for inicio in range(0, len(invertido), 3)
+        ]
         formateado = separador.join(grupos)
         return formateado[::-1]
 

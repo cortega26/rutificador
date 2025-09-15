@@ -372,7 +372,9 @@ class TestProcesadorLotesRut:
 
         assert len(resultado.ruts_validos) == 2
         assert len(resultado.ruts_invalidos) == 1
-        assert resultado.ruts_invalidos[0][0] == "98765432-1"
+        detalle = resultado.ruts_invalidos[0]
+        assert detalle.rut == "98765432-1"
+        assert detalle.codigo == "DIGIT_ERROR"
 
     # La parametrización utiliza la salida esperada para validar toda la cadena
     # formateada (ignorando las líneas de estadísticas que varían). El conjunto
