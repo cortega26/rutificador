@@ -1,54 +1,55 @@
-name: Publish Python Package to PyPI
+name: Publicar paquete de Python en PyPI
 
 on:
   push:
     branches: [master]
     tags:
-      - 'v*'  # Only publish on version tags
+      - 'v*'  # Solo publicar en etiquetas de versión
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   pypi-publish:
-    name: Upload release to PyPI
+    name: Subir lanzamiento a PyPI
     runs-on: ubuntu-latest
-    # Add specific environment for additional security
-    # environment: 
+    # Agregar entorno específico para mayor seguridad
+    # environment:
     #   name: pypi
     #   url: https://pypi.org/p/rutificador
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write  # IMPORTANTE: este permiso es obligatorio para publicación confiable
       contents: read
-    
-    # Only run on tags or releases to prevent accidental publishing
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+
+    # Ejecutar solo en etiquetas, lanzamientos o ejecución manual para evitar publicaciones accidentales
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
 
     steps:
-    - name: Checkout code
+    - name: Obtener código
       uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: Configurar Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Instalar dependencias
       run: |
         python -m pip install --upgrade pip
         pip install build twine
 
-    - name: Build package
+    - name: Construir paquete
       run: python -m build
 
-    - name: Verify package
+    - name: Verificar paquete
       run: |
         python -m twine check dist/*
 
-    - name: Publish to PyPI
+    - name: Publicar en PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        # Use trusted publishing - no API tokens needed
-        # Repository must be configured in PyPI with GitHub as trusted publisher
+        # Uso de publicación confiable: no se requieren tokens de API
+        # El repositorio debe estar configurado en PyPI con GitHub como publicador confiable
         repository-url: https://upload.pypi.org/legacy/
         verbose: true
         print-hash: true
