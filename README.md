@@ -24,6 +24,9 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
     - [Calcular el Dígito Verificador de un RUT](#calcular-el-dígito-verificador-de-un-rut)
     - [Formatear un RUT](#formatear-un-rut)
     - [Validar y Formatear una lista de RUTs en diversos formatos](#validar-y-formatear-una-lista-de-ruts-en-diversos-formatos)
+    - [Procesamiento asíncrono](#procesamiento-asíncrono)
+      - [Validar y formatear listas de manera asíncrona](#validar-y-formatear-listas-de-manera-asíncrona)
+      - [Consumir flujos asíncronos](#consumir-flujos-asíncronos)
   - [Desarrollo](#desarrollo)
     - [Configuración del Entorno](#configuración-del-entorno)
     - [Ejecutar Pruebas](#ejecutar-pruebas)
@@ -145,6 +148,72 @@ print(xml_ruts)
 #     <rut>1234567-4</rut>
 #     <rut>18005183-k</rut>
 # </root>
+```
+
+### Procesamiento asíncrono
+
+Las funciones asíncronas permiten integrar Rutificador en aplicaciones basadas
+en ``asyncio`` sin bloquear el ciclo de eventos mientras se realizan
+validaciones o formateos.
+
+#### Validar y formatear listas de manera asíncrona
+
+```python
+import asyncio
+from rutificador import async_validar_lista_ruts, async_formatear_lista_ruts
+
+
+async def ejecutar():
+    ruts = ["12.345.678-5", "98765432-1", "1-9"]
+    resultado = await async_validar_lista_ruts(ruts)
+    print("Válidos:", resultado["validos"])
+    for detalle in resultado["invalidos"]:
+        print(f"Inválido: {detalle.rut} -> {detalle.mensaje}")
+
+    reporte = await async_formatear_lista_ruts(
+        ruts,
+        separador_miles=True,
+        mayusculas=True,
+    )
+    print(reporte)
+
+
+asyncio.run(ejecutar())
+```
+
+#### Consumir flujos asíncronos
+
+```python
+import asyncio
+from typing import AsyncIterator
+from rutificador import (
+    async_formatear_stream_ruts,
+    async_validar_stream_ruts,
+)
+
+
+async def generar_ruts() -> AsyncIterator[str]:
+    for rut in ["12.345.678-5", "98765432-1", "1-9"]:
+        yield rut
+
+
+async def main():
+    async for es_valido, resultado in async_validar_stream_ruts(generar_ruts()):
+        if es_valido:
+            print(f"RUT válido: {resultado}")
+        else:
+            print(f"Error: {resultado.mensaje}")
+
+    async for es_valido, resultado in async_formatear_stream_ruts(
+        generar_ruts(), separador_miles=True
+    ):
+        if es_valido:
+            print(f"Formateado: {resultado}")
+        else:
+            print(f"Error: {resultado.mensaje}")
+
+
+asyncio.run(main())
 ```
 
 ### Personalizar la validación

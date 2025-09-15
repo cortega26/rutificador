@@ -1,9 +1,12 @@
+import asyncio
 import logging
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import (
+    AsyncIterable,
+    AsyncIterator,
     Any,
     Dict,
     Iterable,
@@ -248,6 +251,52 @@ def formatear_lista_ruts(
     )
 
 
+async def async_validar_lista_ruts(
+    ruts: Sequence[str],
+    parallel: bool = False,
+    max_workers: Optional[int] = None,
+) -> Dict[str, List[Union[str, DetalleError]]]:
+    """Versión asíncrona de :func:`validar_lista_ruts`.
+
+    La validación se ejecuta en un hilo auxiliar para evitar bloquear el
+    *event loop* actual mientras se procesan los datos.
+    """
+
+    return await asyncio.to_thread(
+        validar_lista_ruts,
+        ruts,
+        parallel=parallel,
+        max_workers=max_workers,
+    )
+
+
+async def async_formatear_lista_ruts(
+    ruts: Sequence[str],
+    separador_miles: bool = False,
+    mayusculas: bool = False,
+    formato: Optional[str] = None,
+    parallel: bool = False,
+    max_workers: Optional[int] = None,
+    **formatter_kwargs: Any,
+) -> str:
+    """Versión asíncrona de :func:`formatear_lista_ruts`.
+
+    Se apoya en ``asyncio.to_thread`` para delegar la operación sin bloquear
+    el ciclo de eventos.
+    """
+
+    return await asyncio.to_thread(
+        formatear_lista_ruts,
+        ruts,
+        separador_miles=separador_miles,
+        mayusculas=mayusculas,
+        formato=formato,
+        parallel=parallel,
+        max_workers=max_workers,
+        **formatter_kwargs,
+    )
+
+
 def validar_stream_ruts(
     ruts: Iterable[str],
 ) -> Iterator[Tuple[bool, Union[str, DetalleError]]]:
@@ -262,6 +311,24 @@ def validar_stream_ruts(
     procesador = ProcesadorLotesRut()
     for rut in ruts:
         resultado = procesador.validar_lista_ruts([rut], parallel=False)
+        if resultado.ruts_validos:
+            yield True, resultado.ruts_validos[0]
+        else:
+            yield False, resultado.ruts_invalidos[0]
+
+
+async def async_validar_stream_ruts(
+    ruts: AsyncIterable[str],
+) -> AsyncIterator[Tuple[bool, Union[str, DetalleError]]]:
+    """Valida RUTs desde un flujo asíncrono utilizando ``async for``."""
+
+    procesador = ProcesadorLotesRut()
+    async for rut in ruts:
+        resultado = await asyncio.to_thread(
+            procesador.validar_lista_ruts,
+            [rut],
+            parallel=False,
+        )
         if resultado.ruts_validos:
             yield True, resultado.ruts_validos[0]
         else:
@@ -286,6 +353,31 @@ def formatear_stream_ruts(
     procesador = ProcesadorLotesRut()
     for rut in ruts:
         resultado = procesador.validar_lista_ruts([rut], parallel=False)
+        if resultado.ruts_validos:
+            rut_obj = Rut(resultado.ruts_validos[0], validador=procesador.validador)
+            yield True, rut_obj.formatear(
+                separador_miles=separador_miles, mayusculas=mayusculas
+            )
+        else:
+            yield False, resultado.ruts_invalidos[0]
+
+
+async def async_formatear_stream_ruts(
+    ruts: AsyncIterable[str],
+    separador_miles: bool = False,
+    mayusculas: bool = False,
+) -> AsyncIterator[Tuple[bool, Union[str, DetalleError]]]:
+    """Valida y formatea RUTs desde flujos asíncronos."""
+
+    asegurar_booleano(separador_miles, "separador_miles")
+    asegurar_booleano(mayusculas, "mayusculas")
+    procesador = ProcesadorLotesRut()
+    async for rut in ruts:
+        resultado = await asyncio.to_thread(
+            procesador.validar_lista_ruts,
+            [rut],
+            parallel=False,
+        )
         if resultado.ruts_validos:
             rut_obj = Rut(resultado.ruts_validos[0], validador=procesador.validador)
             yield True, rut_obj.formatear(
@@ -329,7 +421,11 @@ __all__ = [
     "ProcesadorLotesRut",
     "validar_lista_ruts",
     "formatear_lista_ruts",
+    "async_validar_lista_ruts",
+    "async_formatear_lista_ruts",
     "validar_stream_ruts",
     "formatear_stream_ruts",
+    "async_validar_stream_ruts",
+    "async_formatear_stream_ruts",
     "evaluar_rendimiento",
 ]
