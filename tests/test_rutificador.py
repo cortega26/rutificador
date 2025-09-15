@@ -66,7 +66,7 @@ cadenas_rut_validas = [
     " 1-9 ",  # Con D.V. y espacio a ambos lados
     " 000000001 ",  # Con ceros delante y espacios
     " 00.000.001",  # Con ceros delante, puntos y espacios
-    " 25.005.183-2 "  # Con puntos, espacios y D.V.
+    " 25.005.183-2 ",  # Con puntos, espacios y D.V.
 ]
 
 cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "123456789"]
@@ -77,12 +77,12 @@ datos_test_formato = [
     (
         "xml",
         "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n"
-        "    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n"
+        "    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n",
     ),
     (
         "json",
         'RUTs válidos:\n[\n  {\n    "rut": "12345678-5"\n  },\n  '
-        '{\n    "rut": "98765432-5"\n  },\n  {\n    "rut": "1-9"\n  }\n]\n\n'
+        '{\n    "rut": "98765432-5"\n  },\n  {\n    "rut": "1-9"\n  }\n]\n\n',
     ),
 ]
 
@@ -98,6 +98,7 @@ datos_test_formatear_lista_ruts = [
 # ============================================================================
 # TESTS PARA FUNCIÓN CALCULAR_DIGITO_VERIFICADOR
 # ============================================================================
+
 
 class TestCalcularDigitoVerificador:
     """Suite de pruebas para la función calcular_digito_verificador."""
@@ -117,6 +118,7 @@ class TestCalcularDigitoVerificador:
 # ============================================================================
 # TESTS PARA RUTVALIDATOR
 # ============================================================================
+
 
 class TestValidadorRut:
     """Suite de pruebas para la clase ValidadorRut."""
@@ -178,6 +180,7 @@ class TestValidadorRut:
 # TESTS PARA FORMATTERS
 # ============================================================================
 
+
 class TestFormatters:
     """Suite de pruebas para los formateadores."""
 
@@ -194,7 +197,9 @@ class TestFormatters:
         formatter = FormateadorXML()
         ruts = ["12345678-5", "98765432-5"]
         resultado = formatter.formatear(ruts)
-        esperado = "<root>\n    <rut>12345678-5</rut>\n    <rut>98765432-5</rut>\n</root>"
+        esperado = (
+            "<root>\n    <rut>12345678-5</rut>\n    <rut>98765432-5</rut>\n</root>"
+        )
         assert resultado == esperado
 
     def test_json_formatter(self):
@@ -245,6 +250,7 @@ class TestFabricaFormateadorRut:
 # TESTS PARA RUTBASE
 # ============================================================================
 
+
 class TestRutBase:
     """Suite de pruebas para la clase RutBase."""
 
@@ -281,6 +287,7 @@ class TestRutBase:
 # ============================================================================
 # TESTS PARA RUT
 # ============================================================================
+
 
 class TestRut:
     """Suite de pruebas para la clase Rut."""
@@ -343,6 +350,7 @@ class TestRut:
 # ============================================================================
 # TESTS PARA RUTBATCHPROCESSOR
 # ============================================================================
+
 
 class TestProcesadorLotesRut:
     """Suite de pruebas para ProcesadorLotesRut."""
@@ -423,17 +431,70 @@ class TestProcesadorLotesRut:
             inicio = lineas.index("RUTs válidos:") + 1
             fin = inicio
             for idx in range(inicio, len(lineas)):
-                if lineas[idx].strip() == "" or lineas[idx].startswith("RUTs inválidos:"):
+                if lineas[idx].strip() == "" or lineas[idx].startswith(
+                    "RUTs inválidos:"
+                ):
                     fin = idx
                     break
             return lineas[inicio:fin]
 
         assert extraer_validos(seq) == extraer_validos(par)
 
+    def test_executor_respeta_valor_por_defecto(self, monkeypatch):
+        """El ejecutor debe construirse con ``None`` por defecto."""
+
+        llamados = []
+
+        class EjecutorPrueba:
+            def __init__(self, max_workers=None):
+                llamados.append(max_workers)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                return False
+
+            def map(self, funcion, iterable):
+                return [funcion(item) for item in iterable]
+
+        monkeypatch.setattr("rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba)
+
+        processor = ProcesadorLotesRut()
+        processor.validar_lista_ruts(["12345678-5"], parallel=True)
+
+        assert llamados == [None]
+
+    def test_executor_usa_max_workers_personalizado(self, monkeypatch):
+        """El ejecutor debe recibir el valor personalizado de ``max_workers``."""
+
+        llamados = []
+
+        class EjecutorPrueba:
+            def __init__(self, max_workers=None):
+                llamados.append(max_workers)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                return False
+
+            def map(self, funcion, iterable):
+                return [funcion(item) for item in iterable]
+
+        monkeypatch.setattr("rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba)
+
+        processor = ProcesadorLotesRut(max_workers=4)
+        processor.formatear_lista_ruts(["12345678-5", "98765432-5"], parallel=True)
+
+        assert llamados and all(valor == 4 for valor in llamados)
+
 
 # ============================================================================
 # TESTS PARA COMPATIBILIDAD HACIA ATRÁS
 # ============================================================================
+
 
 class TestCompatibilidadHaciaAtras:
     """Suite de pruebas para la compatibilidad con la API original."""
@@ -452,10 +513,7 @@ class TestCompatibilidadHaciaAtras:
         """Prueba la función global con parámetros."""
         ruts = ["12345678-5"]
         resultado = formatear_lista_ruts(
-            ruts,
-            separador_miles=True,
-            mayusculas=True,
-            formato="csv"
+            ruts, separador_miles=True, mayusculas=True, formato="csv"
         )
 
         assert "12.345.678-5" in resultado
@@ -465,6 +523,7 @@ class TestCompatibilidadHaciaAtras:
 # ============================================================================
 # TESTS DE INTEGRACIÓN
 # ============================================================================
+
 
 class TestIntegracion:
     """Suite de pruebas de integración completa."""
@@ -489,9 +548,7 @@ class TestIntegracion:
         # Procesar
         processor = ProcesadorLotesRut()
         resultado = processor.formatear_lista_ruts(
-            ruts,
-            separador_miles=True,
-            formato="json"
+            ruts, separador_miles=True, formato="json"
         )
 
         # Verificar que hay válidos e inválidos
@@ -499,18 +556,18 @@ class TestIntegracion:
         assert "RUTs inválidos:" in resultado
 
         # Verificar JSON válido en la parte de válidos
-        lines = resultado.split('\n')
+        lines = resultado.split("\n")
         json_start = False
         json_lines = []
 
         for line in lines:
-            if line.strip().startswith('['):
+            if line.strip().startswith("["):
                 json_start = True
             if json_start:
                 json_lines.append(line)
-                if line.strip().endswith(']'):
+                if line.strip().endswith("]"):
                     break
 
-        json_str = '\n'.join(json_lines)
+        json_str = "\n".join(json_lines)
         json_data = json.loads(json_str)
         assert len(json_data) == 2  # Solo 2 RUTs válidos
