@@ -2,7 +2,7 @@
 
 from typing import Dict
 
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 
 
 def obtener_informacion_version() -> Dict[str, str]:

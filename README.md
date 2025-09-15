@@ -59,7 +59,7 @@ pip install rutificador
 from rutificador import Rut
 ```
 
-### Crear Un Objeto
+### Crear un objeto
 
 ```python
 rut1 = Rut('12345678-5')
@@ -68,14 +68,14 @@ rut2 = Rut('12.345.670')
 
 ### Validar un RUT
 
-La validación del RUT se realiza automáticamente al crear un objeto `Rut`. La clase 'Rut' acepta RUTs con y sin dígito verificador así como RUTs con y sin separador de miles. Si el RUT ingresado no es válido, se lanzará una excepción `RutInvalidoError`.
+La validación del RUT se realiza automáticamente al crear un objeto `Rut`. La clase `Rut` acepta RUTs con y sin dígito verificador, así como RUTs con y sin separador de miles. Si el RUT ingresado no es válido, se lanzará una excepción `RutInvalidoError`.
 
 ### Calcular el Dígito Verificador de un RUT
 
 ```python
-from rutificador import RutDigitoVerificador
+from rutificador import calcular_digito_verificador
 
-digito_verificador = RutDigitoVerificador('12345678').digito_verificador
+digito_verificador = calcular_digito_verificador("12345678")
 print(digito_verificador)  # Salida: 5
 ```
 
@@ -95,14 +95,16 @@ print(rut2.formatear())  # Salida: 12345670-k
 print(rut2.formatear(separador_miles=True, mayusculas=True))  # Salida: 12.345.670-K
 ```
 
-### Validar y Formatear una lista de RUTs en diversos formatos
+### Validar y formatear una lista de RUTs en diversos formatos
 
-Al igual que con los RUTs individuales, al utilizar el método `formatear_lista_ruts` la validación se hace de forma automática cuando se trata de listas de RUTs, la diferencia es que en vez de mostrar una excepción `RutInvalidoError` separará los RUTs válidos de los inválidos. Veamos algunos ejemplos:
+Al igual que con los RUTs individuales, el uso de `formatear_lista_ruts` realiza la validación de forma automática cuando se trabaja con secuencias de RUTs. En lugar de lanzar una excepción `RutInvalidoError`, separará los RUTs válidos de los inválidos. Veamos algunos ejemplos:
 
 ```python
+from rutificador import formatear_lista_ruts
+
 # Sin formato
-ruts = ['12345678-5', '12345670-k', '98765432-1']
-print(Rut.formatear_lista_ruts(ruts, separador_miles=True, mayusculas=True, formato=None))
+ruts = ["12345678-5", "12345670-k", "98765432-1"]
+print(formatear_lista_ruts(ruts, separador_miles=True, mayusculas=True, formato=None))
 # Salida:
 # RUTs válidos:
 # 12.345.678-5
@@ -112,8 +114,8 @@ RUTs inválidos:
 98765432-1 - El dígito verificador '1' no coincide con el dígito verificador calculado '5'.
 
 # En formato csv
-ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
-csv_ruts = Rut.formatear_lista_ruts(ruts, formato='csv')
+ruts = ["12.345.678", "9876543", "1.234.567-4", "18005183"]
+csv_ruts = formatear_lista_ruts(ruts, formato="csv")
 print(csv_ruts)
 # Salida
 # RUTs válidos:
@@ -124,16 +126,16 @@ print(csv_ruts)
 # 18005183-k
 
 # En formato json
-ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
-json_ruts = Rut.formatear_lista_ruts(ruts, formato='json')
+ruts = ["12.345.678", "9876543", "1.234.567-4", "18005183"]
+json_ruts = formatear_lista_ruts(ruts, formato="json")
 print(json_ruts)
 # Salida
 # RUTs válidos:
 # [{"rut": "12345678-5"}, {"rut": "9876543-3"}, {"rut": "1234567-4"}, {"rut": "18005183-k"}]
 
 # En formato xml
-ruts = ['12.345.678', '9876543', '1.234.567-4', '18005183']
-xml_ruts = Rut.formatear_lista_ruts(ruts, formato='xml')
+ruts = ["12.345.678", "9876543", "1.234.567-4", "18005183"]
+xml_ruts = formatear_lista_ruts(ruts, formato="xml")
 print(xml_ruts)
 # Salida
 # RUTs válidos:
@@ -247,10 +249,14 @@ $ echo "12345678-5" | rutificador formatear --separador-miles
 3. Instalar las dependencias de desarrollo:
    pip install -r requirements-dev.txt
 
-### Ejecutar Pruebas
+4. Instalar los ganchos de pre-commit:
+   pre-commit install
 
-Para ejecutar las pruebas, use el siguiente comando:
+### Ejecutar pruebas y linters
 
+Antes de enviar tus cambios, verifica la calidad del código con:
+
+pre-commit run --files <archivos>
 pytest
 
 ## Problemas o Requerimientos
@@ -259,7 +265,7 @@ pytest
 
 ## Contribuciones
 
-Las contribuciones son bienvenidas. Antes de comenzar, revisa las directrices en [AGENTS.md](AGENTS.md). Solo debes hacer un fork del repositorio, crear una rama nueva, hacer los cambios que consideres pertinentes con su respectiva documentación, y finalmente hacer push y abrir un pull request para migrar los cambios al `master`.
+Las contribuciones son bienvenidas. Antes de comenzar, revisa las directrices en [AGENTS.md](AGENTS.md). Haz un fork del repositorio, crea una rama nueva, documenta tus cambios y finalmente haz push para abrir un pull request hacia la rama principal.
 
 ## Licencia
 
