@@ -259,6 +259,13 @@ Antes de enviar tus cambios, verifica la calidad del código con:
 pre-commit run --files <archivos>
 pytest
 
+### Notas de validación
+
+- La suite incluye pruebas que aseguran el soporte de configuraciones
+  personalizadas de `ConfiguracionRut`, incluyendo bases de hasta 9 dígitos,
+  tanto para entradas con como sin dígito verificador. Esto evita regresiones
+  en escenarios donde se amplía `max_digitos` para integraciones externas.
+
 ## Problemas o Requerimientos
 
 ¿Te gustaría reportar algún error, solicitar alguna modificación o característica adicional en esta librería? Solo debes abrir un `issue` y describir tu petición de la forma más precisa y clara posible.

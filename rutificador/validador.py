@@ -14,7 +14,7 @@ from .utils import normalizar_base_rut, asegurar_cadena_no_vacia
 logger = logging.getLogger(__name__)
 
 # Expresiones regulares compiladas una vez
-RUT_REGEX = re.compile(r"^(\d{1,8}(?:\.\d{3})*)(-([0-9kK]))?$")
+RUT_REGEX = re.compile(r"^((?:\d{1,3}(?:\.\d{3})*)|\d+)(-([0-9kK]))?$")
 BASE_WITH_DOTS_REGEX = re.compile(r"^\d{1,3}(?:\.\d{3})*$")
 BASE_DIGITS_ONLY_REGEX = re.compile(r"^\d+$")
 
@@ -55,6 +55,13 @@ class ValidadorRut:
                     "XXXXXXXX-X o XX.XXX.XXX-X donde X son dígitos "
                     "y el último puede ser 'k'"
                 ),
+            )
+
+        base_capturada = match.group(1)
+        base_normalizada = normalizar_base_rut(base_capturada)
+        if len(base_normalizada) > self.configuracion.max_digitos:
+            raise ErrorLongitudRut(
+                cadena_rut, len(base_normalizada), self.configuracion.max_digitos
             )
         logger.debug("Formato de RUT validado correctamente: %s", cadena_rut)
         return match
