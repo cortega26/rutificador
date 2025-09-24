@@ -2,7 +2,9 @@
 
 import json
 from typing import List
+
 import pytest
+
 from rutificador import (
     Rut,
     RutBase,
@@ -16,6 +18,7 @@ from rutificador import (
     calcular_digito_verificador,
     formatear_lista_ruts,
 )
+from rutificador.config import ConfiguracionRut
 
 # ============================================================================
 # DATOS DE PRUEBA
@@ -345,6 +348,30 @@ class TestRut:
     def test_str_representation(self, rut_valido):
         """Prueba la representación string del RUT."""
         assert str(rut_valido) == "12345678-5"
+
+    def test_rut_respeta_configuracion_personalizada(self):
+        """Permite crear RUTs con configuraciones extendidas de dígitos."""
+
+        configuracion = ConfiguracionRut(max_digitos=9)
+        validador = ValidadorRut(configuracion=configuracion)
+        base_extendida = "123456789"
+        dv = calcular_digito_verificador(base_extendida, configuracion=configuracion)
+
+        rut = Rut(base_extendida, validador=validador)
+
+        assert str(rut) == f"{base_extendida}-{dv}"
+
+    def test_rut_con_digito_usa_configuracion_personalizada(self):
+        """El validador personalizado admite RUTs extendidos con dígito."""
+
+        configuracion = ConfiguracionRut(max_digitos=9)
+        validador = ValidadorRut(configuracion=configuracion)
+        base_extendida = "123456789"
+        dv = calcular_digito_verificador(base_extendida, configuracion=configuracion)
+
+        rut = Rut(f"{base_extendida}-{dv}", validador=validador)
+
+        assert str(rut) == f"{base_extendida}-{dv}"
 
 
 # ============================================================================

@@ -1,5 +1,5 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar
 from contextlib import contextmanager
 from functools import lru_cache
 from typing import Any, Dict, Iterator, Optional, Union
@@ -17,14 +17,15 @@ class RutBase:
 
     base: str
     rut_original: str
+    validador: InitVar[Optional[ValidadorRut]] = None
 
-    def __post_init__(self) -> None:
+    def __post_init__(self, validador: Optional[ValidadorRut]) -> None:
         if not isinstance(self.rut_original, str):
             raise ErrorValidacionRut(
                 "El RUT original debe ser una cadena", error_code="TYPE_ERROR"
             )
-        validador = ValidadorRut()
-        base_validada = validador.validar_base(self.base, self.rut_original)
+        validador_instancia = validador or ValidadorRut()
+        base_validada = validador_instancia.validar_base(self.base, self.rut_original)
         object.__setattr__(self, "base", base_validada)
 
     def __str__(self) -> str:  # pragma: no cover - trivial
@@ -59,7 +60,7 @@ class Rut:
             self.cadena_base = match_result.group(1)
             digito_ingresado = match_result.group(3)
 
-        self.base = RutBase(self.cadena_base, self.cadena_rut)
+        self.base = RutBase(self.cadena_base, self.cadena_rut, self.validador)
         self.digito_verificador = calcular_digito_verificador(self.base.base)
         self.validador.validar_digito_verificador(
             digito_ingresado, self.digito_verificador
