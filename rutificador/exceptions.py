@@ -1,4 +1,5 @@
 """Jerarquía de excepciones personalizadas para Rutificador."""
+
 import logging
 from typing import Any, Optional
 
