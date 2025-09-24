@@ -13,6 +13,7 @@ from rutificador import (
     Rut,
     calcular_digito_verificador,
     DetalleError,
+    ProcesadorLotesRut,
     __version__,
 )
 from rutificador.formatter import FormateadorCSV
@@ -46,6 +47,15 @@ def test_rut_cache_management():
     Rut.limpiar_cache()
     stats = Rut.estadisticas_cache()
     assert stats["cache_size"] == 0
+
+
+def test_resultado_lote_expone_objetos_cacheados():
+    procesador = ProcesadorLotesRut()
+    resultado = procesador.validar_lista_ruts(["12345678-5", "12345678-9"])
+    assert len(resultado.objetos_rut_validos) == 1
+    rut_obj = resultado.objetos_rut_validos[0]
+    assert isinstance(rut_obj, Rut)
+    assert resultado.ruts_validos[0] == str(rut_obj)
 
 
 def test_global_validar_y_formatear():
