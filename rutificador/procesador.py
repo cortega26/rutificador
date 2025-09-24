@@ -44,6 +44,7 @@ class ResultadoLote:
 
     ruts_validos: List[str] = field(default_factory=list)
     ruts_invalidos: List[DetalleError] = field(default_factory=list)
+    objetos_rut_validos: List[Rut] = field(default_factory=list)
     tiempo_procesamiento: float = 0.0
     total_procesados: int = 0
 
@@ -77,10 +78,10 @@ class ProcesadorLotesRut:
         ) -> DetalleError:
             return DetalleError(rut=str(cadena), codigo=codigo, mensaje=str(exc))
 
-        def crear_rut(cadena: str) -> Tuple[bool, Union[str, DetalleError]]:
+        def crear_rut(cadena: str) -> Tuple[bool, Union[Rut, DetalleError]]:
             try:
                 rut_obj = Rut(cadena, validador=self.validador)
-                return True, str(rut_obj)
+                return True, rut_obj
             except ErrorRut as exc:
                 return False, construir_detalle_error(cadena, exc.error_code, exc)
             except (ValueError, TypeError) as exc:
@@ -91,14 +92,18 @@ class ProcesadorLotesRut:
                 resultados = list(executor.map(crear_rut, ruts))
             for es_valido, valor in resultados:
                 if es_valido:
-                    resultado.ruts_validos.append(cast(str, valor))
+                    rut_obj = cast(Rut, valor)
+                    resultado.ruts_validos.append(str(rut_obj))
+                    resultado.objetos_rut_validos.append(rut_obj)
                 else:
                     resultado.ruts_invalidos.append(cast(DetalleError, valor))
         else:
             for cadena in ruts:
                 es_valido, valor = crear_rut(cadena)
                 if es_valido:
-                    resultado.ruts_validos.append(cast(str, valor))
+                    rut_obj = cast(Rut, valor)
+                    resultado.ruts_validos.append(str(rut_obj))
+                    resultado.objetos_rut_validos.append(rut_obj)
                 else:
                     resultado.ruts_invalidos.append(cast(DetalleError, valor))
 
@@ -126,21 +131,20 @@ class ProcesadorLotesRut:
         resultado_validacion = self.validar_lista_ruts(ruts, parallel=parallel)
         partes: List[str] = ["RUTs válidos:"]
 
-        def formatear_cadena(cadena: str) -> str:
-            rut_obj = Rut(cadena, validador=self.validador)
+        def formatear_objeto(rut_obj: Rut) -> str:
             return rut_obj.formatear(
                 separador_miles=separador_miles, mayusculas=mayusculas
             )
 
+        objetos_validos = resultado_validacion.objetos_rut_validos
+
         if parallel:
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 ruts_formateados = list(
-                    executor.map(formatear_cadena, resultado_validacion.ruts_validos)
+                    executor.map(formatear_objeto, objetos_validos)
                 )
         else:
-            ruts_formateados = [
-                formatear_cadena(cadena) for cadena in resultado_validacion.ruts_validos
-            ]
+            ruts_formateados = [formatear_objeto(rut) for rut in objetos_validos]
 
         if formato:
             formatter = FabricaFormateadorRut.obtener_formateador(
@@ -256,13 +260,15 @@ def validar_stream_ruts(
         :class:`DetalleError` cuando existe un problema.
     """
 
-    procesador = ProcesadorLotesRut()
+    validador = ValidadorRut()
     for rut in ruts:
-        resultado = procesador.validar_lista_ruts([rut], parallel=False)
-        if resultado.ruts_validos:
-            yield True, resultado.ruts_validos[0]
-        else:
-            yield False, resultado.ruts_invalidos[0]
+        try:
+            rut_obj = Rut(rut, validador=validador)
+            yield True, str(rut_obj)
+        except ErrorRut as exc:
+            yield False, DetalleError(rut=str(rut), codigo=exc.error_code, mensaje=str(exc))
+        except (ValueError, TypeError) as exc:
+            yield False, DetalleError(rut=str(rut), codigo=None, mensaje=str(exc))
 
 
 def formatear_stream_ruts(
@@ -280,16 +286,17 @@ def formatear_stream_ruts(
 
     asegurar_booleano(separador_miles, "separador_miles")
     asegurar_booleano(mayusculas, "mayusculas")
-    procesador = ProcesadorLotesRut()
+    validador = ValidadorRut()
     for rut in ruts:
-        resultado = procesador.validar_lista_ruts([rut], parallel=False)
-        if resultado.ruts_validos:
-            rut_obj = Rut(resultado.ruts_validos[0], validador=procesador.validador)
+        try:
+            rut_obj = Rut(rut, validador=validador)
             yield True, rut_obj.formatear(
                 separador_miles=separador_miles, mayusculas=mayusculas
             )
-        else:
-            yield False, resultado.ruts_invalidos[0]
+        except ErrorRut as exc:
+            yield False, DetalleError(rut=str(rut), codigo=exc.error_code, mensaje=str(exc))
+        except (ValueError, TypeError) as exc:
+            yield False, DetalleError(rut=str(rut), codigo=None, mensaje=str(exc))
 
 
 def evaluar_rendimiento(num_ruts: int = 10000, parallel: bool = True) -> Dict[str, Any]:
