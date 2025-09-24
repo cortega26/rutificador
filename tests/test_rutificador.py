@@ -451,6 +451,7 @@ class TestProcesadorLotesRut:
 
         class EjecutorPrueba:
             """Ejecutor simulado para registrar el parámetro ``max_workers``."""
+
             def __init__(self, max_workers=None):
                 llamados.append(max_workers)
 
@@ -477,6 +478,7 @@ class TestProcesadorLotesRut:
 
         class EjecutorPrueba:
             """Ejecutor simulado que verifica el valor personalizado."""
+
             def __init__(self, max_workers=None):
                 llamados.append(max_workers)
 
