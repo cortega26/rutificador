@@ -12,6 +12,7 @@ from rutificador import (
     evaluar_rendimiento,
     Rut,
     calcular_digito_verificador,
+    DetalleError,
     __version__,
 )
 from rutificador.formatter import FormateadorCSV
@@ -51,11 +52,15 @@ def test_global_validar_y_formatear():
     ruts = ["12345678-5", "12345679-5", "invalid"]
     resultado_validacion = validar_lista_ruts_global(ruts)
     assert "12345678-5" in resultado_validacion["validos"]
-    assert any("invalid" in tup[0] for tup in resultado_validacion["invalidos"])
+    assert any(
+        isinstance(detalle, DetalleError) and "invalid" in detalle.rut
+        for detalle in resultado_validacion["invalidos"]
+    )
 
     texto = formatear_lista_ruts_global(ruts, formato="csv")
     assert "rut" in texto
     assert "12345678-5" in texto
+    assert "[FORMAT_ERROR]" in texto
 
 
 def test_validar_stream_ruts_con_generador():
@@ -64,7 +69,9 @@ def test_validar_stream_ruts_con_generador():
     assert resultados[0] == (True, "12345678-5")
     assert resultados[1] == (True, "12345679-3")
     assert resultados[2][0] is False
-    assert resultados[2][1][0] == "12345678-9"
+    assert isinstance(resultados[2][1], DetalleError)
+    assert resultados[2][1].rut == "12345678-9"
+    assert resultados[2][1].codigo == "DIGIT_ERROR"
 
 
 def test_formatear_stream_ruts_con_generador():
@@ -73,7 +80,9 @@ def test_formatear_stream_ruts_con_generador():
     assert resultados[0] == (True, "12.345.678-5")
     assert resultados[1] == (True, "12.345.679-3")
     assert resultados[2][0] is False
-    assert resultados[2][1][0] == "12345678-9"
+    assert isinstance(resultados[2][1], DetalleError)
+    assert resultados[2][1].rut == "12345678-9"
+    assert resultados[2][1].codigo == "DIGIT_ERROR"
 
 
 def test_configurar_registro():
