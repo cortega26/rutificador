@@ -1,4 +1,4 @@
-pip<25.2  # GHSA-4xh5-x5gv-qwph: evita la regresión de extracción insegura en pip 25.2
+pip>=25.2  # GHSA-4xh5-x5gv-qwph: usar versión corregida disponible en runners
 pytest
 pytest-cov
 black

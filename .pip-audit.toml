@@ -1,0 +1,8 @@
+[tool.pip-audit]
+requirements = ["requirements-dev.txt"]
+format = "json"
+output = "audit-report.json"
+desc = true
+progress-spinner = "off"
+# Nota: `pip` es una herramienta del entorno. Este archivo limita el escaneo a
+# las dependencias del proyecto definidas en desarrollo.

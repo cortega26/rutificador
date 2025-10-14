@@ -247,7 +247,7 @@ $ echo "12345678-5" | rutificador formatear --separador-miles
    source venv/bin/activate  # En Windows use venv\Scripts\activate
 
 3. Actualizar pip a una versión segura y luego instalar las dependencias de desarrollo:
-   python -m pip install --upgrade "pip<25.2"
+   python -m pip install --upgrade "pip>=25.2"
    pip install -r requirements-dev.txt
 
 4. Instalar los ganchos de pre-commit:
@@ -260,12 +260,14 @@ Antes de enviar tus cambios, verifica la calidad del código con:
 pre-commit run --files <archivos>
 pytest
 
-### Notas de validación
+### Notas de validación y seguridad
 
 - La suite incluye pruebas que aseguran el soporte de configuraciones
   personalizadas de `ConfiguracionRut`, incluyendo bases de hasta 9 dígitos,
   tanto para entradas con como sin dígito verificador. Esto evita regresiones
   en escenarios donde se amplía `max_digitos` para integraciones externas.
+- Para detalles del flujo de escaneo y de la gestión temporal del aviso
+  GHSA-4xh5-x5gv-qwph, consulta `SECURITY_SCANNING_NOTES.md`.
 
 ## Problemas o Requerimientos
 
