@@ -38,6 +38,40 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -e .
 
+      - name: Export runtime dependencies for audit
+        run: |
+          python - <<'PY'
+          import pathlib
+          import tomllib
+
+          lock_path = pathlib.Path('poetry.lock')
+          data = tomllib.loads(lock_path.read_text(encoding='utf-8'))
+
+          runtime_requirements: set[str] = set()
+          for package in data.get('package', []):
+            groups = package.get('groups', [])
+            if 'main' not in groups:
+              continue
+
+            markers = package.get('markers')
+            marker_text = ''
+            if isinstance(markers, dict):
+              marker_text = markers.get('main', '') or markers.get('default', '')
+            elif isinstance(markers, str):
+              marker_text = markers
+
+            if marker_text and 'python' not in marker_text:
+              # Skip platform or implementation specific dependencies that cannot
+              # be resolved on the Linux runner.
+              continue
+
+            runtime_requirements.add(f"{package['name']}=={package['version']}")
+
+          output_path = pathlib.Path('requirements-runtime-audit.txt')
+          output_path.write_text('\n'.join(sorted(runtime_requirements)) + ('\n' if runtime_requirements else ''), encoding='utf-8')
+          print(f"Exported {len(runtime_requirements)} runtime dependencies to {output_path}")
+          PY
+
       - name: Run Bandit security linter
         run: |
           bandit -r rutificador/ -f json -o bandit-report.json || true
@@ -48,11 +82,32 @@ jobs:
           safety check --json --output safety-report.json || true
           safety check
 
-      - name: Run pip-audit (project dependencies only)
+      - name: Run pip-audit (installed environment)
+        run: |
+          pip-audit \
+            --format json \
+            --output audit-report-env.json \
+            --desc \
+            --progress-spinner off
+
+      - name: Run pip-audit (runtime lock snapshot)
+        run: |
+          if [ -s requirements-runtime-audit.txt ]; then
+            pip-audit -r requirements-runtime-audit.txt \
+              --format json \
+              --output audit-report-runtime.json \
+              --desc \
+              --progress-spinner off
+          else
+            echo "No runtime dependencies exported from poetry.lock" >&2
+            echo '{"dependencies": []}' > audit-report-runtime.json
+          fi
+
+      - name: Run pip-audit (development requirements)
         run: |
           pip-audit -r requirements-dev.txt \
             --format json \
-            --output audit-report.json \
+            --output audit-report-dev.json \
             --desc \
             --progress-spinner off
 
@@ -64,7 +119,9 @@ jobs:
           path: |
             bandit-report.json
             safety-report.json
-            audit-report.json
+            audit-report-env.json
+            audit-report-runtime.json
+            audit-report-dev.json
 
   dependency-review:
     runs-on: ubuntu-latest

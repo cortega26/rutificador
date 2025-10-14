@@ -1,9 +1,9 @@
 # Notas sobre el flujo de "Security Scanning"
 
 ## Alcance del escaneo
-- `pip-audit` se ejecuta una sola vez y toma como entrada `requirements-dev.txt` mediante la configuración declarada en `.pip-audit.toml`.
-- Con esta configuración, solo se auditan las dependencias del proyecto y no las herramientas globales del runner.
-- El reporte JSON (`audit-report.json`) se publica como artefacto para facilitar la revisión.
+- `pip-audit` se ejecuta tres veces: contra el entorno instalado completo, contra un snapshot derivado de `poetry.lock` (solo dependencias de ejecución) y contra `requirements-dev.txt`.
+- Con este enfoque se cubren tanto las dependencias de ejecución declaradas en `pyproject.toml` —incluso aquellas condicionadas por versión de Python— como las herramientas de desarrollo.
+- Los reportes JSON (`audit-report-env.json`, `audit-report-runtime.json` y `audit-report-dev.json`) se publican como artefactos para facilitar la revisión.
 
 ## Gestión del CVE GHSA-4xh5-x5gv-qwph
 - Los runners vienen con `pip` vulnerable (25.1.1). La solución es actualizar explícitamente a `pip>=25.2`, versión que corrige la alerta.
@@ -12,4 +12,4 @@
 
 ## Próximos pasos
 - Revisar periódicamente las notas de lanzamiento de `pip` y quitar esta sección cuando la versión corregida sea estándar en los runners.
-- Si se migra a otro gestor de dependencias, actualizar `.pip-audit.toml` para que el escaneo siga acotado al árbol del proyecto.
+- Si se migra a otro gestor de dependencias, actualizar `.pip-audit.toml` para mantener la configuración por defecto y revisar los comandos del flujo de trabajo.
