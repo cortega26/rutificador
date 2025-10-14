@@ -12,6 +12,7 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    TypedDict,
     Union,
     cast,
 )
@@ -53,6 +54,13 @@ class ResultadoLote:
         if self.total_procesados == 0:
             return 0.0
         return (len(self.ruts_validos) / self.total_procesados) * 100
+
+
+class ResumenValidacion(TypedDict):
+    """Resumen tipado del resultado de ``validar_lista_ruts``."""
+
+    validos: List[str]
+    invalidos: List[DetalleError]
 
 
 class ProcesadorLotesRut:
@@ -140,9 +148,7 @@ class ProcesadorLotesRut:
 
         if parallel:
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-                ruts_formateados = list(
-                    executor.map(formatear_objeto, objetos_validos)
-                )
+                ruts_formateados = list(executor.map(formatear_objeto, objetos_validos))
         else:
             ruts_formateados = [formatear_objeto(rut) for rut in objetos_validos]
 
@@ -188,7 +194,7 @@ def validar_lista_ruts(
     ruts: Sequence[str],
     parallel: bool = False,
     max_workers: Optional[int] = None,
-) -> Dict[str, List[Union[str, DetalleError]]]:
+) -> ResumenValidacion:
     """Valida una secuencia de RUTs utilizando ``ProcesadorLotesRut``.
 
     Args:
@@ -266,7 +272,9 @@ def validar_stream_ruts(
             rut_obj = Rut(rut, validador=validador)
             yield True, str(rut_obj)
         except ErrorRut as exc:
-            yield False, DetalleError(rut=str(rut), codigo=exc.error_code, mensaje=str(exc))
+            yield False, DetalleError(
+                rut=str(rut), codigo=exc.error_code, mensaje=str(exc)
+            )
         except (ValueError, TypeError) as exc:
             yield False, DetalleError(rut=str(rut), codigo=None, mensaje=str(exc))
 
@@ -294,7 +302,9 @@ def formatear_stream_ruts(
                 separador_miles=separador_miles, mayusculas=mayusculas
             )
         except ErrorRut as exc:
-            yield False, DetalleError(rut=str(rut), codigo=exc.error_code, mensaje=str(exc))
+            yield False, DetalleError(
+                rut=str(rut), codigo=exc.error_code, mensaje=str(exc)
+            )
         except (ValueError, TypeError) as exc:
             yield False, DetalleError(rut=str(rut), codigo=None, mensaje=str(exc))
 
