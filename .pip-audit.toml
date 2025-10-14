@@ -1,8 +1,8 @@
 [tool.pip-audit]
-requirements = ["requirements-dev.txt"]
 format = "json"
-output = "audit-report.json"
+output = "audit-report-env.json"
 desc = true
 progress-spinner = "off"
-# Nota: `pip` es una herramienta del entorno. Este archivo limita el escaneo a
-# las dependencias del proyecto definidas en desarrollo.
+# Nota: el flujo de CI ejecuta auditorías separadas para el entorno instalado,
+# para los paquetes exportados desde `poetry.lock` y para `requirements-dev.txt`;
+# este archivo define la configuración por defecto al auditar el entorno activo.
