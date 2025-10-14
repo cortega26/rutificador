@@ -246,7 +246,8 @@ $ echo "12345678-5" | rutificador formatear --separador-miles
    python -m venv venv
    source venv/bin/activate  # En Windows use venv\Scripts\activate
 
-3. Instalar las dependencias de desarrollo:
+3. Actualizar pip a una versión segura y luego instalar las dependencias de desarrollo:
+   python -m pip install --upgrade "pip<25.2"
    pip install -r requirements-dev.txt
 
 4. Instalar los ganchos de pre-commit:
