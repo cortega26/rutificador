@@ -2,9 +2,9 @@ name: Security Scanning
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   schedule:
     # Run security scans weekly on Mondays at 2 AM UTC
     - cron: '0 2 * * 1'
@@ -12,53 +12,59 @@ on:
 jobs:
   security:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements-dev.txt
+            poetry.lock
 
-    - name: Install security scanning tools
-      run: |
-        python -m pip install --upgrade "pip<25.2"
-        pip install bandit safety pip-audit
+      - name: Upgrade pip and install security tooling
+        run: |
+          python -m pip install --upgrade "pip>=25.2"
+          pip --version
+          pip install bandit safety pip-audit
+          pip-audit --version
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements-dev.txt
-        pip install -e .
+      - name: Install project dependencies
+        run: |
+          pip install -r requirements-dev.txt
+          pip install -e .
 
-    - name: Run Bandit security linter
-      run: |
-        bandit -r rutificador/ -f json -o bandit-report.json || true
-        bandit -r rutificador/ --severity-level medium --confidence-level medium
+      - name: Run Bandit security linter
+        run: |
+          bandit -r rutificador/ -f json -o bandit-report.json || true
+          bandit -r rutificador/ --severity-level medium --confidence-level medium
 
-    - name: Run Safety check for known vulnerabilities
-      run: |
-        safety check --json --output safety-report.json || true
-        safety check
+      - name: Run Safety check for known vulnerabilities
+        run: |
+          safety check --json --output safety-report.json || true
+          safety check
 
-    - name: Run pip-audit for dependency vulnerabilities
-      run: |
-        pip-audit --desc --output audit-report.json --format json || true
-        pip-audit --desc
+      - name: Run pip-audit (project dependencies only)
+        run: |
+          pip-audit -r requirements-dev.txt \
+            --format json \
+            --output audit-report.json \
+            --desc \
+            --progress-spinner off
 
-    - name: Upload security reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: security-reports-${{ matrix.python-version }}
-        path: |
-          bandit-report.json
-          safety-report.json
-          audit-report.json
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+            audit-report.json
 
   dependency-review:
     runs-on: ubuntu-latest
