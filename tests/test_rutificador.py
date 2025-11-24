@@ -161,6 +161,14 @@ class TestValidadorRut:
         with pytest.raises(RutInvalidoError):
             validador.validar_base(base, rut_original)
 
+    def test_validar_base_respeta_min_digitos(self):
+        """Verifica que se aplique la longitud mínima configurada."""
+        configuracion = ConfiguracionRut(min_digitos=2, max_digitos=5)
+        validador = ValidadorRut(configuracion=configuracion)
+        with pytest.raises(RutInvalidoError):
+            validador.validar_base("1", "1")
+        assert validador.validar_base("12", "12") == "12"
+
     def test_validar_digito_verificador_correcto(self):
         """Prueba validación de dígito verificador correcto."""
         # No debería lanzar excepción
@@ -451,6 +459,56 @@ class TestProcesadorLotesRut:
         assert seq.ruts_validos == par.ruts_validos
         assert seq.ruts_invalidos == par.ruts_invalidos
 
+    def test_formatear_lista_ruts_respeta_backend_process(self, monkeypatch):
+        """El formateo usa el backend configurado (procesos en plataformas soportadas)."""
+        llamados = []
+
+        class EjecutorPrueba:
+            def __init__(self, max_workers=None):
+                llamados.append(max_workers)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                return False
+
+            def map(self, funcion, iterable):
+                return list(funcion(item) for item in iterable)
+
+        monkeypatch.setattr("rutificador.procesador.sys.platform", "linux")
+        monkeypatch.setattr(
+            "rutificador.procesador.ProcessPoolExecutor", EjecutorPrueba
+        )
+        processor = ProcesadorLotesRut(parallel_backend="process")
+        processor.formatear_lista_ruts(["12345678-5"], parallel=True)
+        assert llamados == [None]
+
+    def test_paralelo_con_procesos_cae_a_threads_en_windows(self, monkeypatch):
+        """En Windows se cambia a hilos para evitar fallos de inicialización."""
+        llamados = []
+
+        class ThreadExecutorPrueba:
+            def __init__(self, max_workers=None):
+                llamados.append(max_workers)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                return False
+
+            def map(self, funcion, iterable):
+                return list(funcion(item) for item in iterable)
+
+        monkeypatch.setattr("rutificador.procesador.sys.platform", "win32")
+        monkeypatch.setattr(
+            "rutificador.procesador.ThreadPoolExecutor", ThreadExecutorPrueba
+        )
+        processor = ProcesadorLotesRut(parallel_backend="process")
+        processor.validar_lista_ruts(["12345678-5"], parallel=True)
+        assert llamados == [None]
+
     def test_formatear_lista_ruts_parallel(self):
         """Verifica que el formateo paralelo preserve el orden."""
         ruts = ["12345678-5", "98765432-5", "1-9", "123"]
@@ -492,6 +550,18 @@ class TestProcesadorLotesRut:
         )
         assert detalle.formatear(separador_miles=True) == "12.345.678-5"
         assert detalle.formatear(mayusculas=True) == "12345678-5".upper()
+
+    def test_validar_rut_local_propaga_excepciones_internas(self, monkeypatch):
+        """Errores internos no se silencian como DetalleError."""
+        import rutificador.procesador as proc
+
+        class RutFalla:
+            def __init__(self, rut, validador=None):
+                raise ValueError("fallo interno")
+
+        monkeypatch.setattr(proc, "Rut", RutFalla)
+        with pytest.raises(ValueError):
+            proc._validar_rut_local("12345678-5", ValidadorRut())
 
     def test_executor_por_defecto_utiliza_processpool(self, monkeypatch):
         """El backend por defecto utiliza procesos para tareas paralelas."""

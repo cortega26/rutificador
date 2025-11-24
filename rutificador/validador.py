@@ -76,6 +76,13 @@ class ValidadorRut:
             )
 
         base_normalizada = normalizar_base_rut(base)
+        if len(base_normalizada) < self.configuracion.min_digitos:
+            raise ErrorLongitudRut(
+                rut_original,
+                len(base_normalizada),
+                self.configuracion.min_digitos,
+                minimo=True,
+            )
         if len(base_normalizada) > self.configuracion.max_digitos:
             raise ErrorLongitudRut(
                 rut_original, len(base_normalizada), self.configuracion.max_digitos

@@ -52,14 +52,32 @@ class ErrorDigitoRut(ErrorValidacionRut):
 class ErrorLongitudRut(ErrorValidacionRut):
     """Se lanza cuando la longitud del RUT es inválida."""
 
-    def __init__(self, valor_rut: str, longitud: int, longitud_maxima: int) -> None:
+    def __init__(
+        self,
+        valor_rut: str,
+        longitud: int,
+        limite: int,
+        minimo: bool = False,
+    ) -> None:
+        if minimo:
+            mensaje = (
+                f"El RUT '{valor_rut}' es menor a la longitud mínima: "
+                f"{longitud} < {limite}"
+            )
+            contexto = {"min_length": limite}
+        else:
+            mensaje = (
+                f"El RUT '{valor_rut}' excede la longitud máxima: "
+                f"{longitud} > {limite}"
+            )
+            contexto = {"max_length": limite}
+
         super().__init__(
-            f"El RUT '{valor_rut}' excede la longitud máxima: "
-            f"{longitud} > {longitud_maxima}",
+            mensaje,
             error_code="LENGTH_ERROR",
             rut_value=valor_rut,
             length=longitud,
-            max_length=longitud_maxima,
+            **contexto,
         )
 
 

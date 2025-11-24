@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import (
@@ -121,11 +122,13 @@ class ProcesadorLotesRut:
         self.parallel_backend = parallel_backend
 
     def _executor_class(self):
-        return (
-            ProcessPoolExecutor
-            if self.parallel_backend == "process"
-            else ThreadPoolExecutor
-        )
+        if self.parallel_backend == "process" and sys.platform == "win32":
+            logger.warning(
+                "Procesamiento en paralelo con procesos no está soportado en Windows; "
+                "usando ThreadPoolExecutor"
+            )
+            return ThreadPoolExecutor
+        return ProcessPoolExecutor if self.parallel_backend == "process" else ThreadPoolExecutor
 
     @monitor_de_rendimiento
     def validar_lista_ruts(
@@ -196,7 +199,8 @@ class ProcesadorLotesRut:
             )
 
         if parallel:
-            with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            executor_cls = self._executor_class()
+            with executor_cls(max_workers=self.max_workers) as executor:
                 ruts_formateados = list(executor.map(aplicar_formato, fuentes))
         else:
             ruts_formateados = [aplicar_formato(item) for item in fuentes]
@@ -361,13 +365,9 @@ def _validar_rut_local(
             mensaje=str(exc),
             duracion=time.perf_counter() - inicio,
         )
-    except (ValueError, TypeError) as exc:
-        return False, DetalleError(
-            rut=str(cadena),
-            codigo=None,
-            mensaje=str(exc),
-            duracion=time.perf_counter() - inicio,
-        )
+    except Exception:
+        # Re-lanzamos para evitar silenciar fallos de programación o configuraciones corruptas
+        raise
 
 
 def _validar_rut_en_proceso(
