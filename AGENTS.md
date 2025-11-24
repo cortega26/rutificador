@@ -129,6 +129,7 @@ def test_validacion_rut(entrada, esperado):
 
 ## 9. Documentación y Control de Cambios
 - Actualizar `README` o guías si se añaden flags, scripts o procesos.
+- Siempre que se libere o se suban cambios de código, incrementar la versión en `rutificador/version.py`; el CI de PyPI rechaza publicar versiones repetidas.
 - Las entradas de `CHANGELOG.md` deben incluir etiquetas `[SECURITY]`, `[PERF]`, `[BREAKING]` según corresponda.
 - Para decisiones arquitectónicas, crear/editar ADR con: contexto, opciones, decisión, consecuencias.
 - Mantener referencias a requisitos regulatorios cumplidos (ej. “Cumple GDPR Art. 32 mediante cifrado at-rest”).  
