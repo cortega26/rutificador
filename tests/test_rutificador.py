@@ -5,6 +5,7 @@ from typing import List
 
 import pytest
 
+import rutificador.procesador as proc
 from rutificador import (
     Rut,
     RutBase,
@@ -464,6 +465,8 @@ class TestProcesadorLotesRut:
         llamados = []
 
         class EjecutorPrueba:
+            """Ejecutor simulado para validar el backend de procesos."""
+
             def __init__(self, max_workers=None):
                 llamados.append(max_workers)
 
@@ -489,6 +492,8 @@ class TestProcesadorLotesRut:
         llamados = []
 
         class ThreadExecutorPrueba:
+            """Ejecutor simulado para validar el backend de hilos en Windows."""
+
             def __init__(self, max_workers=None):
                 llamados.append(max_workers)
 
@@ -553,15 +558,15 @@ class TestProcesadorLotesRut:
 
     def test_validar_rut_local_propaga_excepciones_internas(self, monkeypatch):
         """Errores internos no se silencian como DetalleError."""
-        import rutificador.procesador as proc
+        class RutFalla:  # pylint: disable=too-few-public-methods
+            """Simula un RUT que falla durante la inicialización."""
 
-        class RutFalla:
             def __init__(self, rut, validador=None):
                 raise ValueError("fallo interno")
 
         monkeypatch.setattr(proc, "Rut", RutFalla)
         with pytest.raises(ValueError):
-            proc._validar_rut_local("12345678-5", ValidadorRut())
+            proc._validar_rut_local("12345678-5", ValidadorRut())  # pylint: disable=protected-access
 
     def test_executor_por_defecto_utiliza_processpool(self, monkeypatch):
         """El backend por defecto utiliza procesos para tareas paralelas."""

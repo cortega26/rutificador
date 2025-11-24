@@ -194,11 +194,6 @@ class ProcesadorLotesRut:
                 for cadena in resultado_validacion.ruts_validos
             ]
 
-        def aplicar_formato(detalle: RutProcesado) -> str:
-            return detalle.formatear(
-                separador_miles=separador_miles, mayusculas=mayusculas
-            )
-
         formateador_detalle = partial(
             _formatear_detalle,
             separador_miles=separador_miles,
@@ -372,9 +367,6 @@ def _validar_rut_local(
             mensaje=str(exc),
             duracion=time.perf_counter() - inicio,
         )
-    except Exception:
-        # Re-lanzamos para evitar silenciar fallos de programación o configuraciones corruptas
-        raise
 
 
 def _validar_rut_en_proceso(
