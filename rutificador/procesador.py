@@ -46,6 +46,7 @@ class ResultadoLote:
     ruts_invalidos: List[DetalleError] = field(default_factory=list)
     tiempo_procesamiento: float = 0.0
     total_procesados: int = 0
+    objetos_rut: List[Rut] = field(default_factory=list, repr=False)
 
     @property
     def tasa_exito(self) -> float:
@@ -67,7 +68,7 @@ class ProcesadorLotesRut:
 
     @monitor_de_rendimiento
     def validar_lista_ruts(
-        self, ruts: Sequence[str], parallel: bool = False
+        self, ruts: Sequence[str], parallel: bool = False, preservar_objetos: bool = False
     ) -> ResultadoLote:
         inicio = time.perf_counter()
         resultado = ResultadoLote()
@@ -77,10 +78,10 @@ class ProcesadorLotesRut:
         ) -> DetalleError:
             return DetalleError(rut=str(cadena), codigo=codigo, mensaje=str(exc))
 
-        def crear_rut(cadena: str) -> Tuple[bool, Union[str, DetalleError]]:
+        def crear_rut(cadena: str) -> Tuple[bool, Union[Rut, DetalleError]]:
             try:
                 rut_obj = Rut(cadena, validador=self.validador)
-                return True, str(rut_obj)
+                return True, rut_obj
             except ErrorRut as exc:
                 return False, construir_detalle_error(cadena, exc.error_code, exc)
             except (ValueError, TypeError) as exc:
@@ -91,14 +92,20 @@ class ProcesadorLotesRut:
                 resultados = list(executor.map(crear_rut, ruts))
             for es_valido, valor in resultados:
                 if es_valido:
-                    resultado.ruts_validos.append(cast(str, valor))
+                    rut_obj = cast(Rut, valor)
+                    resultado.ruts_validos.append(str(rut_obj))
+                    if preservar_objetos:
+                        resultado.objetos_rut.append(rut_obj)
                 else:
                     resultado.ruts_invalidos.append(cast(DetalleError, valor))
         else:
             for cadena in ruts:
                 es_valido, valor = crear_rut(cadena)
                 if es_valido:
-                    resultado.ruts_validos.append(cast(str, valor))
+                    rut_obj = cast(Rut, valor)
+                    resultado.ruts_validos.append(str(rut_obj))
+                    if preservar_objetos:
+                        resultado.objetos_rut.append(rut_obj)
                 else:
                     resultado.ruts_invalidos.append(cast(DetalleError, valor))
 
@@ -123,11 +130,21 @@ class ProcesadorLotesRut:
         asegurar_booleano(separador_miles, "separador_miles")
         asegurar_booleano(mayusculas, "mayusculas")
 
-        resultado_validacion = self.validar_lista_ruts(ruts, parallel=parallel)
+        resultado_validacion = self.validar_lista_ruts(
+            ruts, parallel=parallel, preservar_objetos=True
+        )
         partes: List[str] = ["RUTs válidos:"]
 
-        def formatear_cadena(cadena: str) -> str:
-            rut_obj = Rut(cadena, validador=self.validador)
+        fuentes = (
+            resultado_validacion.objetos_rut
+            if resultado_validacion.objetos_rut
+            else [
+                Rut(cadena, validador=self.validador)
+                for cadena in resultado_validacion.ruts_validos
+            ]
+        )
+
+        def aplicar_formato(rut_obj: Rut) -> str:
             return rut_obj.formatear(
                 separador_miles=separador_miles, mayusculas=mayusculas
             )
@@ -135,12 +152,10 @@ class ProcesadorLotesRut:
         if parallel:
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 ruts_formateados = list(
-                    executor.map(formatear_cadena, resultado_validacion.ruts_validos)
+                    executor.map(aplicar_formato, fuentes)
                 )
         else:
-            ruts_formateados = [
-                formatear_cadena(cadena) for cadena in resultado_validacion.ruts_validos
-            ]
+            ruts_formateados = [aplicar_formato(rut_obj) for rut_obj in fuentes]
 
         if formato:
             formatter = FabricaFormateadorRut.obtener_formateador(
@@ -282,10 +297,11 @@ def formatear_stream_ruts(
     asegurar_booleano(mayusculas, "mayusculas")
     procesador = ProcesadorLotesRut()
     for rut in ruts:
-        resultado = procesador.validar_lista_ruts([rut], parallel=False)
-        if resultado.ruts_validos:
-            rut_obj = Rut(resultado.ruts_validos[0], validador=procesador.validador)
-            yield True, rut_obj.formatear(
+        resultado = procesador.validar_lista_ruts(
+            [rut], parallel=False, preservar_objetos=True
+        )
+        if resultado.objetos_rut:
+            yield True, resultado.objetos_rut[0].formatear(
                 separador_miles=separador_miles, mayusculas=mayusculas
             )
         else:

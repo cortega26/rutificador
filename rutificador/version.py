@@ -1,11 +1,11 @@
 """Módulo que define la versión de Rutificador."""
 
-from typing import Dict
+from typing import Dict, List, Union
 
-__version__ = "1.0.16"
+__version__ = "1.0.17"
 
 
-def obtener_informacion_version() -> Dict[str, str]:
+def obtener_informacion_version() -> Dict[str, Union[str, List[str]]]:
     """Retorna metadatos de la versión actual."""
     return {
         "version": __version__,

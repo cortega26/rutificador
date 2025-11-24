@@ -1,0 +1,235 @@
+================================================================================
+1) INFORMACIÓN BÁSICA DEL SISTEMA
+================================================================================
+Fecha/hora: 2025-11-24T10:30:32.094643
+Python     : 3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]
+Ejecutable : C:\Users\corte\VS Code Projects\rutificador\.venv\Scripts\python.exe
+Platform   : Windows-11-10.0.26220-SP0
+OS name    : nt
+Architecture: ('64bit', 'WindowsPE')
+
+================================================================================
+2) VARIABLES DE ENTORNO CRÍTICAS
+================================================================================
+COMSPEC = 'C:\\WINDOWS\\system32\\cmd.exe'
+SystemRoot = 'C:\\WINDOWS'
+windir = 'C:\\WINDOWS'
+PATH = 'C:\\Users\\corte\\OneDrive\\Python scripts\\chile-rut\\.venv\\Scripts;C:\\Users\\corte\\bin;C:\\Program Files\\Git\\mingw64\\bin;C:\\Program Files\\Git\\usr\\local\\bin;C:\\Program Files\\Git\\usr\\bin;C:\\Program Files\\Git\\usr\\bin;C:\\Program Files\\Git\\mingw64\\bin;C:\\Program Files\\Git\\usr\\bin;C:\\Users\\corte\\bin;C:\\Users\\corte\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand;C:\\Users\\corte\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli;C:\\Program Files (x86)\\VMware\\VMware Workstation\\bin;C:\\Python312\\Scripts;C:\\Python312;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0;C:\\WINDOWS\\System32\\OpenSSH;C:\\Program Files\\Calibre2;C:\\Program Files\\GitHub CLI;C:\\ProgramData\\chocolatey\\bin;C:\\Program Files\\MySQL\\MySQL Shell 8.0\\bin;C:\\Users\\corte\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\corte\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\Scripts;C:\\Users\\corte\\AppData\\Roaming\\npm;C:\\Users\\corte\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Program Files\\Tesseract-OCR;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0;C:\\WINDOWS\\System32\\OpenSSH;C:\\Program Files\\nodejs;C:\\Program Files\\Git\\cmd;C:\\Users\\corte\\AppData\\Local\\Programs\\Python\\Python314\\Scripts;C:\\Users\\corte\\AppData\\Local\\Programs\\Python\\Python314;C:\\Program Files\\MySQL\\MySQL Shell 8.0\\bin;C:\\Users\\corte\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\corte\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\Scripts;C:\\Users\\corte\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\corte\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Program Files\\smartmontools\\bin;C:\\Users\\corte\\AppData\\Roaming\\npm;C:\\Users\\corte\\.vscode\\extensions\\ms-python.debugpy-2025.16.0-win32-x64\\bundled\\scripts\\noConfigScripts;C:\\Program Files\\Git\\usr\\bin\\vendor_perl;C:\\Program Files\\Git\\usr\\bin\\core_perl'
+MSYS = None
+MSYSTEM = 'MINGW64'
+MSYS2_PATH_TYPE = None
+WSLENV = None
+HOME = 'C:\\Users\\corte'
+USERPROFILE = 'C:\\Users\\corte'
+SHELL = 'C:\\Program Files\\Git\\usr\\bin\\bash.exe'
+TERM = 'xterm-256color'
+
+PATH length: 1999 chars
+Número de entradas en PATH: 47
+Primeras 47 entradas de PATH:
+  [00] C:\Users\corte\OneDrive\Python scripts\chile-rut\.venv\Scripts
+  [01] C:\Users\corte\bin
+  [02] C:\Program Files\Git\mingw64\bin
+  [03] C:\Program Files\Git\usr\local\bin
+  [04] C:\Program Files\Git\usr\bin
+  [05] C:\Program Files\Git\usr\bin
+  [06] C:\Program Files\Git\mingw64\bin
+  [07] C:\Program Files\Git\usr\bin
+  [08] C:\Users\corte\bin
+  [09] C:\Users\corte\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand
+  [10] C:\Users\corte\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli
+  [11] C:\Program Files (x86)\VMware\VMware Workstation\bin
+  [12] C:\Python312\Scripts
+  [13] C:\Python312
+  [14] C:\WINDOWS\system32
+  [15] C:\WINDOWS
+  [16] C:\WINDOWS\System32\Wbem
+  [17] C:\WINDOWS\System32\WindowsPowerShell\v1.0
+  [18] C:\WINDOWS\System32\OpenSSH
+  [19] C:\Program Files\Calibre2
+  [20] C:\Program Files\GitHub CLI
+  [21] C:\ProgramData\chocolatey\bin
+  [22] C:\Program Files\MySQL\MySQL Shell 8.0\bin
+  [23] C:\Users\corte\AppData\Local\Microsoft\WindowsApps
+  [24] C:\Users\corte\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\Scripts
+  [25] C:\Users\corte\AppData\Roaming\npm
+  [26] C:\Users\corte\AppData\Local\Programs\Microsoft VS Code\bin
+  [27] C:\Program Files\Tesseract-OCR
+  [28] C:\WINDOWS\system32
+  [29] C:\WINDOWS
+  [30] C:\WINDOWS\System32\Wbem
+  [31] C:\WINDOWS\System32\WindowsPowerShell\v1.0
+  [32] C:\WINDOWS\System32\OpenSSH
+  [33] C:\Program Files\nodejs
+  [34] C:\Program Files\Git\cmd
+  [35] C:\Users\corte\AppData\Local\Programs\Python\Python314\Scripts
+  [36] C:\Users\corte\AppData\Local\Programs\Python\Python314
+  [37] C:\Program Files\MySQL\MySQL Shell 8.0\bin
+  [38] C:\Users\corte\AppData\Local\Microsoft\WindowsApps
+  [39] C:\Users\corte\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\Scripts
+  [40] C:\Users\corte\AppData\Local\Microsoft\WindowsApps
+  [41] C:\Users\corte\AppData\Local\Programs\Microsoft VS Code\bin
+  [42] C:\Program Files\smartmontools\bin
+  [43] C:\Users\corte\AppData\Roaming\npm
+  [44] C:\Users\corte\.vscode\extensions\ms-python.debugpy-2025.16.0-win32-x64\bundled\scripts\noConfigScripts
+  [45] C:\Program Files\Git\usr\bin\vendor_perl
+  [46] C:\Program Files\Git\usr\bin\core_perl
+
+Entradas de PATH que parecen MSYS/Git/WSL:
+  - C:\Program Files\Git\mingw64\bin
+  - C:\Program Files\Git\usr\local\bin
+  - C:\Program Files\Git\usr\bin
+  - C:\Program Files\Git\usr\bin
+  - C:\Program Files\Git\mingw64\bin
+  - C:\Program Files\Git\usr\bin
+  - C:\Users\corte\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand
+  - C:\Users\corte\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli
+  - C:\Program Files\GitHub CLI
+  - C:\Program Files\Git\cmd
+  - C:\Program Files\Git\usr\bin\vendor_perl
+  - C:\Program Files\Git\usr\bin\core_perl
+
+================================================================================
+3) LOCALIZACIÓN DE SHELLS (which / where)
+================================================================================
+shutil.which('cmd.exe')        = C:\WINDOWS\system32\cmd.exe
+shutil.which('powershell.exe') = C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe
+
+Salida de 'where cmd' y 'where powershell' vía cmd.exe:
+--- TEST: cmd.exe /C where cmd ---
+Comando: 'cmd.exe' '/C' 'where cmd'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  C:\Windows\System32\cmd.exe
+--- STDERR ---
+  <vacío>
+
+--- TEST: cmd.exe /C where powershell ---
+Comando: 'cmd.exe' '/C' 'where powershell'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+--- STDERR ---
+  <vacío>
+
+
+================================================================================
+4) PRUEBAS CON CMD.EXE Y POWERSHELL
+================================================================================
+COMSPEC usado para tests          : 'C:\\WINDOWS\\system32\\cmd.exe'
+Ruta calculada System32\cmd.exe   : 'C:\\WINDOWS\\System32\\cmd.exe'
+Ruta calculada System32\powershell: 'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'
+
+--- TEST: COMSPEC /C echo ok ---
+Comando: 'C:\\WINDOWS\\system32\\cmd.exe' '/C' 'echo ok'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  ok
+--- STDERR ---
+  <vacío>
+
+--- TEST: COMSPEC /C ver ---
+Comando: 'C:\\WINDOWS\\system32\\cmd.exe' '/C' 'ver'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+
+  Microsoft Windows [Versión 10.0.26220.7271]
+--- STDERR ---
+  <vacío>
+
+--- TEST: COMSPEC /C where cmd ---
+Comando: 'C:\\WINDOWS\\system32\\cmd.exe' '/C' 'where cmd'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  C:\Windows\System32\cmd.exe
+--- STDERR ---
+  <vacío>
+
+--- TEST: COMSPEC /C where powershell ---
+Comando: 'C:\\WINDOWS\\system32\\cmd.exe' '/C' 'where powershell'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+--- STDERR ---
+  <vacío>
+
+--- TEST: COMSPEC /C echo %COMSPEC% ---
+Comando: 'C:\\WINDOWS\\system32\\cmd.exe' '/C' 'echo %COMSPEC%'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  C:\WINDOWS\system32\cmd.exe
+--- STDERR ---
+  <vacío>
+
+--- TEST: COMSPEC /C echo %SystemRoot% ---
+Comando: 'C:\\WINDOWS\\system32\\cmd.exe' '/C' 'echo %SystemRoot%'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  C:\WINDOWS
+--- STDERR ---
+  <vacío>
+
+--- TEST: COMSPEC /C echo %windir% ---
+Comando: 'C:\\WINDOWS\\system32\\cmd.exe' '/C' 'echo %windir%'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  C:\WINDOWS
+--- STDERR ---
+  <vacío>
+
+--- TEST: System32\cmd.exe /C echo ok ---
+Comando: 'C:\\WINDOWS\\System32\\cmd.exe' '/C' 'echo ok'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  ok
+--- STDERR ---
+  <vacío>
+
+--- TEST: System32\cmd.exe /C ver ---
+Comando: 'C:\\WINDOWS\\System32\\cmd.exe' '/C' 'ver'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+
+  Microsoft Windows [Versión 10.0.26220.7271]
+--- STDERR ---
+  <vacío>
+
+--- TEST: System32\WindowsPowerShell\v1.0\powershell.exe echo ok ---
+Comando: 'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe' '-NoLogo' '-NoProfile' '-Command' 'echo ok'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+  ok
+--- STDERR ---
+  <vacío>
+
+--- TEST: System32\WindowsPowerShell\v1.0\powershell.exe Get-Host ---
+Comando: 'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe' '-NoLogo' '-NoProfile' '-Command' 'Get-Host | Format-List *'
+Return code: 0 (0x00000000)
+--- STDOUT ---
+
+
+  Name             : ConsoleHost
+  Version          : 5.1.26100.7271
+  InstanceId       : f833a16f-5e0d-46f1-a655-c7e073962f87
+  UI               : System.Management.Automation.Internal.Host.InternalHostUserInterface
+  CurrentCulture   : es-CL
+  CurrentUICulture : es-MX
+  PrivateData      : Microsoft.PowerShell.ConsoleHost+ConsoleColorProxy
+  DebuggerEnabled  : True
+  IsRunspacePushed : False
+  Runspace         : System.Management.Automation.Runspaces.LocalRunspace
+--- STDERR ---
+  <vacío>
+
+================================================================================
+5) ANÁLISIS HEURÍSTICO Y POSIBLES PROBLEMAS
+================================================================================
+Se han detectado las siguientes posibles anomalías / puntos a revisar:
+  - La primera entrada de PATH que contiene 'System32' está en posición 14; si hay muchas rutas de MSYS/Git/Cygwin por delante, podría causar conflictos de DLL.
+  - Hay rutas de MSYS/MINGW/Git/Cygwin en PATH antes de System32; esto puede provocar que se carguen DLLs/binaries no estándar antes que los de Windows.
+
+IMPORTANTE: incluso si no se ven problemas evidentes aquí, los tests anteriores pueden mostrar
+códigos de retorno como 0xC0000142 al lanzar cmd.exe/powershell.exe. Revisa especialmente:
+  - Return code de los tests 'COMSPEC /C ...' y 'System32\\cmd.exe /C ...'
+  - Si alguno devuelve 0xC0000142, el problema está en la inicialización de DLLs del proceso hijo.
+

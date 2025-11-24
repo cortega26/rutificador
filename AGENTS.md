@@ -38,9 +38,9 @@
 ## Dynamic Model Selection
 
 ### Task-Appropriate Model Assignment
-- **Complex Architecture/Reasoning**: Use highest-capability model (Claude 4 Opus, GPT-5.1)
+- **Complex Architecture/Reasoning**: Use highest-capability model (Claude 4 Opus, GPT-5.1-Codex-Max)
 - **General Development**: Cost-effective models (GPT-4.1, Claude 4 Sonnet)
-- **Specialized Logic**: Reasoning-optimized models (O3, O4-mini)  
+- **Specialized Logic**: Reasoning-optimized models (O3 or similar newer model)  
 - **Security-Critical**: Models with verified security training
 - **Legacy Codebase**: Models trained on specific language versions/frameworks
 
@@ -48,7 +48,7 @@
 ```yaml
 model_config:
   primary_model: "claude-4-opus@2025-09-01"
-  fallback_models: ["gpt-4.1", "claude-4-sonnet"]
+  fallback_models: ["gpt-5.1", "claude-4-sonnet"]
   determinism:
     seed: 42
     temperature: 0.0-0.1  # 0.0 for code, 0.1 for problem-solving

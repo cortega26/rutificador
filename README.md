@@ -41,6 +41,7 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
 - Manejo de excepciones personalizadas.
 - **Procesamiento de lotes de RUTs:** Permite procesar lotes de RUTs en lugar de hacerlo individualmente, lo que agiliza el trabajo con grandes cantidades de datos.
 - **Separación de resultados:** Los resultados de los lotes se entregan por separado, mostrando RUTs válidos e inválidos, y pueden exportarse en varios formatos, incluidos CSV, XML y JSON.
+- **Validación configurable por instancia:** Cada `Rut` reutiliza el mismo `ValidadorRut` inyectado, respetando configuraciones avanzadas como límites personalizados o modos flexibles.
 - Compatibilidad con Python 3.9 o superior.
 
 ## Instalación
@@ -168,6 +169,8 @@ resultado = processor.formatear_lista_ruts(ruts, formato='json')
 print(resultado)
 ```
 
+Todas las operaciones en lote reutilizan las instancias de `Rut` generadas durante la validación, evitando recalcular cada entrada al momento de formatear o transmitir resultados por streaming. Esto mantiene la coherencia con los validadores personalizados y mejora el rendimiento en conjuntos grandes.
+
 ### Registro y depuración
 
 ```python
@@ -176,6 +179,8 @@ from rutificador import configurar_registro
 
 configurar_registro(level=logging.DEBUG)
 ```
+
+`configurar_registro` prepara un logger dedicado (`rutificador`) sin alterar la configuración global del proyecto que lo consume. Si ya cuentas con tu propio esquema de logging, la función simplemente añade (o reutiliza) un `StreamHandler` exclusivo para la librería, por lo que no interferirá con tus handlers o formatos existentes.
 
 ### Información de versión
 

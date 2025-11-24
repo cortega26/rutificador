@@ -22,10 +22,26 @@ def configurar_registro(
     level: int = logging.WARNING,
     formato: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 ) -> None:
-    """Configura el sistema de registro del módulo."""
-    logging.basicConfig(level=level, format=formato, force=True)
+    """Configura un logger dedicado para la librería sin sobrescribir el global."""
+    logger_principal = logging.getLogger("rutificador")
+    logger_principal.setLevel(level)
+    logger_principal.propagate = False
+
+    formatter = logging.Formatter(formato)
+    handler = next(
+        (h for h in logger_principal.handlers if getattr(h, "_rutificador", False)),
+        None,
+    )
+    if handler is None:
+        handler = logging.StreamHandler()
+        setattr(handler, "_rutificador", True)
+        logger_principal.addHandler(handler)
+    handler.setFormatter(formatter)
+
     logger.setLevel(level)
-    logger.info("Registro configurado al nivel: %s", logging.getLevelName(level))
+    logger_principal.info(
+        "Registro configurado al nivel: %s", logging.getLevelName(level)
+    )
 
 
 def asegurar_cadena_no_vacia(valor: Any, nombre: str) -> str:
