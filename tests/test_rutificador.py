@@ -482,7 +482,7 @@ class TestProcesadorLotesRut:
         )
         processor = ProcesadorLotesRut(parallel_backend="process")
         processor.formatear_lista_ruts(["12345678-5"], parallel=True)
-        assert llamados == [None]
+        assert llamados == [None, None]
 
     def test_paralelo_con_procesos_cae_a_threads_en_windows(self, monkeypatch):
         """En Windows se cambia a hilos para evitar fallos de inicialización."""

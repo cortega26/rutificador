@@ -2,6 +2,7 @@ import logging
 import random
 import time
 import sys
+from functools import partial
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import (
@@ -198,12 +199,18 @@ class ProcesadorLotesRut:
                 separador_miles=separador_miles, mayusculas=mayusculas
             )
 
+        formateador_detalle = partial(
+            _formatear_detalle,
+            separador_miles=separador_miles,
+            mayusculas=mayusculas,
+        )
+
         if parallel:
             executor_cls = self._executor_class()
             with executor_cls(max_workers=self.max_workers) as executor:
-                ruts_formateados = list(executor.map(aplicar_formato, fuentes))
+                ruts_formateados = list(executor.map(formateador_detalle, fuentes))
         else:
-            ruts_formateados = [aplicar_formato(item) for item in fuentes]
+            ruts_formateados = [formateador_detalle(item) for item in fuentes]
 
         if formato:
             formatter = FabricaFormateadorRut.obtener_formateador(
@@ -376,6 +383,15 @@ def _validar_rut_en_proceso(
     cadena, configuracion, modo = payload
     validador = ValidadorRut(configuracion=configuracion, modo=modo)
     return _validar_rut_local(cadena, validador)
+
+def _formatear_detalle(
+    detalle: RutProcesado, separador_miles: bool, mayusculas: bool
+) -> str:
+    """Función separada para permitir pickling en ejecución con procesos."""
+    return detalle.formatear(
+        separador_miles=separador_miles,
+        mayusculas=mayusculas,
+    )
 
 
 __all__ = [
