@@ -109,7 +109,7 @@ class Rut:
         with self._contexto_formateo():
             rut_str = str(self)
             if separador_miles:
-                base_formateada = self._agregar_separador_miles(
+                base_formateada = self.agregar_separador_miles(
                     str(self.base), separador_personalizado
                 )
                 rut_str = f"{base_formateada}-{self.digito_verificador}"
@@ -117,6 +117,11 @@ class Rut:
                 rut_str = rut_str.upper()
             logger.debug("RUT formateado: %s", rut_str)
             return rut_str
+
+    @staticmethod
+    def agregar_separador_miles(numero: str, separador: str = ".") -> str:
+        """Expone un separador de miles público para reutilizar desde otros módulos."""
+        return Rut._agregar_separador_miles(numero, separador)
 
     @staticmethod
     def _agregar_separador_miles(numero: str, separador: str = ".") -> str:

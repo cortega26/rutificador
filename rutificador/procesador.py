@@ -50,7 +50,7 @@ class RutProcesado:
         """Formatea el RUT reutilizando la información ya validada."""
         resultado = self.valor
         if separador_miles:
-            base_formateada = Rut._agregar_separador_miles(
+            base_formateada = Rut.agregar_separador_miles(
                 self.base, separador_personalizado
             )
             resultado = f"{base_formateada}-{self.digito}"

@@ -7,6 +7,7 @@ from .validador import Validador, ValidadorRut, RutValidator
 from .rut import Rut, RutBase, obtener_rut
 from .procesador import (
     DetalleError,
+    RutProcesado,
     ProcesadorLotesRut,
     ResultadoLote,
     formatear_lista_ruts,
@@ -50,6 +51,7 @@ __all__: List[str] = [
     "ValidadorRut",
     "RutValidator",
     "DetalleError",
+    "RutProcesado",
     "ProcesadorLotesRut",
     "ResultadoLote",
     "FabricaFormateadorRut",

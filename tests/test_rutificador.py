@@ -498,6 +498,8 @@ class TestProcesadorLotesRut:
         llamados = []
 
         class EjecutorPrueba:
+            """Ejecutor simulado para validar que se utilice ProcessPoolExecutor."""
+
             def __init__(self, max_workers=None):
                 llamados.append(max_workers)
 
@@ -507,7 +509,7 @@ class TestProcesadorLotesRut:
             def __exit__(self, exc_type, exc_val, exc_tb):
                 return False
 
-            def map(self, funcion, iterable):
+            def map(self, _funcion, iterable):
                 list(iterable)
                 return []
 
@@ -523,6 +525,8 @@ class TestProcesadorLotesRut:
         llamados = []
 
         class EjecutorPrueba:
+            """Ejecutor simulado para validar que se utilice ThreadPoolExecutor."""
+
             def __init__(self, max_workers=None):
                 llamados.append(max_workers)
 
@@ -532,7 +536,7 @@ class TestProcesadorLotesRut:
             def __exit__(self, exc_type, exc_val, exc_tb):
                 return False
 
-            def map(self, funcion, iterable):
+            def map(self, _funcion, _iterable):
                 return []
 
         monkeypatch.setattr(
