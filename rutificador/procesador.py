@@ -68,6 +68,20 @@ class DetalleError:
     mensaje: str
     duracion: float = 0.0
 
+    def __eq__(self, other: object) -> bool:  # pragma: no cover - comparación simple
+        if not isinstance(other, DetalleError):
+            return NotImplemented
+        # Se ignora la duración porque varía entre ejecuciones y backends
+        return (
+            self.rut,
+            self.codigo,
+            self.mensaje,
+        ) == (
+            other.rut,
+            other.codigo,
+            other.mensaje,
+        )
+
 
 @dataclass
 class ResultadoLote:
