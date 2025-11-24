@@ -591,6 +591,7 @@ class TestProcesadorLotesRut:
         monkeypatch.setattr(
             "rutificador.procesador.ProcessPoolExecutor", EjecutorPrueba
         )
+        monkeypatch.setattr("rutificador.procesador.sys.platform", "linux")
         processor = ProcesadorLotesRut()
         processor.validar_lista_ruts([], parallel=True)
         assert llamados == [None]
