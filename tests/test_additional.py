@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 
 from rutificador import (
@@ -11,8 +13,10 @@ from rutificador import (
     configurar_registro,
     evaluar_rendimiento,
     Rut,
+    RutProcesado,
     calcular_digito_verificador,
     DetalleError,
+    ProcesadorLotesRut,
     __version__,
 )
 from rutificador.formatter import FormateadorCSV
@@ -46,6 +50,16 @@ def test_rut_cache_management():
     Rut.limpiar_cache()
     stats = Rut.estadisticas_cache()
     assert stats["cache_size"] == 0
+
+
+def test_resultado_lote_expone_metadatos_cacheados():
+    procesador = ProcesadorLotesRut()
+    resultado = procesador.validar_lista_ruts(["12345678-5", "12345678-9"])
+    assert len(resultado.detalles_validos) == 1
+    detalle = resultado.detalles_validos[0]
+    assert isinstance(detalle, RutProcesado)
+    assert detalle.valor == "12345678-5"
+    assert detalle.base == "12345678"
 
 
 def test_global_validar_y_formatear():
@@ -85,8 +99,11 @@ def test_formatear_stream_ruts_con_generador():
     assert resultados[2][1].codigo == "DIGIT_ERROR"
 
 
-def test_configurar_registro():
-    configurar_registro()
+def test_configurar_registro_acepta_handler():
+    handler = logging.StreamHandler()
+    configurar_registro(handler=handler)
+    logger = logging.getLogger("rutificador")
+    assert handler in logger.handlers
 
 
 def test_evaluar_rendimiento():

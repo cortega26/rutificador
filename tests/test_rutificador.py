@@ -2,13 +2,16 @@
 
 import json
 from typing import List
+
 import pytest
+
 from rutificador import (
     Rut,
     RutBase,
     RutInvalidoError,
     ValidadorRut,
     ProcesadorLotesRut,
+    RutProcesado,
     FabricaFormateadorRut,
     FormateadorCSV,
     FormateadorXML,
@@ -16,6 +19,7 @@ from rutificador import (
     calcular_digito_verificador,
     formatear_lista_ruts,
 )
+from rutificador.config import ConfiguracionRut
 
 # ============================================================================
 # DATOS DE PRUEBA
@@ -346,6 +350,30 @@ class TestRut:
         """Prueba la representación string del RUT."""
         assert str(rut_valido) == "12345678-5"
 
+    def test_rut_respeta_configuracion_personalizada(self):
+        """Permite crear RUTs con configuraciones extendidas de dígitos."""
+
+        configuracion = ConfiguracionRut(max_digitos=9)
+        validador = ValidadorRut(configuracion=configuracion)
+        base_extendida = "123456789"
+        dv = calcular_digito_verificador(base_extendida, configuracion=configuracion)
+
+        rut = Rut(base_extendida, validador=validador)
+
+        assert str(rut) == f"{base_extendida}-{dv}"
+
+    def test_rut_con_digito_usa_configuracion_personalizada(self):
+        """El validador personalizado admite RUTs extendidos con dígito."""
+
+        configuracion = ConfiguracionRut(max_digitos=9)
+        validador = ValidadorRut(configuracion=configuracion)
+        base_extendida = "123456789"
+        dv = calcular_digito_verificador(base_extendida, configuracion=configuracion)
+
+        rut = Rut(f"{base_extendida}-{dv}", validador=validador)
+
+        assert str(rut) == f"{base_extendida}-{dv}"
+
 
 # ============================================================================
 # TESTS PARA RUTBATCHPROCESSOR
@@ -417,7 +445,7 @@ class TestProcesadorLotesRut:
     def test_validar_lista_ruts_parallel(self):
         """Compara resultados en modo secuencial y paralelo."""
         ruts = ["12345678-5", "98765432-1", "1-9", "123"]
-        processor = ProcesadorLotesRut()
+        processor = ProcesadorLotesRut(parallel_backend="thread")
         seq = processor.validar_lista_ruts(ruts, parallel=False)
         par = processor.validar_lista_ruts(ruts, parallel=True)
         assert seq.ruts_validos == par.ruts_validos
@@ -444,13 +472,32 @@ class TestProcesadorLotesRut:
 
         assert extraer_validos(seq) == extraer_validos(par)
 
-    def test_executor_respeta_valor_por_defecto(self, monkeypatch):
-        """El ejecutor debe construirse con ``None`` por defecto."""
+    def test_detalles_validos_incluyen_metadatos(self):
+        """Los resultados conservan información del modo y duración."""
+        processor = ProcesadorLotesRut()
+        resultado = processor.validar_lista_ruts(["12345678-5"])
+        assert resultado.detalles_validos
+        detalle = resultado.detalles_validos[0]
+        assert detalle.valor == "12345678-5"
+        assert detalle.validador_modo in {"estricto", "flexible", "legado"}
+        assert detalle.duracion >= 0.0
 
+    def test_rut_procesado_formatear_respecta_opciones(self):
+        """RutProcesado expone un formateo equivalente a Rut.formatear."""
+        detalle = RutProcesado(
+            valor="12345678-5",
+            base="12345678",
+            digito="5",
+            validador_modo="estricto",
+        )
+        assert detalle.formatear(separador_miles=True) == "12.345.678-5"
+        assert detalle.formatear(mayusculas=True) == "12345678-5".upper()
+
+    def test_executor_por_defecto_utiliza_processpool(self, monkeypatch):
+        """El backend por defecto utiliza procesos para tareas paralelas."""
         llamados = []
 
         class EjecutorPrueba:
-            """Ejecutor simulado para registrar el parámetro ``max_workers``."""
             def __init__(self, max_workers=None):
                 llamados.append(max_workers)
 
@@ -461,22 +508,21 @@ class TestProcesadorLotesRut:
                 return False
 
             def map(self, funcion, iterable):
-                return [funcion(item) for item in iterable]
+                list(iterable)
+                return []
 
-        monkeypatch.setattr("rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba)
-
+        monkeypatch.setattr(
+            "rutificador.procesador.ProcessPoolExecutor", EjecutorPrueba
+        )
         processor = ProcesadorLotesRut()
-        processor.validar_lista_ruts(["12345678-5"], parallel=True)
-
+        processor.validar_lista_ruts([], parallel=True)
         assert llamados == [None]
 
-    def test_executor_usa_max_workers_personalizado(self, monkeypatch):
-        """El ejecutor debe recibir el valor personalizado de ``max_workers``."""
-
+    def test_executor_thread_backend(self, monkeypatch):
+        """El backend de hilos se respeta cuando se solicita explícitamente."""
         llamados = []
 
         class EjecutorPrueba:
-            """Ejecutor simulado que verifica el valor personalizado."""
             def __init__(self, max_workers=None):
                 llamados.append(max_workers)
 
@@ -487,14 +533,14 @@ class TestProcesadorLotesRut:
                 return False
 
             def map(self, funcion, iterable):
-                return [funcion(item) for item in iterable]
+                return []
 
-        monkeypatch.setattr("rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba)
-
-        processor = ProcesadorLotesRut(max_workers=4)
-        processor.formatear_lista_ruts(["12345678-5", "98765432-5"], parallel=True)
-
-        assert llamados and all(valor == 4 for valor in llamados)
+        monkeypatch.setattr(
+            "rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba
+        )
+        processor = ProcesadorLotesRut(max_workers=4, parallel_backend="thread")
+        processor.validar_lista_ruts([], parallel=True)
+        assert llamados == [4]
 
 
 # ============================================================================

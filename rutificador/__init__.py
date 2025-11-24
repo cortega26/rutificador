@@ -1,6 +1,6 @@
 """Rutificador: utilidades para validar y formatear RUTs chilenos."""
 
-from typing import List, Type, Union
+from typing import List
 
 from .version import __version__, obtener_informacion_version
 from .validador import Validador, ValidadorRut, RutValidator
@@ -42,7 +42,7 @@ from .exceptions import (
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
-__all__: List[Union[str, Type]] = [
+__all__: List[str] = [
     "Rut",
     "RutBase",
     "obtener_rut",

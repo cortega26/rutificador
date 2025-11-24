@@ -1,4 +1,5 @@
 """Definiciones de configuración para Rutificador."""
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple

@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any, Dict, Iterator, Optional, Union
+from typing import Any, Iterator, Optional, TypedDict, Union
 
 from .exceptions import ErrorValidacionRut
 from .validador import ValidadorRut
@@ -136,7 +136,7 @@ class Rut:
         logger.info("Caché de RUT limpiada")
 
     @classmethod
-    def estadisticas_cache(cls) -> Dict[str, int]:
+    def estadisticas_cache(cls) -> "EstadisticasCache":
         info = obtener_rut.cache_info()
         return {"cache_size": info.currsize, "max_cache_size": info.maxsize}
 
@@ -147,4 +147,11 @@ def obtener_rut(rut: Union[str, int], validador: Optional[ValidadorRut] = None) 
     return Rut(rut, validador)
 
 
-__all__ = ["Rut", "RutBase", "obtener_rut"]
+__all__ = ["Rut", "RutBase", "obtener_rut", "EstadisticasCache"]
+
+
+class EstadisticasCache(TypedDict):
+    """Estructura del reporte de caché de :func:`obtener_rut`."""
+
+    cache_size: int
+    max_cache_size: Optional[int]

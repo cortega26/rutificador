@@ -4,7 +4,7 @@ import logging
 import time
 from functools import lru_cache, wraps
 from itertools import cycle
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut
 from .exceptions import ErrorValidacionRut
@@ -21,6 +21,7 @@ _PUNTOS_TRADUCCION = str.maketrans("", "", ".")
 def configurar_registro(
     level: int = logging.WARNING,
     formato: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handler: Optional[logging.Handler] = None,
 ) -> None:
     """Configura un logger dedicado para la librería sin sobrescribir el global."""
     logger_principal = logging.getLogger("rutificador")
@@ -28,15 +29,26 @@ def configurar_registro(
     logger_principal.propagate = False
 
     formatter = logging.Formatter(formato)
-    handler = next(
-        (h for h in logger_principal.handlers if getattr(h, "_rutificador", False)),
-        None,
-    )
-    if handler is None:
-        handler = logging.StreamHandler()
+
+    if handler is not None:
+        handler.setFormatter(formatter)
         setattr(handler, "_rutificador", True)
+        logger_principal.handlers = [
+            existente
+            for existente in logger_principal.handlers
+            if not getattr(existente, "_rutificador", False)
+        ]
         logger_principal.addHandler(handler)
-    handler.setFormatter(formatter)
+    else:
+        existente = next(
+            (h for h in logger_principal.handlers if getattr(h, "_rutificador", False)),
+            None,
+        )
+        if existente is None:
+            existente = logging.StreamHandler()
+            setattr(existente, "_rutificador", True)
+            logger_principal.addHandler(existente)
+        existente.setFormatter(formatter)
 
     logger.setLevel(level)
     logger_principal.info(

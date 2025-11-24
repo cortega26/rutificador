@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rutificador"
-version = "1.0.0"
+version = "0.0.0"
 description = "Herramientas para validar, calcular y formatear el Rol Único Tributario (RUT) en Chile, con procesamiento por lotes y salida en múltiples formatos."
 authors = ["Carlos Ortega González <carlosortega77@gmail.com>"]
 license = "MIT"
@@ -24,14 +24,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
     "Topic :: Utilities",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<4.0"
 tomli = { version = "^2.0", python = "<3.11" }
 
 [tool.poetry.dev-dependencies]

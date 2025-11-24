@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 [![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.9--%3C4.0-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Continuous Integration](https://github.com/cortega26/rutificador/actions/workflows/ci.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/ci.yml)
@@ -34,15 +34,13 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
 
 ## Características
 
-- Validación del formato del RUT.
-- Cálculo del dígito verificador del RUT.
-- Formateo del RUT con diferentes opciones (separador de miles, mayúsculas, formato de salida).
-- Validación y formateo de listas de RUTs.
-- Manejo de excepciones personalizadas.
-- **Procesamiento de lotes de RUTs:** Permite procesar lotes de RUTs en lugar de hacerlo individualmente, lo que agiliza el trabajo con grandes cantidades de datos.
-- **Separación de resultados:** Los resultados de los lotes se entregan por separado, mostrando RUTs válidos e inválidos, y pueden exportarse en varios formatos, incluidos CSV, XML y JSON.
-- **Validación configurable por instancia:** Cada `Rut` reutiliza el mismo `ValidadorRut` inyectado, respetando configuraciones avanzadas como límites personalizados o modos flexibles.
-- Compatibilidad con Python 3.9 o superior.
+- Validación de formato y cálculo de dígito verificador.
+- Formateo configurable (separador de miles, mayúsculas, separador personalizado).
+- Procesamiento por lotes con separación de válidos/ inválidos y salida en CSV, XML o JSON.
+- Validación configurable por instancia: cada `Rut` reutiliza el `ValidadorRut` inyectado.
+- Metadatos enriquecidos: cada validación genera un `RutProcesado` con duración y modo de rigurosidad.
+- Paralelismo adaptable en la API (`parallel_backend` por procesos o hilos); la CLI usa el backend predeterminado.
+- Compatibilidad con Python >=3.9 y <4.0.
 
 ## Instalación
 
@@ -164,12 +162,21 @@ print(rut)
 from rutificador import ProcesadorLotesRut
 
 ruts = ['12.345.678-5', '98.765.432-1', '1-9']
-processor = ProcesadorLotesRut()
+processor = ProcesadorLotesRut(parallel_backend="process")
 resultado = processor.formatear_lista_ruts(ruts, formato='json')
 print(resultado)
 ```
 
-Todas las operaciones en lote reutilizan las instancias de `Rut` generadas durante la validación, evitando recalcular cada entrada al momento de formatear o transmitir resultados por streaming. Esto mantiene la coherencia con los validadores personalizados y mejora el rendimiento en conjuntos grandes.
+Todas las operaciones en lote reutilizan las instancias de `Rut` generadas durante la validación, evitando recalcular cada entrada al momento de formatear o transmitir resultados por streaming. Esto mantiene la coherencia con los validadores personalizados y mejora el rendimiento en conjuntos grandes. Para cargas masivas puedes alternar entre `parallel_backend="thread"` (compatible con I/O intensivo) o `parallel_backend="process"` (ideal para CPU-bound).
+
+### CLI con archivos grandes
+
+```bash
+# Procesa un archivo gigantesco mediante streaming
+$ rutificador validar datos/ruts_masivos.txt > ruts_validos.txt
+```
+
+La herramienta lee línea a línea y usa el backend predeterminado; si necesitas seleccionar explícitamente hilos o procesos, hazlo mediante la API (`parallel_backend`) y combina el resultado con tus scripts para generar informes especializados.
 
 ### Registro y depuración
 
@@ -180,7 +187,21 @@ from rutificador import configurar_registro
 configurar_registro(level=logging.DEBUG)
 ```
 
-`configurar_registro` prepara un logger dedicado (`rutificador`) sin alterar la configuración global del proyecto que lo consume. Si ya cuentas con tu propio esquema de logging, la función simplemente añade (o reutiliza) un `StreamHandler` exclusivo para la librería, por lo que no interferirá con tus handlers o formatos existentes.
+`configurar_registro` prepara un logger dedicado (`rutificador`) sin alterar la configuración global del proyecto que lo consume. Si ya cuentas con tu propio esquema de logging puedes pasar cualquier `logging.Handler` personalizado (JSON, Syslog, etc.) mediante el parámetro `handler`, y la función se encargará de integrarlo sin tocar los handlers existentes de tu aplicación:
+
+```python
+import logging
+import json
+from rutificador import configurar_registro
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        return json.dumps({"nivel": record.levelname, "mensaje": record.getMessage()})
+
+handler = logging.StreamHandler()
+handler.setFormatter(JsonFormatter())
+configurar_registro(level=logging.INFO, handler=handler)
+```
 
 ### Información de versión
 
@@ -199,6 +220,28 @@ from rutificador import obtener_informacion_version
 
 info = obtener_informacion_version()
 print(info['version'])
+
+### Acceder a metadatos de validación
+
+```python
+from rutificador import ProcesadorLotesRut
+
+procesador = ProcesadorLotesRut()
+resultado = procesador.validar_lista_ruts(["12.345.678-5"], parallel=False)
+
+detalle = resultado.detalles_validos[0]
+print(detalle.valor)           # 12345678-5
+print(detalle.validador_modo)  # estricto/flexible
+print(detalle.duracion)        # segundos consumidos en la validación
+
+# Errores con código y mensaje
+resultado_error = procesador.validar_lista_ruts(["12345678-9"])
+if resultado_error.ruts_invalidos:
+    problema = resultado_error.ruts_invalidos[0]
+    print(problema.rut, problema.codigo, problema.mensaje)
+```
+
+Los objetos `RutProcesado` permiten instrumentar dashboards o auditorías sin volver a recorrer el lote original.
 ```
 
 ### Evaluar rendimiento
@@ -251,7 +294,8 @@ $ echo "12345678-5" | rutificador formatear --separador-miles
    python -m venv venv
    source venv/bin/activate  # En Windows use venv\Scripts\activate
 
-3. Instalar las dependencias de desarrollo:
+3. Actualizar pip a una versión segura y luego instalar las dependencias de desarrollo:
+   python -m pip install --upgrade "pip>=25.2"
    pip install -r requirements-dev.txt
 
 4. Instalar los ganchos de pre-commit:
@@ -263,6 +307,15 @@ Antes de enviar tus cambios, verifica la calidad del código con:
 
 pre-commit run --files <archivos>
 pytest
+
+### Notas de validación y seguridad
+
+- La suite incluye pruebas que aseguran el soporte de configuraciones
+  personalizadas de `ConfiguracionRut`, incluyendo bases de hasta 9 dígitos,
+  tanto para entradas con como sin dígito verificador. Esto evita regresiones
+  en escenarios donde se amplía `max_digitos` para integraciones externas.
+- Para detalles del flujo de escaneo y de la gestión temporal del aviso
+  GHSA-4xh5-x5gv-qwph, consulta `SECURITY_SCANNING_NOTES.md`.
 
 ## Problemas o Requerimientos
 
