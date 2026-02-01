@@ -1,0 +1,39 @@
+name: version-bump-gate
+
+on:
+  pull_request:
+    branches: ["master", "main"]
+
+jobs:
+  bump_required_if_code_changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detectar cambios y validar bump de versión
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+
+          echo "Base: $BASE"
+          echo "Head: $HEAD"
+
+          CHANGED="$(git diff --name-only "$BASE" "$HEAD")"
+          echo "$CHANGED"
+
+          CODE_CHANGED="$(echo "$CHANGED" | grep -E '^(rutificador/)' || true)"
+          VERSION_CHANGED="$(echo "$CHANGED" | grep -E '^rutificador/version\.py$' || true)"
+
+          if [[ -n "$CODE_CHANGED" && -z "$VERSION_CHANGED" ]]; then
+            echo "::error::Cambios en rutificador/ detectados sin bump en rutificador/version.py"
+            echo "::error::Debes incrementar la versión (y actualizar CHANGELOG.md) para cualquier cambio de código."
+            exit 1
+          fi
+
+          echo "OK: Gate de versionado satisfecho."
