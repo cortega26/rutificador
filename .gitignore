@@ -57,3 +57,10 @@ Thumbs.db
 *.so
 *.dylib
 .coverage
+
+# Basura accidental (expansión literal de variable Windows)
+%SystemDrive%/
+**/%SystemDrive%/
+
+# Diagnósticos y artefactos de agentes
+codex_env_diagnosis_*.txt
