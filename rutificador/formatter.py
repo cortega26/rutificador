@@ -1,3 +1,4 @@
+# SECURITY-CRITICAL
 """Utilidades para formatear listas de números RUT chilenos."""
 
 import csv
