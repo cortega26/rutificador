@@ -42,6 +42,12 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
 - Paralelismo adaptable en la API (`parallel_backend` por procesos o hilos); la CLI usa el backend predeterminado.
 - Compatibilidad con Python >=3.9 y <4.0.
 
+## Alcance y limitaciones
+
+Rutificador **no** verifica la existencia del RUT en registros oficiales ni realiza
+enriquecimiento de identidad. El alcance es validación, normalización y formateo
+según reglas locales.
+
 ## Instalación
 
 Puedes instalar la librería utilizando pip:
@@ -92,6 +98,41 @@ print(rut2.formatear())  # Salida: 12345670-k
 
 # Con separador de miles y en mayúsculas
 print(rut2.formatear(separador_miles=True, mayusculas=True))  # Salida: 12.345.670-K
+```
+
+### Parseo incremental y normalización
+
+```python
+from rutificador import Rut
+from rutificador.config import RigorValidacion
+
+resultado = Rut.parse("12.345.678-5")
+print(resultado.estado)       # valid
+print(resultado.normalizado)  # 12345678-5
+
+normalizado, errores, advertencias = Rut.normalizar(
+    "12 345 678-5", modo=RigorValidacion.FLEXIBLE
+)
+print(normalizado)  # 12345678-5
+```
+
+### Enmascarado y tokenización
+
+```python
+from rutificador import Rut
+
+print(Rut.mask("12.345.678-5", keep=3, char="X"))  # XXXXX678-5
+print(Rut.mask("12.345.678-5", modo="token", clave="<CLAVE>"))  # tok_...
+```
+
+### Streaming con resultados estructurados
+
+```python
+from rutificador import ProcesadorLotesRut
+
+ruts = ["12.345.678-5", "12.345.678-1", "abc"]
+for resultado in ProcesadorLotesRut().stream(ruts):
+    print(resultado.estado, resultado.normalizado)
 ```
 
 ### Validar y formatear una lista de RUTs en diversos formatos
@@ -243,6 +284,39 @@ if resultado_error.ruts_invalidos:
 
 Los objetos `RutProcesado` permiten instrumentar dashboards o auditorías sin volver a recorrer el lote original.
 ```
+
+### Política de errores
+
+Los errores y advertencias tienen códigos estables y severidad explícita:
+
+```python
+from rutificador import Rut
+
+res = Rut.parse("12..345")
+for err in res.errores:
+    print(err.codigo, err.severidad, err.hint)
+```
+
+Resumen de códigos (v1.x):
+
+| Código | Severidad | Descripción |
+|---|---|---|
+| TYPE_ERROR | error | Tipo inválido |
+| EMPTY_RUT | error | Entrada vacía |
+| INVALID_CHARS | error | Caracteres no permitidos |
+| FORMAT_DOTS | error | Separadores de miles inválidos |
+| FORMAT_HYPHEN | error | Guion inválido |
+| LENGTH_MIN | error | Longitud mínima no alcanzada |
+| LENGTH_MAX | error | Longitud máxima excedida |
+| DV_INVALID | error | DV inválido |
+| DV_MISMATCH | error | DV no coincide |
+| MASK_STATE | error | Enmascarado en estado no válido |
+| TOKEN_KEY_REQUIRED | error | Falta clave de tokenización |
+| NORMALIZED_WS | warning | Espacios eliminados |
+| NORMALIZED_DASH | warning | Guion normalizado |
+| NORMALIZED_DOTS | warning | Puntos eliminados |
+| NORMALIZED_DV | warning | DV en minúscula |
+| LEADING_ZEROS | warning | Ceros a la izquierda eliminados |
 
 ### Evaluar rendimiento
 

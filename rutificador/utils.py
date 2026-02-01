@@ -1,3 +1,4 @@
+# SECURITY-CRITICAL
 """Funciones utilitarias para Rutificador."""
 
 import logging

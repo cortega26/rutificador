@@ -2,7 +2,7 @@
 
 from typing import List, TypedDict
 
-__version__ = "1.0.24"
+__version__ = "1.1.0"
 
 
 class InformacionVersion(TypedDict):
@@ -23,13 +23,13 @@ def obtener_informacion_version() -> InformacionVersion:
         "license": "MIT",
         "description": "Librería mejorada para validar y formatear RUT chileno",
         "features": [
-            "High-performance validation with caching",
-            "Parallel batch processing",
-            "Comprehensive error handling",
-            "Multiple output formats",
-            "Configurable validation modes",
-            "Performance monitoring",
-            "Thread-safe operations",
+            "Validación de alto rendimiento con caché",
+            "Procesamiento por lotes en paralelo",
+            "Modelo de errores estructurado",
+            "Múltiples formatos de salida",
+            "Modos de validación configurables",
+            "Monitoreo de rendimiento",
+            "Operaciones seguras en hilos",
         ],
     }
 

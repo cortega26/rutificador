@@ -1,3 +1,4 @@
+# SECURITY-CRITICAL
 import logging
 import random
 import time
@@ -20,6 +21,7 @@ from typing import (
 )
 
 from .config import ConfiguracionRut, RigorValidacion
+from .errores import DetalleError, crear_detalle_error
 from .exceptions import ErrorRut
 from .formatter import FabricaFormateadorRut
 from .utils import (
@@ -28,7 +30,7 @@ from .utils import (
     calcular_digito_verificador,
 )
 from .validador import ValidadorRut
-from .rut import Rut
+from .rut import Rut, ValidacionResultado
 
 logger = logging.getLogger(__name__)
 
@@ -59,30 +61,6 @@ class RutProcesado:
         if mayusculas:
             resultado = resultado.upper()
         return resultado
-
-
-@dataclass
-class DetalleError:
-    """Representa un error asociado a un RUT específico, incluyendo su código."""
-
-    rut: str
-    codigo: Optional[str]
-    mensaje: str
-    duracion: float = 0.0
-
-    def __eq__(self, other: object) -> bool:  # pragma: no cover - comparación simple
-        if not isinstance(other, DetalleError):
-            return NotImplemented
-        # Se ignora la duración porque varía entre ejecuciones y backends
-        return (
-            self.rut,
-            self.codigo,
-            self.mensaje,
-        ) == (
-            other.rut,
-            other.codigo,
-            other.mensaje,
-        )
 
 
 @dataclass
@@ -161,6 +139,15 @@ class ProcesadorLotesRut:
         resultado.total_procesados = len(ruts)
         resultado.tiempo_procesamiento = time.perf_counter() - inicio
         return resultado
+
+    def stream(self, ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:
+        """Procesa RUTs en streaming sin materializar el lote completo."""
+        for rut in ruts:
+            yield Rut.parse(
+                rut,
+                modo=self.validador.modo,
+                configuracion=self.validador.configuracion,
+            )
 
     @monitor_de_rendimiento
     def formatear_lista_ruts(
@@ -285,21 +272,21 @@ def formatear_lista_ruts(
 
 
 def validar_stream_ruts(
-    ruts: Iterable[str],
+    ruts: Iterable[Union[str, int]],
 ) -> Iterator[Tuple[bool, Union[str, DetalleError]]]:
     """Valida RUTs desde cualquier iterable y produce resultados uno a uno."""
 
     procesador = ProcesadorLotesRut()
     for rut in ruts:
-        resultado = procesador.validar_lista_ruts([rut], parallel=False)
-        if resultado.detalles_validos:
-            yield True, resultado.detalles_validos[0].valor
+        es_valido, detalle = _validar_rut_local(rut, procesador.validador)
+        if es_valido:
+            yield True, detalle.valor  # type: ignore[union-attr]
         else:
-            yield False, resultado.ruts_invalidos[0]
+            yield False, detalle
 
 
 def formatear_stream_ruts(
-    ruts: Iterable[str],
+    ruts: Iterable[Union[str, int]],
     separador_miles: bool = False,
     mayusculas: bool = False,
 ) -> Iterator[Tuple[bool, Union[str, DetalleError]]]:
@@ -309,13 +296,13 @@ def formatear_stream_ruts(
     asegurar_booleano(mayusculas, "mayusculas")
     procesador = ProcesadorLotesRut()
     for rut in ruts:
-        resultado = procesador.validar_lista_ruts([rut], parallel=False)
-        if resultado.detalles_validos:
-            yield True, resultado.detalles_validos[0].formatear(
+        es_valido, detalle = _validar_rut_local(rut, procesador.validador)
+        if es_valido:
+            yield True, detalle.formatear(  # type: ignore[union-attr]
                 separador_miles=separador_miles, mayusculas=mayusculas
             )
         else:
-            yield False, resultado.ruts_invalidos[0]
+            yield False, detalle
 
 
 def evaluar_rendimiento(num_ruts: int = 10000, parallel: bool = True) -> Dict[str, Any]:
@@ -361,12 +348,16 @@ def _validar_rut_local(
         )
         return True, detalle
     except ErrorRut as exc:
-        return False, DetalleError(
-            rut=str(cadena),
-            codigo=exc.error_code,
+        codigo = exc.error_code or "SIN_CODIGO"
+        detalle_error = crear_detalle_error(
+            codigo,
             mensaje=str(exc),
+            severidad="error",
+            recuperable=False,
+            rut=str(cadena),
             duracion=time.perf_counter() - inicio,
         )
+        return False, detalle_error
 
 
 def _validar_rut_en_proceso(

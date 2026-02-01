@@ -16,7 +16,8 @@ class ErrorRut(Exception):
         self.message = message
         self.error_code = error_code
         self.contexto = kwargs
-        logger.error("Error de RUT [%s]: %s", error_code, message, extra=kwargs)
+        # Evitar registrar valores completos de RUT en logs por defecto.
+        logger.error("Error de RUT [%s]", error_code, extra=kwargs)
 
 
 class ErrorValidacionRut(ErrorRut):

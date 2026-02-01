@@ -1,3 +1,4 @@
+# SECURITY-CRITICAL
 import argparse
 import sys
 from typing import Iterator, List, Optional

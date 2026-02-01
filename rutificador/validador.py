@@ -1,3 +1,4 @@
+# SECURITY-CRITICAL
 import logging
 import re
 from typing import Optional, Protocol, runtime_checkable, Match
@@ -63,7 +64,7 @@ class ValidadorRut:
             raise ErrorLongitudRut(
                 cadena_rut, len(base_normalizada), self.configuracion.max_digitos
             )
-        logger.debug("Formato de RUT validado correctamente: %s", cadena_rut)
+        logger.debug("Formato de RUT validado correctamente")
         return match
 
     def validar_base(self, base: str, rut_original: str) -> str:
@@ -87,7 +88,7 @@ class ValidadorRut:
             raise ErrorLongitudRut(
                 rut_original, len(base_normalizada), self.configuracion.max_digitos
             )
-        logger.debug("Base validada y normalizada: %s -> %s", base, base_normalizada)
+        logger.debug("Base validada y normalizada correctamente")
         return base_normalizada
 
     def validar_digito_verificador(

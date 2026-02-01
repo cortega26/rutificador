@@ -4,7 +4,7 @@ from typing import List
 
 from .version import __version__, obtener_informacion_version
 from .validador import Validador, ValidadorRut, RutValidator
-from .rut import Rut, RutBase, obtener_rut
+from .rut import Rut, RutBase, ValidacionResultado, obtener_rut
 from .procesador import (
     DetalleError,
     RutProcesado,
@@ -46,6 +46,7 @@ __license__ = "MIT"
 __all__: List[str] = [
     "Rut",
     "RutBase",
+    "ValidacionResultado",
     "obtener_rut",
     "Validador",
     "ValidadorRut",
