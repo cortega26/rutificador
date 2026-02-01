@@ -1,0 +1,51 @@
+name: Quality Gate
+
+on:
+  pull_request:
+    branches: ["master", "main"]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements-dev.txt
+
+      - name: Instalar dependencias de desarrollo
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+          python -m pip install ruff mypy bandit
+
+      - name: Instalar el paquete
+        run: |
+          python -m pip install -e .
+
+      - name: Formato (ruff)
+        run: |
+          python -m ruff format .
+          git diff --exit-code
+
+      - name: Lint (ruff)
+        run: |
+          python -m ruff check .
+
+      - name: Tipos (mypy)
+        run: |
+          python -m mypy --strict .
+
+      - name: Seguridad (bandit)
+        run: |
+          python -m bandit -r rutificador/
+
+      - name: Tests (pytest)
+        run: |
+          python -m pytest -q
