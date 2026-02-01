@@ -68,8 +68,7 @@ class ErrorLongitudRut(ErrorValidacionRut):
             contexto = {"min_length": limite}
         else:
             mensaje = (
-                f"El RUT '{valor_rut}' excede la longitud máxima: "
-                f"{longitud} > {limite}"
+                f"El RUT '{valor_rut}' excede la longitud máxima: {longitud} > {limite}"
             )
             contexto = {"max_length": limite}
 

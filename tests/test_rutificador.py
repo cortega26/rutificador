@@ -558,6 +558,7 @@ class TestProcesadorLotesRut:
 
     def test_validar_rut_local_propaga_excepciones_internas(self, monkeypatch):
         """Errores internos no se silencian como DetalleError."""
+
         class RutFalla:  # pylint: disable=too-few-public-methods
             """Simula un RUT que falla durante la inicialización."""
 
@@ -615,9 +616,7 @@ class TestProcesadorLotesRut:
             def map(self, _funcion, _iterable):
                 return []
 
-        monkeypatch.setattr(
-            "rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba
-        )
+        monkeypatch.setattr("rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba)
         processor = ProcesadorLotesRut(max_workers=4, parallel_backend="thread")
         processor.validar_lista_ruts([], parallel=True)
         assert llamados == [4]

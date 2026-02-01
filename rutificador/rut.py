@@ -99,9 +99,7 @@ class Rut:
         cadena = cadena_recortada
 
         if any(simbolo in cadena for simbolo in ("_", "–", "—")):
-            cadena = (
-                cadena.replace("_", "-").replace("–", "-").replace("—", "-")
-            )
+            cadena = cadena.replace("_", "-").replace("–", "-").replace("—", "-")
             Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_DASH")
 
         if re.search(r"\s", cadena):
@@ -278,7 +276,11 @@ class Rut:
             )
 
         resultado = Rut.parse(valor)
-        if resultado.estado != "valid" or resultado.base is None or resultado.dv is None:
+        if (
+            resultado.estado != "valid"
+            or resultado.base is None
+            or resultado.dv is None
+        ):
             raise ErrorValidacionRut(
                 crear_detalle_error("MASK_STATE").mensaje,
                 error_code="MASK_STATE",
@@ -290,7 +292,9 @@ class Rut:
                     crear_detalle_error("TOKEN_KEY_REQUIRED").mensaje,
                     error_code="TOKEN_KEY_REQUIRED",
                 )
-            clave_bytes = clave if isinstance(clave, bytes) else str(clave).encode("utf-8")
+            clave_bytes = (
+                clave if isinstance(clave, bytes) else str(clave).encode("utf-8")
+            )
             mensaje = resultado.normalizado.encode("utf-8")
             digest = hmac.new(clave_bytes, mensaje, hashlib.sha256).digest()
             token = base64.b32encode(digest).decode("ascii").rstrip("=").lower()

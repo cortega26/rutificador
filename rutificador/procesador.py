@@ -107,7 +107,11 @@ class ProcesadorLotesRut:
                 "usando ThreadPoolExecutor"
             )
             return ThreadPoolExecutor
-        return ProcessPoolExecutor if self.parallel_backend == "process" else ThreadPoolExecutor
+        return (
+            ProcessPoolExecutor
+            if self.parallel_backend == "process"
+            else ThreadPoolExecutor
+        )
 
     @monitor_de_rendimiento
     def validar_lista_ruts(
@@ -124,9 +128,7 @@ class ProcesadorLotesRut:
             with executor_cls(max_workers=self.max_workers) as executor:
                 resultados = executor.map(_validar_rut_en_proceso, payloads)
         else:
-            resultados = (
-                _validar_rut_local(cadena, self.validador) for cadena in ruts
-            )
+            resultados = (_validar_rut_local(cadena, self.validador) for cadena in ruts)
 
         for es_valido, valor in resultados:
             if es_valido:
@@ -298,8 +300,11 @@ def formatear_stream_ruts(
     for rut in ruts:
         es_valido, detalle = _validar_rut_local(rut, procesador.validador)
         if es_valido:
-            yield True, detalle.formatear(  # type: ignore[union-attr]
-                separador_miles=separador_miles, mayusculas=mayusculas
+            yield (
+                True,
+                detalle.formatear(  # type: ignore[union-attr]
+                    separador_miles=separador_miles, mayusculas=mayusculas
+                ),
             )
         else:
             yield False, detalle
@@ -361,11 +366,12 @@ def _validar_rut_local(
 
 
 def _validar_rut_en_proceso(
-    payload: Tuple[str, ConfiguracionRut, RigorValidacion]
+    payload: Tuple[str, ConfiguracionRut, RigorValidacion],
 ) -> Tuple[bool, Union[RutProcesado, DetalleError]]:
     cadena, configuracion, modo = payload
     validador = ValidadorRut(configuracion=configuracion, modo=modo)
     return _validar_rut_local(cadena, validador)
+
 
 def _formatear_detalle(
     detalle: RutProcesado, separador_miles: bool, mayusculas: bool
