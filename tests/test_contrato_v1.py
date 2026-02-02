@@ -63,8 +63,9 @@ def test_unicode_dash_normaliza_con_advertencia():
     assert _contiene_codigo(res.advertencias, "NORMALIZED_DASH")
 
 
-def test_unicode_fullwidth_digits_rechazado():
-    res = Rut.parse("１２３４５６７８-５")
+@pytest.mark.parametrize("valor", ["１２３４５６７８-５", "１２３４５６７８–５"])
+def test_unicode_fullwidth_digits_rechazado(valor):
+    res = Rut.parse(valor)
     assert res.estado == "invalid"
     assert _contiene_codigo(res.errores, "INVALID_CHARS")
 
