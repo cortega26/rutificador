@@ -165,7 +165,9 @@ def crear_detalle_error(
 
     entrada = CATALOGO_ERRORES.get(codigo)
     mensaje_final = mensaje or (entrada["mensaje"] if entrada else "Error desconocido")
-    hint_final = hint or (entrada["hint"] if entrada else "Consulte el catálogo de errores")
+    hint_final = hint or (
+        entrada["hint"] if entrada else "Consulte el catálogo de errores"
+    )
     severidad_final = severidad or (entrada["severidad"] if entrada else "error")
     recuperable_final = (
         recuperable

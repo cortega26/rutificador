@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.1.1 - 2026-02-01
+- [FIX] Ajustes de formato para cumplir con ruff format en CI.
+
 ## 1.1.0 - 2026-02-01
 - [FEATURE] Se incorporan `Rut.parse`, `Rut.normalizar`, `Rut.mask` y el modelo `ValidacionResultado`.
 - [FEATURE] Nuevo streaming estructurado con `ProcesadorLotesRut.stream`.
