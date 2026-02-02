@@ -1,0 +1,29 @@
+name: repo-hygiene-gate
+
+on:
+  pull_request:
+    branches: ["master", "main"]
+
+jobs:
+  repo_hygiene_gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Repo hygiene gate (%SystemDrive%)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -d "%SystemDrive%" ]]; then
+            echo "::error::Se detectó el directorio literal %SystemDrive%/ en el repo. Debe eliminarse del workspace."
+            exit 1
+          fi
+
+          if git ls-files | grep -q '^%SystemDrive%/'; then
+            echo "::error::Archivos trackeados bajo %SystemDrive%/. Esto no debe ocurrir. Revisa .gitignore y el índice."
+            exit 1
+          fi
+
+          echo "OK: No se detecta %SystemDrive%/."
