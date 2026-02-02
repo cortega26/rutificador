@@ -90,6 +90,12 @@ class Rut:
             return None, errores, advertencias
 
         cadena_original = str(valor)
+        if any(
+            caracter.isdigit() and caracter not in "0123456789"
+            for caracter in cadena_original
+        ):
+            errores.append(crear_detalle_error("INVALID_CHARS"))
+            return None, errores, advertencias
         cadena = unicodedata.normalize("NFKC", cadena_original)
         cambio_unicode = cadena != cadena_original
 

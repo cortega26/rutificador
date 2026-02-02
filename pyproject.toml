@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rutificador"
-version = "1.1.1"
+version = "1.1.2"
 description = "Herramientas para validar, calcular y formatear el Rol Único Tributario (RUT) en Chile, con procesamiento por lotes y salida en múltiples formatos."
 authors = ["Carlos Ortega González <carlosortega77@gmail.com>"]
 license = "MIT"

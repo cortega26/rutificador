@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.1.2 - 2026-02-01
+- [FIX] Se rechazan dígitos Unicode fullwidth incluso si hay guiones Unicode normalizados.
+
 ## 1.1.1 - 2026-02-01
 - [FIX] Ajustes de formato para cumplir con ruff format en CI.
 
