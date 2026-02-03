@@ -8,4 +8,11 @@ disable=
     R0913,
     R0917,
     R0914,
-    R0801
+    R0801,
+    W0718
+
+[DESIGN]
+max-attributes=10
+max-branches=30
+max-returns=12
+max-statements=80
