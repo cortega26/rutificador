@@ -1,6 +1,7 @@
 # SECURITY-CRITICAL
 from __future__ import annotations
 
+import importlib
 import os
 import subprocess
 import sys
@@ -9,14 +10,18 @@ from pathlib import Path
 
 import pytest
 from hypothesis import given, strategies as st
-from pydantic import BaseModel, ValidationError
 
 from rutificador.contrib.pydantic import RutStr
 from rutificador.contrib.pydantic._compat import PYDANTIC_IMPORT_ERROR_MESSAGE
 from rutificador.utils import calcular_digito_verificador
 
 
-class _Modelo(BaseModel):
+_pydantic = importlib.import_module("pydantic")
+BaseModel = getattr(_pydantic, "BaseModel")
+ValidationError = getattr(_pydantic, "ValidationError")
+
+
+class _Modelo(BaseModel):  # pylint: disable=too-few-public-methods
     rut: RutStr
 
 

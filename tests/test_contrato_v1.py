@@ -14,7 +14,7 @@ def test_parse_validacion_simple():
     res = Rut.parse("12.345.678-5")
     assert res.estado == "valid"
     assert res.normalizado == "12345678-5"
-    assert res.errores == []
+    assert not res.errores
 
 
 def test_incremental_typing():
@@ -81,5 +81,5 @@ def test_espacios_internos_por_modo():
         "12 345 678-5", modo=RigorValidacion.FLEXIBLE
     )
     assert normalizado == "12345678-5"
-    assert errores == []
+    assert not errores
     assert _contiene_codigo(advertencias, "NORMALIZED_WS")

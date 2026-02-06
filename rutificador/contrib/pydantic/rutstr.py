@@ -14,15 +14,16 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
-from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
-from pydantic_core import PydanticCustomError, core_schema
+from pydantic_core import PydanticCustomError, core_schema as cs
 
-from ...config import RigorValidacion
-from ...rut import Rut
-from ...utils import calcular_digito_verificador
+from rutificador.config import RigorValidacion
+from rutificador.rut import Rut
+from rutificador.utils import calcular_digito_verificador
 
 
 class RutStr(str):
+    """Tipo `str` validado/normalizado para Pydantic v2 (extra opt-in)."""
+
     _PATTERN_CANONICO: ClassVar[str] = r"^\d{1,8}-[0-9k]$"
     _EJEMPLOS: ClassVar[list[str]] = ["12.345.678-5", "12345678-5"]
 
@@ -76,27 +77,27 @@ class RutStr(str):
 
     @classmethod
     def __get_pydantic_core_schema__(
-        cls, source_type: Any, handler: GetCoreSchemaHandler
-    ) -> core_schema.CoreSchema:
+        cls, _source_type: Any, _handler: Any
+    ) -> cs.CoreSchema:
         # Validator estricto: se encarga del chequeo de tipo (solo str) y del mapping
         # de errores; no dependemos del schema default de `str` para mantener type codes
         # deterministas.
-        return core_schema.no_info_plain_validator_function(
+        return cs.no_info_plain_validator_function(
             cls._validar_y_normalizar,
-            json_schema_input_schema=core_schema.str_schema(),
-            serialization=core_schema.to_string_ser_schema(),
+            json_schema_input_schema=cs.str_schema(),
+            serialization=cs.to_string_ser_schema(),
         )
 
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, core_schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
+        cls, schema: cs.CoreSchema, handler: Any
     ) -> dict[str, Any]:
-        schema = handler(core_schema)
-        if isinstance(schema, dict):
-            schema.setdefault("type", "string")
-            schema.setdefault("examples", cls._EJEMPLOS)
-            schema.setdefault("pattern", cls._PATTERN_CANONICO)
-        return schema
+        json_schema = handler(schema)
+        if isinstance(json_schema, dict):
+            json_schema.setdefault("type", "string")
+            json_schema.setdefault("examples", cls._EJEMPLOS)
+            json_schema.setdefault("pattern", cls._PATTERN_CANONICO)
+        return json_schema
 
 
 __all__ = ["RutStr"]

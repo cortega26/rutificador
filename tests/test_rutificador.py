@@ -567,7 +567,9 @@ class TestProcesadorLotesRut:
 
         monkeypatch.setattr(proc, "Rut", RutFalla)
         with pytest.raises(ValueError):
-            proc._validar_rut_local("12345678-5", ValidadorRut())  # pylint: disable=protected-access
+            proc._validar_rut_local(  # pylint: disable=protected-access
+                "12345678-5", ValidadorRut()
+            )
 
     def test_executor_por_defecto_utiliza_processpool(self, monkeypatch):
         """El backend por defecto utiliza procesos para tareas paralelas."""

@@ -7,13 +7,17 @@ verificacion para mantener un mensaje determinista cuando el extra no esta insta
 
 from __future__ import annotations
 
+import importlib
+
 
 PYDANTIC_IMPORT_ERROR_MESSAGE = "Instala rutificador[pydantic] para usar RutStr"
 
 
 def _require_pydantic() -> None:
     try:
-        import pydantic  # noqa: F401
-        import pydantic_core  # noqa: F401
+        # Usamos importlib para evitar falsos positivos de Pylint cuando el paquete
+        # `rutificador.contrib.pydantic` es inferido como modulo top-level `pydantic`.
+        importlib.import_module("pydantic")
+        importlib.import_module("pydantic_core")
     except (ImportError, ModuleNotFoundError) as exc:  # pragma: no cover
         raise ImportError(PYDANTIC_IMPORT_ERROR_MESSAGE) from exc
