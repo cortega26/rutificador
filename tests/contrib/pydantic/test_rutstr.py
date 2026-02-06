@@ -147,9 +147,6 @@ def test_require_pydantic_falla_con_mensaje_determinista_si_no_hay_extra() -> No
         env=env,
         check=False,
     )
-    assert (
-        proceso.returncode == 0
-    ), f"stdout:\n{proceso.stdout}\nstderr:\n{proceso.stderr}"
-    assert (
-        proceso.stdout.strip() == PYDANTIC_IMPORT_ERROR_MESSAGE
-    ), f"stdout:\n{proceso.stdout}\nstderr:\n{proceso.stderr}"
+    salida_diagnostico = f"stdout:\n{proceso.stdout}\nstderr:\n{proceso.stderr}"
+    assert proceso.returncode == 0, salida_diagnostico
+    assert proceso.stdout.strip() == PYDANTIC_IMPORT_ERROR_MESSAGE, salida_diagnostico
