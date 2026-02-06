@@ -1,4 +1,4 @@
-name: repo-hygiene-gate
+name: higiene-del-repo
 
 on:
   pull_request:
@@ -8,10 +8,10 @@ jobs:
   repo_hygiene_gate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Obtener codigo (checkout)
         uses: actions/checkout@v4
 
-      - name: Repo hygiene gate (%SystemDrive%)
+      - name: Control de higiene del repo (%SystemDrive%)
         shell: bash
         run: |
           set -euo pipefail

@@ -1,11 +1,11 @@
 <!-- markdownlint-disable MD041 -->
 [![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
 [![Python](https://img.shields.io/badge/Python-3.9--%3C4.0-blue)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Continuous Integration](https://github.com/cortega26/rutificador/actions/workflows/ci.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/ci.yml)
+[![Licencia](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Estilo de código](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Integración continua](https://github.com/cortega26/rutificador/actions/workflows/ci.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/cortega26/rutificador/actions/workflows/codeql.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/codeql.yml)
-[![Coverage Status](https://coveralls.io/repos/github/cortega26/rutificador/badge.svg)](https://coveralls.io/github/cortega26/rutificador)
+[![Estado de cobertura](https://coveralls.io/repos/github/cortega26/rutificador/badge.svg)](https://coveralls.io/github/cortega26/rutificador)
 
 # Rutificador
 
@@ -116,7 +116,7 @@ normalizado, errores, advertencias = Rut.normalizar(
 print(normalizado)  # 12345678-5
 ```
 
-### Pydantic v2 (extra opt-in)
+### Pydantic v2 (extra opcional; se instala explícitamente)
 
 Instalación:
 

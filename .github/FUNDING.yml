@@ -1,15 +1,15 @@
-# These are supported funding model platforms
+# Plataformas soportadas de financiamiento
 
-github: # Replace with up to 4 GitHub Sponsors-enabled usernames e.g., [user1, user2]
-patreon: # Replace with a single Patreon username
-open_collective: # Replace with a single Open Collective username
-ko_fi: # Replace with a single Ko-fi username
-tidelift: # Replace with a single Tidelift platform-name/package-name e.g., npm/babel
-community_bridge: # Replace with a single Community Bridge project-name e.g., cloud-foundry
-liberapay: # Replace with a single Liberapay username
-issuehunt: # Replace with a single IssueHunt username
-lfx_crowdfunding: # Replace with a single LFX Crowdfunding project-name e.g., cloud-foundry
-polar: # Replace with a single Polar username
+github: # Reemplaza con hasta 4 usuarios con GitHub Sponsors, p. ej.: [usuario1, usuario2]
+patreon: # Reemplaza con un usuario de Patreon
+open_collective: # Reemplaza con un usuario de Open Collective
+ko_fi: # Reemplaza con un usuario de Ko-fi
+tidelift: # Reemplaza con una plataforma/paquete de Tidelift, p. ej.: npm/babel
+community_bridge: # Reemplaza con un proyecto de Community Bridge, p. ej.: cloud-foundry
+liberapay: # Reemplaza con un usuario de Liberapay
+issuehunt: # Reemplaza con un usuario de IssueHunt
+lfx_crowdfunding: # Reemplaza con un proyecto de LFX Crowdfunding, p. ej.: cloud-foundry
+polar: # Reemplaza con un usuario de Polar
 buy_me_a_coffee: cortega26
-thanks_dev: # Replace with a single thanks.dev username
-custom: # Replace with up to 4 custom sponsorship URLs e.g., ['link1', 'link2']
+thanks_dev: # Reemplaza con un usuario de thanks.dev
+custom: # Reemplaza con hasta 4 URLs de patrocinio, p. ej.: ['link1', 'link2']

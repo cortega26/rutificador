@@ -1,31 +1,31 @@
-# Byte-compiled / optimized / DLL files
+# Archivos bytecode / optimizados / DLL
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
+# Extensiones en C
 *.so
 
-# Distribution / packaging
+# Distribucion / empaquetado
 build/
 dist/
 *.egg-info/
 *.egg
 *.whl
 
-# Virtual environments
+# Entornos virtuales
 .venv/
 .venv-clean/
 venv/
 env/
 ENV/
 
-# Environment files (keep examples committable)
+# Archivos de entorno (mantener ejemplos versionables)
 .env
 .env.*
 !.env.example
 
-# Test / coverage artifacts
+# Artefactos de tests / cobertura
 .pytest_cache/
 .pytest-tmp*/
 .coverage
@@ -33,7 +33,7 @@ ENV/
 coverage.xml
 htmlcov/
 
-# Type checkers / linters
+# Tipado / linters
 .mypy_cache/
 .ruff_cache/
 
@@ -44,17 +44,17 @@ htmlcov/
 .vscode/
 .idea/
 
-# OS / editor
+# Sistema operativo / editor
 .DS_Store
 Thumbs.db
 *~
 *.swp
 *.swo
 
-# Logs
+# Registros (logs)
 *.log
 
-# Project-specific artifacts
+# Artefactos especificos del proyecto
 codex_env_diagnosis_*.txt
 .wheeltest/
 .qodo/

@@ -43,9 +43,9 @@ rutificador = "rutificador.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# Use default import mode so that local package is discoverable without
-# installing it. This ensures running `pytest` from the project root works
-# as documented in the README.
+# Usar el modo de import por defecto para que el paquete local sea descubrible
+# sin instalarlo. Esto asegura que ejecutar `pytest` desde la raiz del proyecto
+# funcione como se documenta en el README.
 addopts = ""
 
 [tool.poetry-dynamic-versioning]

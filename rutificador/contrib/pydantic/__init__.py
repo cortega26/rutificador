@@ -1,7 +1,7 @@
 # SECURITY-CRITICAL
-"""Integracion opt-in con Pydantic v2.
+"""Integración opcional (se instala explícitamente) con Pydantic v2.
 
-Este modulo es un *extra* opcional. Importar ``rutificador`` no debe requerir Pydantic.
+Este módulo es un *extra* opcional. Importar ``rutificador`` no debe requerir Pydantic.
 """
 
 from __future__ import annotations
@@ -19,11 +19,11 @@ def __getattr__(name: str) -> Any:
     if name != "RutStr":
         raise AttributeError(name)
     _require_pydantic()
-    # Import tardio: evita dependencia implicita en la instalacion base.
-    rutstr_type = importlib.import_module(".rutstr", __name__).RutStr
+    # Importación tardía: evita dependencia implícita en la instalación base.
+    tipo_rutstr = importlib.import_module(".rutstr", __name__).RutStr
 
-    globals()["RutStr"] = rutstr_type
-    return rutstr_type
+    globals()["RutStr"] = tipo_rutstr
+    return tipo_rutstr
 
 
 def __dir__() -> list[str]:  # pragma: no cover - trivial

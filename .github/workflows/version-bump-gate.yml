@@ -1,4 +1,4 @@
-name: version-bump-gate
+name: control-versionado
 
 on:
   pull_request:

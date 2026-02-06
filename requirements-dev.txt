@@ -1,4 +1,4 @@
-pip>=25.2  # GHSA-4xh5-x5gv-qwph: usar versión corregida disponible en runners
+pip>=25.2  # GHSA-4xh5-x5gv-qwph: usar versión corregida disponible en ejecutores de CI
 pytest
 pytest-cov
 black
@@ -6,6 +6,5 @@ coveralls
 tomli
 pydantic>=2,<3
 hypothesis
-requests>=2.32.0 # not directly required, pinned by Snyk to avoid a vulnerability
-zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
-
+requests>=2.32.0 # no requerido directamente; fijado por Snyk para evitar una vulnerabilidad
+zipp>=3.19.1 # no requerido directamente; fijado por Snyk para evitar una vulnerabilidad

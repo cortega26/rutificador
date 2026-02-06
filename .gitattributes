@@ -1,6 +1,6 @@
-# Normalize to LF in repo
+# Normalizar a LF en el repo
 * text=auto eol=lf
 
-# Windows scripts can stay CRLF if you have any (optional)
+# Los scripts de Windows pueden mantenerse en CRLF si existen (opcional)
 *.bat text eol=crlf
 *.ps1 text eol=crlf

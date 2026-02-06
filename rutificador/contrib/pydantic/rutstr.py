@@ -1,5 +1,5 @@
 # SECURITY-CRITICAL
-"""Tipo `RutStr` para Pydantic v2 (extra opt-in).
+"""Tipo `RutStr` para Pydantic v2 (extra opcional; se instala explícitamente).
 
 Contrato:
 - Acepta solo `str` (estricto de tipo).
@@ -22,33 +22,38 @@ from rutificador.utils import calcular_digito_verificador
 
 
 class RutStr(str):
-    """Tipo `str` validado/normalizado para Pydantic v2 (extra opt-in)."""
+    """Tipo `str` validado/normalizado para Pydantic v2.
+
+    Este tipo pertenece a un extra opcional que se instala explícitamente.
+    """
 
     _PATTERN_CANONICO: ClassVar[str] = r"^\d{1,8}-[0-9k]$"
     _EJEMPLOS: ClassVar[list[str]] = ["12.345.678-5", "12345678-5"]
 
-    _ERROR_RUT_INVALID_TYPE: ClassVar[str] = "RUT_INVALID"
-    _ERROR_RUT_INVALID_MESSAGE: ClassVar[str] = "RUT inválido"
-    _ERROR_RUT_INVALID_HINT: ClassVar[str] = "Verifica formato base-dv"
+    _CODIGO_RUT_INVALIDO: ClassVar[str] = "RUT_INVALID"
+    _MENSAJE_RUT_INVALIDO: ClassVar[str] = "RUT inválido"
+    _PISTA_RUT_INVALIDO: ClassVar[str] = "Verifica formato base-dv"
 
-    _ERROR_TYPE_TYPE: ClassVar[str] = "TYPE_ERROR"
-    _ERROR_TYPE_MESSAGE: ClassVar[str] = "El RUT debe ser una cadena"
-    _ERROR_TYPE_HINT: ClassVar[str] = "Convierta el valor a str"
-
-    @classmethod
-    def _error(cls, *, type_code: str, message: str, hint: str) -> PydanticCustomError:
-        return PydanticCustomError(type_code, message, {"hint": hint})
+    _CODIGO_ERROR_TIPO: ClassVar[str] = "TYPE_ERROR"
+    _MENSAJE_ERROR_TIPO: ClassVar[str] = "El RUT debe ser una cadena"
+    _PISTA_ERROR_TIPO: ClassVar[str] = "Convierta el valor a str"
 
     @classmethod
-    def _validar_y_normalizar(cls, value: Any) -> "RutStr":
-        if not isinstance(value, str):
+    def _error(
+        cls, *, codigo_tipo: str, mensaje: str, pista: str
+    ) -> PydanticCustomError:
+        return PydanticCustomError(codigo_tipo, mensaje, {"hint": pista})
+
+    @classmethod
+    def _validar_y_normalizar(cls, valor: Any) -> "RutStr":
+        if not isinstance(valor, str):
             raise cls._error(
-                type_code=cls._ERROR_TYPE_TYPE,
-                message=cls._ERROR_TYPE_MESSAGE,
-                hint=cls._ERROR_TYPE_HINT,
+                codigo_tipo=cls._CODIGO_ERROR_TIPO,
+                mensaje=cls._MENSAJE_ERROR_TIPO,
+                pista=cls._PISTA_ERROR_TIPO,
             )
 
-        resultado = Rut.parse(value, modo=RigorValidacion.ESTRICTO)
+        resultado = Rut.parse(valor, modo=RigorValidacion.ESTRICTO)
 
         if resultado.estado == "valid" and resultado.normalizado is not None:
             return cls(resultado.normalizado)
@@ -70,18 +75,18 @@ class RutStr(str):
             )
 
         raise cls._error(
-            type_code=cls._ERROR_RUT_INVALID_TYPE,
-            message=cls._ERROR_RUT_INVALID_MESSAGE,
-            hint=cls._ERROR_RUT_INVALID_HINT,
+            codigo_tipo=cls._CODIGO_RUT_INVALIDO,
+            mensaje=cls._MENSAJE_RUT_INVALIDO,
+            pista=cls._PISTA_RUT_INVALIDO,
         )
 
     @classmethod
     def __get_pydantic_core_schema__(
-        cls, _source_type: Any, _handler: Any
+        cls, _tipo_origen: Any, _manejador: Any
     ) -> cs.CoreSchema:
-        # Validator estricto: se encarga del chequeo de tipo (solo str) y del mapping
-        # de errores; no dependemos del schema default de `str` para mantener type codes
-        # deterministas.
+        # Validador estricto: se encarga del chequeo de tipo (solo str) y del mapeo
+        # de errores; no dependemos del esquema por defecto de `str` para mantener
+        # códigos de tipo deterministas.
         return cs.no_info_plain_validator_function(
             cls._validar_y_normalizar,
             json_schema_input_schema=cs.str_schema(),
@@ -90,14 +95,14 @@ class RutStr(str):
 
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, schema: cs.CoreSchema, handler: Any
+        cls, esquema_core: cs.CoreSchema, manejador: Any
     ) -> dict[str, Any]:
-        json_schema = handler(schema)
-        if isinstance(json_schema, dict):
-            json_schema.setdefault("type", "string")
-            json_schema.setdefault("examples", cls._EJEMPLOS)
-            json_schema.setdefault("pattern", cls._PATTERN_CANONICO)
-        return json_schema
+        esquema_json = manejador(esquema_core)
+        if isinstance(esquema_json, dict):
+            esquema_json.setdefault("type", "string")
+            esquema_json.setdefault("examples", cls._EJEMPLOS)
+            esquema_json.setdefault("pattern", cls._PATTERN_CANONICO)
+        return esquema_json
 
 
 __all__ = ["RutStr"]

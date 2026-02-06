@@ -16,17 +16,17 @@ from rutificador.contrib.pydantic._compat import PYDANTIC_IMPORT_ERROR_MESSAGE
 from rutificador.utils import calcular_digito_verificador
 
 
-_pydantic = importlib.import_module("pydantic")
-BaseModel = getattr(_pydantic, "BaseModel")
-ValidationError = getattr(_pydantic, "ValidationError")
+modulo_pydantic = importlib.import_module("pydantic")
+BaseModel = getattr(modulo_pydantic, "BaseModel")
+ValidationError = getattr(modulo_pydantic, "ValidationError")
 
 
 class _Modelo(BaseModel):  # pylint: disable=too-few-public-methods
     rut: RutStr
 
 
-def _primer_error(exc: ValidationError) -> dict:
-    errores = exc.errors()
+def _primer_error(excepcion: ValidationError) -> dict:
+    errores = excepcion.errors()
     assert errores, "Se esperaba al menos un error"
     return errores[0]
 
@@ -121,32 +121,40 @@ def test_rutstr_property_based_dv_ok_pasa_y_dv_bad_falla(base: str) -> None:
 
 
 def test_require_pydantic_falla_con_mensaje_determinista_si_no_hay_extra() -> None:
-    repo_root = Path(__file__).resolve().parents[3]
+    raiz_repo = Path(__file__).resolve().parents[3]
+    # Bandit/Codacy (B603): subprocess sin `shell=True`, argumentos controlados y codigo estatico.
     codigo = textwrap.dedent(
-        f"""
-        import sys
-        sys.path.insert(0, {str(repo_root)!r})
-        from rutificador.contrib.pydantic._compat import _require_pydantic, PYDANTIC_IMPORT_ERROR_MESSAGE
+        """
+        from rutificador.contrib.pydantic._compat import (
+            PYDANTIC_IMPORT_ERROR_MESSAGE,
+            _require_pydantic,
+        )
+
         try:
             _require_pydantic()
         except ImportError as exc:
             print(str(exc))
             raise SystemExit(0)
+
         raise SystemExit(1)
         """
     ).strip()
 
-    env = os.environ.copy()
-    env.pop("PYTHONPATH", None)
-    env["PYTHONNOUSERSITE"] = "1"
+    entorno = os.environ.copy()
+    # No heredar PYTHONPATH del padre: fijamos uno controlado (solo el repo).
+    entorno.pop("PYTHONPATH", None)
+    entorno["PYTHONPATH"] = str(raiz_repo)
+    entorno["PYTHONNOUSERSITE"] = "1"
 
     proceso = subprocess.run(
         [sys.executable, "-S", "-c", codigo],
         capture_output=True,
         text=True,
-        env=env,
+        env=entorno,
         check=False,
+    )  # nosec B603
+    salida_diagnostico = (
+        f"salida_estandar:\n{proceso.stdout}\nerror_estandar:\n{proceso.stderr}"
     )
-    salida_diagnostico = f"stdout:\n{proceso.stdout}\nstderr:\n{proceso.stderr}"
     assert proceso.returncode == 0, salida_diagnostico
     assert proceso.stdout.strip() == PYDANTIC_IMPORT_ERROR_MESSAGE, salida_diagnostico

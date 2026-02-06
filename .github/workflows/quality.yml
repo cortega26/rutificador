@@ -1,4 +1,4 @@
-name: Quality Gate
+name: Control de calidad
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Obtener codigo (checkout)
         uses: actions/checkout@v4
 
       - name: Configurar Python

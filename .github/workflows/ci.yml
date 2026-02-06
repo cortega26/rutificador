@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: Integracion continua
 
 on:
   push:
@@ -15,15 +15,15 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
-    - name: Checkout code
+    - name: Obtener codigo (checkout)
       uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Configurar Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Cache pip dependencies
+    - name: Cache de dependencias (pip)
       uses: actions/cache@v4
       with:
         path: ~/.cache/pip
@@ -32,21 +32,21 @@ jobs:
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
 
-    - name: Install dependencies
+    - name: Instalar dependencias
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
 
-    - name: Install rutificador
+    - name: Instalar rutificador
       run: |
         pip install -e .
 
-    - name: Run tests with pytest
+    - name: Ejecutar tests (pytest)
       run: |
         python -m pytest -v tests/ --tb=short
 
-    - name: Run type checking (Python 3.9+ only)
+    - name: Ejecutar verificacion de tipos (solo Python 3.9+)
       if: matrix.python-version != '3.8'
       run: |
         pip install mypy
-        python -m mypy rutificador/ --ignore-missing-imports || true  # Non-blocking for now
+        python -m mypy rutificador/ --ignore-missing-imports || true  # No bloqueante por ahora

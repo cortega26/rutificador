@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## 1.2.0 - 2026-02-06
-- [FEATURE] Se incorpora `rutificador.contrib.pydantic.RutStr` (Pydantic v2, extra opt-in `rutificador[pydantic]`).
+- [FEATURE] Se incorpora `rutificador.contrib.pydantic.RutStr` (Pydantic v2, extra opcional; se instala explícitamente con `rutificador[pydantic]`).
 
 ## 1.1.2 - 2026-02-01
 - [FIX] Se rechazan dígitos Unicode fullwidth incluso si hay guiones Unicode normalizados.
