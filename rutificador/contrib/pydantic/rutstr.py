@@ -1,0 +1,102 @@
+# SECURITY-CRITICAL
+"""Tipo `RutStr` para Pydantic v2 (extra opt-in).
+
+Contrato:
+- Acepta solo `str` (estricto de tipo).
+- Valida con `Rut.parse(..., modo=ESTRICTO)` sin modificar el core.
+- Normaliza siempre a `base-dv` (DV en minuscula).
+- Si el DV falta y la base es valida, calcula el DV.
+- Si no hay `DetalleError`, usa un error honesto y determinista:
+  type="RUT_INVALID", message="RUT inválido", hint="Verifica formato base-dv".
+"""
+
+from __future__ import annotations
+
+from typing import Any, ClassVar
+
+from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
+from pydantic_core import PydanticCustomError, core_schema
+
+from ...config import RigorValidacion
+from ...rut import Rut
+from ...utils import calcular_digito_verificador
+
+
+class RutStr(str):
+    _PATTERN_CANONICO: ClassVar[str] = r"^\d{1,8}-[0-9k]$"
+    _EJEMPLOS: ClassVar[list[str]] = ["12.345.678-5", "12345678-5"]
+
+    _ERROR_RUT_INVALID_TYPE: ClassVar[str] = "RUT_INVALID"
+    _ERROR_RUT_INVALID_MESSAGE: ClassVar[str] = "RUT inválido"
+    _ERROR_RUT_INVALID_HINT: ClassVar[str] = "Verifica formato base-dv"
+
+    _ERROR_TYPE_TYPE: ClassVar[str] = "TYPE_ERROR"
+    _ERROR_TYPE_MESSAGE: ClassVar[str] = "El RUT debe ser una cadena"
+    _ERROR_TYPE_HINT: ClassVar[str] = "Convierta el valor a str"
+
+    @classmethod
+    def _error(cls, *, type_code: str, message: str, hint: str) -> PydanticCustomError:
+        return PydanticCustomError(type_code, message, {"hint": hint})
+
+    @classmethod
+    def _validar_y_normalizar(cls, value: Any) -> "RutStr":
+        if not isinstance(value, str):
+            raise cls._error(
+                type_code=cls._ERROR_TYPE_TYPE,
+                message=cls._ERROR_TYPE_MESSAGE,
+                hint=cls._ERROR_TYPE_HINT,
+            )
+
+        resultado = Rut.parse(value, modo=RigorValidacion.ESTRICTO)
+
+        if resultado.estado == "valid" and resultado.normalizado is not None:
+            return cls(resultado.normalizado)
+
+        if (
+            resultado.estado == "possible"
+            and resultado.base is not None
+            and not resultado.errores
+        ):
+            dv = calcular_digito_verificador(resultado.base).lower()
+            return cls(f"{resultado.base}-{dv}")
+
+        if resultado.errores:
+            detalle = resultado.errores[0]
+            raise PydanticCustomError(
+                detalle.codigo,
+                detalle.mensaje,
+                {"hint": detalle.hint},
+            )
+
+        raise cls._error(
+            type_code=cls._ERROR_RUT_INVALID_TYPE,
+            message=cls._ERROR_RUT_INVALID_MESSAGE,
+            hint=cls._ERROR_RUT_INVALID_HINT,
+        )
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        # Validator estricto: se encarga del chequeo de tipo (solo str) y del mapping
+        # de errores; no dependemos del schema default de `str` para mantener type codes
+        # deterministas.
+        return core_schema.no_info_plain_validator_function(
+            cls._validar_y_normalizar,
+            json_schema_input_schema=core_schema.str_schema(),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls, core_schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
+    ) -> dict[str, Any]:
+        schema = handler(core_schema)
+        if isinstance(schema, dict):
+            schema.setdefault("type", "string")
+            schema.setdefault("examples", cls._EJEMPLOS)
+            schema.setdefault("pattern", cls._PATTERN_CANONICO)
+        return schema
+
+
+__all__ = ["RutStr"]

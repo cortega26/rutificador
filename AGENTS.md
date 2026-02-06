@@ -14,7 +14,7 @@
 ---
 
 ## 2. Estrategia de Modelos
-- **Capa principal** · `gpt-5.1-codex-max@2025-10-01` para arquitectura o migraciones críticas.  
+- **Capa principal** · `gpt-5.3-codex-max@2025-10-01` para arquitectura o migraciones críticas.  
 - **Capa optimizada** · `claude-4.1-sonnet` para tareas de mantenimiento/lint.  
 - **Capa de razonamiento** · Modelos O-series u homólogos cuando se requiera verificación formal.  
 
@@ -25,7 +25,7 @@ model_profile:
   temperature: 0.05        # 0 para código determinista, 0.1 para investigación ligera
   top_p: 0.95
   max_retries: 2
-  fallback: ["gpt-5.1", "claude-4-haiku"]
+  fallback: ["gpt-5.3", "claude-4-haiku"]
 ```
 > Registrar en cada entrega: modelo efectivo, temperatura y número de reintentos.
 
@@ -60,7 +60,7 @@ model_profile:
 ### Bloque META obligatorio
 ```yaml
 META:
-  modelo: "gpt-5.1-codex-max@2025-10-01"
+  modelo: "gpt-5.3-codex-max@2025-10-01"
   seed: 42
   reintentos: 0
   complejidad: 0.6          # 0‑1
@@ -171,7 +171,7 @@ NEXT: Pasos sugeridos (opcional)
     }
   ],
   "meta": {
-    "modelo": "gpt-5.1-codex-max",
+    "modelo": "gpt-5.3-codex-max",
     "seed": 42,
     "seguridad": "validada"
   }

@@ -1,66 +1,61 @@
-# Compiled Python files
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
-# Test caches
-.pytest_cache/
+# C extensions
+*.so
 
-# Virtual environments
-venv/
-.env/
-env/
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-
-# IDE project files
-*.idea/
-*.vscode/
-
-# Build directories
+# Distribution / packaging
 build/
 dist/
 *.egg-info/
+*.egg
+*.whl
 
-# Common data files
-*.csv
-*.json
-*.xml
+# Virtual environments
+.venv/
+.venv-clean/
+venv/
+env/
+ENV/
 
-# Common backup files
-*.bak
-*.orig
-*.tmp
+# Environment files (keep examples committable)
+.env
+.env.*
+!.env.example
 
-# Log files
-*.log
+# Test / coverage artifacts
+.pytest_cache/
+.pytest-tmp*/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 
-# Temporary files (e.g., editor files)
+# Type checkers / linters
+.mypy_cache/
+.ruff_cache/
+
+# Hypothesis
+.hypothesis/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS / editor
+.DS_Store
+Thumbs.db
 *~
 *.swp
 *.swo
-.DS_Store
-temp/
 
-# Package files
-*.egg
-*.whl
-*.deb
+# Logs
+*.log
 
-# Thumbs.db
-Thumbs.db
-
-# Other binary files
-*.dll
-*.so
-*.dylib
-.coverage
-
-# Basura accidental (expansión literal de variable Windows)
-%SystemDrive%/
-**/%SystemDrive%/
-
-# Diagnósticos y artefactos de agentes
+# Project-specific artifacts
 codex_env_diagnosis_*.txt
+.wheeltest/
+.qodo/
+temp/

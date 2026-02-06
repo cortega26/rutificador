@@ -116,6 +116,36 @@ normalizado, errores, advertencias = Rut.normalizar(
 print(normalizado)  # 12345678-5
 ```
 
+### Pydantic v2 (extra opt-in)
+
+Instalación:
+
+```bash
+pip install rutificador[pydantic]
+```
+
+Uso con Pydantic v2:
+
+```python
+from pydantic import BaseModel
+from rutificador.contrib.pydantic import RutStr
+
+class Modelo(BaseModel):
+    rut: RutStr
+
+m = Modelo(rut="12.345.678-5")
+print(m.rut)  # 12345678-5
+```
+
+Advertencia:
+
+> RutStr valida y normaliza identificadores. NO verifica identidad ni existencia.
+
+Anti-ejemplos:
+
+- No uses `RutStr` para autocorregir entradas de usuario de forma silenciosa.
+- No trates la normalización como verificación de identidad.
+
 ### Enmascarado y tokenización
 
 ```python
@@ -261,6 +291,7 @@ from rutificador import obtener_informacion_version
 
 info = obtener_informacion_version()
 print(info['version'])
+```
 
 ### Acceder a metadatos de validación
 
@@ -283,7 +314,6 @@ if resultado_error.ruts_invalidos:
 ```
 
 Los objetos `RutProcesado` permiten instrumentar dashboards o auditorías sin volver a recorrer el lote original.
-```
 
 ### Política de errores
 
