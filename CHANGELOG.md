@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.2.1 - 2026-02-06
+- [FIX] Endurecimiento y correcciones de empaquetado/tests/documentación posteriores a `v1.2.0`.
+
 ## 1.2.0 - 2026-02-06
 - [FEATURE] Se incorpora `rutificador.contrib.pydantic.RutStr` (Pydantic v2, extra opcional; se instala explícitamente con `rutificador[pydantic]`).
 
