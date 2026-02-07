@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.2.2 - 2026-02-06
+- [FIX] Ajustes de CI: se elimina Python 3.9 (EOL) y se agrega Python 3.14 como prerelease no bloqueante.
+
 ## 1.2.1 - 2026-02-06
 - [FIX] Endurecimiento y correcciones de empaquetado/tests/documentación posteriores a `v1.2.0`.
 
