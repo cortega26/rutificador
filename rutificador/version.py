@@ -2,27 +2,27 @@
 
 from typing import List, TypedDict
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 
 class InformacionVersion(TypedDict):
     """Estructura tipada para la metadata de versión."""
 
     version: str
-    author: str
-    license: str
-    description: str
-    features: List[str]
+    autor: str
+    licencia: str
+    descripcion: str
+    funcionalidades: List[str]
 
 
 def obtener_informacion_version() -> InformacionVersion:
     """Retorna metadatos de la versión actual."""
     return {
         "version": __version__,
-        "author": "Carlos Ortega González",
-        "license": "MIT",
-        "description": "Librería mejorada para validar y formatear RUT chileno",
-        "features": [
+        "autor": "Carlos Ortega González",
+        "licencia": "MIT",
+        "descripcion": "Librería mejorada para validar y formatear RUT chileno",
+        "funcionalidades": [
             "Validación de alto rendimiento con caché",
             "Procesamiento por lotes en paralelo",
             "Modelo de errores estructurado",

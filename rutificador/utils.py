@@ -64,12 +64,12 @@ def asegurar_cadena_no_vacia(valor: Any, nombre: str) -> str:
     if not isinstance(valor, str):
         raise ErrorValidacionRut(
             f"{nombre} debe ser una cadena, se recibió: {type(valor).__name__}",
-            error_code="TYPE_ERROR",
+            codigo_error="ERROR_TIPO",
         )
     valor = valor.strip()
     if not valor:
         raise ErrorValidacionRut(
-            f"{nombre} no puede estar vacío", error_code="EMPTY_STRING"
+            f"{nombre} no puede estar vacío", codigo_error="CADENA_VACIA"
         )
     return valor
 
@@ -79,7 +79,7 @@ def asegurar_booleano(valor: Any, nombre: str) -> bool:
     if not isinstance(valor, bool):
         raise ErrorValidacionRut(
             f"{nombre} debe ser booleano, se recibió: {type(valor).__name__}",
-            error_code="TYPE_ERROR",
+            codigo_error="ERROR_TIPO",
         )
     return valor
 
@@ -135,18 +135,18 @@ def calcular_digito_verificador(
         raise ErrorValidacionRut(
             f"La base numérica debe ser una cadena, se recibió: "
             f"{type(base_numerica).__name__}",
-            error_code="TYPE_ERROR",
+            codigo_error="ERROR_TIPO",
         )
     if not base_numerica or not base_numerica.strip():
         raise ErrorValidacionRut(
             "La base numérica no puede estar vacía",
-            error_code="EMPTY_BASE",
+            codigo_error="BASE_VACIA",
         )
     base_numerica = base_numerica.strip()
     if not base_numerica.isdigit():
         raise ErrorValidacionRut(
             f"La base numérica '{base_numerica}' debe contener solo dígitos",
-            error_code="INVALID_DIGITS",
+            codigo_error="DIGITOS_INVALIDOS",
         )
     # Se utiliza itertools.cycle para evitar operaciones costosas de módulo
     # dentro del bucle y mantener eficiente la implementación para bases grandes.
@@ -164,7 +164,7 @@ def normalizar_base_rut(base: str) -> str:
     if not isinstance(base, str):
         raise ErrorValidacionRut(
             f"La base debe ser una cadena, se recibió: {type(base).__name__}",
-            error_code="TYPE_ERROR",
+            codigo_error="ERROR_TIPO",
         )
     base_normalizada = base.translate(_PUNTOS_TRADUCCION).lstrip("0")
     return base_normalizada if base_normalizada else "0"

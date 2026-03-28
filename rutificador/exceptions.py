@@ -9,15 +9,19 @@ logger = logging.getLogger(__name__)
 class ErrorRut(Exception):
     """Excepción base para todos los errores relacionados con RUT."""
 
+
+class ErrorRut(Exception):
+    """Excepción base para todos los errores relacionados con RUT."""
+
     def __init__(
-        self, message: str, error_code: Optional[str] = None, **kwargs: Any
+        self, mensaje: str, codigo_error: Optional[str] = None, **kwargs: Any
     ) -> None:
-        super().__init__(message)
-        self.message = message
-        self.error_code = error_code
+        super().__init__(mensaje)
+        self.mensaje = mensaje
+        self.codigo_error = codigo_error
         self.contexto = kwargs
         # Evitar registrar valores completos de RUT en logs por defecto.
-        logger.error("Error de RUT [%s]", error_code, extra=kwargs)
+        logger.error("Error de RUT [%s]", codigo_error, extra=kwargs)
 
 
 class ErrorValidacionRut(ErrorRut):
@@ -31,9 +35,9 @@ class ErrorFormatoRut(ErrorValidacionRut):
         super().__init__(
             f"Formato de RUT inválido: '{valor_rut}'. "
             f"Formato esperado: {formato_esperado}",
-            error_code="FORMAT_ERROR",
-            rut_value=valor_rut,
-            expected_format=formato_esperado,
+            codigo_error="CARACTERES_INVALIDOS",
+            valor_rut=valor_rut,
+            formato_esperado=formato_esperado,
         )
 
 
@@ -44,9 +48,9 @@ class ErrorDigitoRut(ErrorValidacionRut):
         super().__init__(
             f"Dígito verificador no coincide: se entregó '{digito_entregado}', "
             f"se calculó '{digito_calculado}'",
-            error_code="DIGIT_ERROR",
-            provided_digit=digito_entregado,
-            calculated_digit=digito_calculado,
+            codigo_error="DV_DISCORDANTE",
+            digito_entregado=digito_entregado,
+            digito_calculado=digito_calculado,
         )
 
 
@@ -65,18 +69,18 @@ class ErrorLongitudRut(ErrorValidacionRut):
                 f"El RUT '{valor_rut}' es menor a la longitud mínima: "
                 f"{longitud} < {limite}"
             )
-            contexto = {"min_length": limite}
+            contexto = {"longitud_min": limite}
         else:
             mensaje = (
                 f"El RUT '{valor_rut}' excede la longitud máxima: {longitud} > {limite}"
             )
-            contexto = {"max_length": limite}
+            contexto = {"longitud_max": limite}
 
         super().__init__(
             mensaje,
-            error_code="LENGTH_ERROR",
-            rut_value=valor_rut,
-            length=longitud,
+            codigo_error="LONGITUD_MINIMA" if minimo else "LONGITUD_MAXIMA",
+            valor_rut=valor_rut,
+            longitud=longitud,
             **contexto,
         )
 

@@ -5,7 +5,6 @@ import hmac
 import logging
 import re
 import time
-import unicodedata
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -20,7 +19,7 @@ from .sugestor import sugerir_ruts
 
 logger = logging.getLogger(__name__)
 
-EstadoValidacion = Literal["incomplete", "possible", "valid", "invalid"]
+EstadoValidacion = Literal["incompleto", "posible", "valido", "invalido"]
 
 _BASE_CON_PUNTOS = re.compile(r"^\d{1,3}(?:\.\d{3})*$")
 
@@ -53,7 +52,7 @@ class RutBase:
     def __post_init__(self) -> None:
         if not isinstance(self.rut_original, str):
             raise ErrorValidacionRut(
-                "El RUT original debe ser una cadena", error_code="TYPE_ERROR"
+                "El RUT original debe ser una cadena", codigo_error="ERROR_TIPO"
             )
         base_validada = self.validador.validar_base(self.base, self.rut_original)
         object.__setattr__(self, "base", base_validada)
@@ -87,7 +86,7 @@ class Rut:
         vistos: set[str] = set()
 
         if not isinstance(valor, (str, int)):
-            errores.append(crear_detalle_error("TYPE_ERROR"))
+            errores.append(crear_detalle_error("ERROR_TIPO"))
             return None, errores, advertencias
 
         cadena_original = str(valor)
@@ -95,26 +94,26 @@ class Rut:
 
         if re.search(r"\s", cadena_original):
             if modo == RigorValidacion.ESTRICTO:
-                errores.append(crear_detalle_error("INVALID_CHARS"))
+                errores.append(crear_detalle_error("CARACTERES_INVALIDOS"))
                 return None, errores, advertencias
-            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_WS")
+            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_ESPACIOS")
 
         if any(simbolo in cadena_original for simbolo in ("_", "–", "—", "−")):
-            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_DASH")
+            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_GUION")
 
         if cadena == "":
-            errores.append(crear_detalle_error("EMPTY_RUT"))
+            errores.append(crear_detalle_error("RUT_VACIO"))
             return None, errores, advertencias
 
         if re.search(r"[^0-9kK\.-]", cadena):
-            errores.append(crear_detalle_error("INVALID_CHARS"))
+            errores.append(crear_detalle_error("CARACTERES_INVALIDOS"))
             return None, errores, advertencias
 
         if not re.search(r"\d", cadena):
             return None, errores, advertencias
 
         if cadena.count("-") > 1:
-            errores.append(crear_detalle_error("FORMAT_HYPHEN"))
+            errores.append(crear_detalle_error("FORMATO_GUION"))
             return None, errores, advertencias
 
         guion_presente = "-" in cadena
@@ -125,7 +124,7 @@ class Rut:
         if guion_presente:
             base_raw, dv_raw = cadena.split("-", 1)
             if base_raw == "":
-                errores.append(crear_detalle_error("FORMAT_HYPHEN"))
+                errores.append(crear_detalle_error("FORMATO_GUION"))
                 return None, errores, advertencias
             if dv_raw == "":
                 dv_faltante = True
@@ -133,10 +132,10 @@ class Rut:
 
         if "." in base_raw:
             if not _BASE_CON_PUNTOS.fullmatch(base_raw):
-                errores.append(crear_detalle_error("FORMAT_DOTS"))
+                errores.append(crear_detalle_error("FORMATO_PUNTOS"))
                 return None, errores, advertencias
             base_sin_puntos = base_raw.replace(".", "")
-            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_DOTS")
+            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_PUNTOS")
         else:
             base_sin_puntos = base_raw
 
@@ -144,16 +143,16 @@ class Rut:
         if base_normalizada == "":
             base_normalizada = "0"
         if base_normalizada != base_sin_puntos:
-            Rut._agregar_advertencia(advertencias, vistos, "LEADING_ZEROS")
+            Rut._agregar_advertencia(advertencias, vistos, "CEROS_IZQUIERDA")
 
         dv_normalizado: Optional[str] = None
         if dv_raw is not None:
             if len(dv_raw) != 1 or not re.fullmatch(r"[0-9kK]", dv_raw):
-                errores.append(crear_detalle_error("DV_INVALID"))
+                errores.append(crear_detalle_error("DV_INVALIDO"))
                 return None, errores, advertencias
             dv_normalizado = dv_raw.lower()
             if dv_raw != dv_normalizado:
-                Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_DV")
+                Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_DV")
 
         if dv_normalizado is None and dv_faltante:
             normalizado = f"{base_normalizada}-"
@@ -182,45 +181,47 @@ class Rut:
         normalizado, errores, advertencias = Rut.normalizar(valor, modo=modo)
         base: Optional[str] = None
         dv: Optional[str] = None
-        estado: EstadoValidacion = "invalid" if errores else "incomplete"
+        estado: EstadoValidacion = "invalido" if errores else "incompleto"
 
-        if errores and all(error.codigo == "EMPTY_RUT" for error in errores):
-            estado = "incomplete"
+        if errores and all(error.codigo == "RUT_VACIO" for error in errores):
+            estado = "incompleto"
 
         if not errores:
             if normalizado is None:
-                estado = "incomplete"
+                estado = "incompleto"
             else:
                 if "-" in normalizado:
                     base, dv_raw = normalizado.split("-", 1)
                     if dv_raw == "":
                         dv = None
-                        estado = "possible"
+                        estado = "posible"
                     else:
                         dv = dv_raw
+                        estado = "posible"
                 else:
                     base = normalizado
                     dv = None
+                    estado = "posible"
 
                 if base is None or base == "":
-                    estado = "incomplete"
+                    estado = "incompleto"
                 elif len(base) < configuracion.min_digitos:
-                    errores.append(crear_detalle_error("LENGTH_MIN"))
-                    estado = "invalid"
+                    errores.append(crear_detalle_error("LONGITUD_MINIMA"))
+                    estado = "invalido"
                 elif len(base) > configuracion.max_digitos:
-                    errores.append(crear_detalle_error("LENGTH_MAX"))
-                    estado = "invalid"
+                    errores.append(crear_detalle_error("LONGITUD_MAXIMA"))
+                    estado = "invalido"
                 elif dv is None:
-                    estado = "possible"
+                    estado = "posible"
                 else:
                     digito_calculado = calcular_digito_verificador(
                         base, configuracion=configuracion
                     )
                     if dv.lower() != digito_calculado.lower():
-                        errores.append(crear_detalle_error("DV_MISMATCH"))
-                        estado = "invalid"
+                        errores.append(crear_detalle_error("DV_DISCORDANTE"))
+                        estado = "invalido"
                     else:
-                        estado = "valid"
+                        estado = "valido"
 
         duracion = time.perf_counter() - inicio
         return ValidacionResultado(
@@ -236,12 +237,12 @@ class Rut:
         )
 
     @staticmethod
-    def mask(
+    def enmascarar(
         valor: Union[str, int],
         *,
-        keep: int = 4,
-        char: str = "*",
-        modo: Literal["mask", "token"] = "mask",
+        mantener: int = 4,
+        caracter: str = "*",
+        modo: Literal["mascarada", "token"] = "mascarada",
         clave: Optional[Union[str, bytes]] = None,
         separador_miles: bool = False,
         mayusculas: bool = False,
@@ -249,33 +250,33 @@ class Rut:
     ) -> str:
         """Enmascara o tokeniza un RUT válido."""
 
-        if not isinstance(keep, int) or keep < 0:
+        if not isinstance(mantener, int) or mantener < 0:
             raise ErrorValidacionRut(
-                "keep debe ser un entero mayor o igual a 0",
-                error_code="TYPE_ERROR",
+                "mantener debe ser un entero mayor o igual a 0",
+                codigo_error="ERROR_TIPO",
             )
-        if not isinstance(char, str) or len(char) != 1:
+        if not isinstance(caracter, str) or len(caracter) != 1:
             raise ErrorValidacionRut(
-                "char debe ser un único carácter",
-                error_code="TYPE_ERROR",
+                "caracter debe ser un único carácter",
+                codigo_error="ERROR_TIPO",
             )
 
         resultado = Rut.parse(valor)
         if (
-            resultado.estado != "valid"
+            resultado.estado != "valido"
             or resultado.base is None
             or resultado.dv is None
         ):
             raise ErrorValidacionRut(
-                crear_detalle_error("MASK_STATE").mensaje,
-                error_code="MASK_STATE",
+                crear_detalle_error("ESTADO_ENMASCARADO").mensaje,
+                codigo_error="ESTADO_ENMASCARADO",
             )
 
         if modo == "token":
             if clave is None:
                 raise ErrorValidacionRut(
-                    crear_detalle_error("TOKEN_KEY_REQUIRED").mensaje,
-                    error_code="TOKEN_KEY_REQUIRED",
+                    crear_detalle_error("CLAVE_TOKEN_REQUERIDA").mensaje,
+                    codigo_error="CLAVE_TOKEN_REQUERIDA",
                 )
             clave_bytes = (
                 clave if isinstance(clave, bytes) else str(clave).encode("utf-8")
@@ -286,15 +287,15 @@ class Rut:
             return f"tok_{token}"
 
         base = resultado.base
-        if keep >= len(base):
+        if mantener >= len(base):
             base_visible = base
             mascara = ""
-        elif keep == 0:
+        elif mantener == 0:
             base_visible = ""
-            mascara = char * len(base)
+            mascara = caracter * len(base)
         else:
-            base_visible = base[-keep:]
-            mascara = char * (len(base) - keep)
+            base_visible = base[-mantener:]
+            mascara = caracter * (len(base) - mantener)
 
         base_mascarada = f"{mascara}{base_visible}"
         if separador_miles:
@@ -306,19 +307,22 @@ class Rut:
             rut_mascarado = rut_mascarado.upper()
         return rut_mascarado
 
+    # Alias para compatibilidad
+    mask = enmascarar
+
     def __init__(
         self, rut: Union[str, int], validador: Optional[ValidadorRut] = None
     ) -> None:
         if not isinstance(rut, (str, int)):
             raise ErrorValidacionRut(
                 f"El RUT debe ser cadena o entero, se recibió: {type(rut).__name__}",
-                error_code="TYPE_ERROR",
+                codigo_error="ERROR_TIPO",
             )
         # Normalizar entrada antes de validar
         self.cadena_rut, _ = _limpiar_entrada(str(rut).strip())
         if not self.cadena_rut:
             raise ErrorValidacionRut(
-                "El RUT no puede estar vacío", error_code="EMPTY_RUT"
+                "El RUT no puede estar vacío", codigo_error="RUT_VACIO"
             )
         self.validador = validador or ValidadorRut()
         self._analizar_y_validar()
@@ -343,7 +347,7 @@ class Rut:
         return f"{self.base}-{self.digito_verificador}"
 
     def __repr__(self) -> str:  # pragma: no cover - trivial
-        return f"Rut(base='********', dv='*')"
+        return "Rut(base='********', dv='*')"
 
     def __eq__(self, other: Any) -> bool:  # pragma: no cover - trivial
         if not isinstance(other, Rut):
@@ -375,7 +379,7 @@ class Rut:
         ):
             raise ErrorValidacionRut(
                 "separador_personalizado debe ser un único carácter",
-                error_code="FORMAT_ERROR",
+                codigo_error="ERROR_FORMATO",
             )
         with self._contexto_formateo():
             rut_str = str(self)
@@ -416,9 +420,13 @@ class Rut:
 
     @staticmethod
     def mejorar(valor: str) -> Optional[str]:
-        """Intenta mejorar/corregir un RUT devolviendo la mejor sugerencia si existe."""
-        sugerencias = sugerir_ruts(valor, limite=1)
-        return sugerencias[0] if sugerencias else None
+        """Intenta mejorar/corregir un RUT de forma segura.
+
+        Solo una sugerencia inequívoca (distancia 1 y sin ambigüedad) será devuelta.
+        """
+        from .sugestor import mejorar_con_confianza
+
+        return mejorar_con_confianza(valor)
 
     @classmethod
     def limpiar_cache(cls) -> None:
@@ -428,7 +436,7 @@ class Rut:
     @classmethod
     def estadisticas_cache(cls) -> "EstadisticasCache":
         info = obtener_rut.cache_info()
-        return {"cache_size": info.currsize, "max_cache_size": info.maxsize}
+        return {"tamanio_cache": info.currsize, "tamanio_max_cache": info.maxsize}
 
 
 @lru_cache(maxsize=1000)
@@ -449,5 +457,5 @@ __all__ = [
 class EstadisticasCache(TypedDict):
     """Estructura del reporte de caché de :func:`obtener_rut`."""
 
-    cache_size: int
-    max_cache_size: Optional[int]
+    tamanio_cache: int
+    tamanio_max_cache: Optional[int]

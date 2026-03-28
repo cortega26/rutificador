@@ -93,15 +93,15 @@ class ProcesadorLotesRut:
     def __init__(
         self,
         validador: Optional[ValidadorRut] = None,
-        max_workers: Optional[int] = None,
-        parallel_backend: Literal["thread", "process"] = "process",
+        max_trabajadores: Optional[int] = None,
+        motor_paralelo: Literal["thread", "process"] = "process",
     ) -> None:
         self.validador = validador or ValidadorRut()
-        self.max_workers: Optional[int] = max_workers
-        self.parallel_backend = parallel_backend
+        self.max_trabajadores: Optional[int] = max_trabajadores
+        self.motor_paralelo = motor_paralelo
 
-    def _executor_class(self):
-        if self.parallel_backend == "process" and sys.platform == "win32":
+    def _clase_ejecutor(self):
+        if self.motor_paralelo == "process" and sys.platform == "win32":
             logger.warning(
                 "Procesamiento en paralelo con procesos no está soportado en Windows; "
                 "usando ThreadPoolExecutor"
@@ -109,24 +109,24 @@ class ProcesadorLotesRut:
             return ThreadPoolExecutor
         return (
             ProcessPoolExecutor
-            if self.parallel_backend == "process"
+            if self.motor_paralelo == "process"
             else ThreadPoolExecutor
         )
 
     @monitor_de_rendimiento
     def validar_lista_ruts(
-        self, ruts: Sequence[str], parallel: bool = False
+        self, ruts: Sequence[str], paralelo: bool = False
     ) -> ResultadoLote:
         inicio = time.perf_counter()
         resultado = ResultadoLote()
 
-        if parallel:
+        if paralelo:
             configuracion = self.validador.configuracion
             modo = self.validador.modo
-            payloads = ((cadena, configuracion, modo) for cadena in ruts)
-            executor_cls = self._executor_class()
-            with executor_cls(max_workers=self.max_workers) as executor:
-                resultados = executor.map(_validar_rut_en_proceso, payloads)
+            cargas = ((cadena, configuracion, modo) for cadena in ruts)
+            cls_ejecutor = self._clase_ejecutor()
+            with cls_ejecutor(max_workers=self.max_trabajadores) as ejecutor:
+                resultados = ejecutor.map(_validar_rut_en_proceso, cargas)
         else:
             resultados = (_validar_rut_local(cadena, self.validador) for cadena in ruts)
 
@@ -142,8 +142,8 @@ class ProcesadorLotesRut:
         resultado.tiempo_procesamiento = time.perf_counter() - inicio
         return resultado
 
-    def stream(self, ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:
-        """Procesa RUTs en streaming sin materializar el lote completo."""
+    def flujo(self, ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:
+        """Procesa RUTs en flujo continuo (streaming) sin materializar el lote completo."""
         for rut in ruts:
             yield Rut.parse(
                 rut,
@@ -158,8 +158,8 @@ class ProcesadorLotesRut:
         separador_miles: bool = False,
         mayusculas: bool = False,
         formato: Optional[str] = None,
-        parallel: bool = False,
-        **formatter_kwargs: Any,
+        paralelo: bool = False,
+        **kwargs_formateador: Any,
     ) -> str:
         if not isinstance(ruts, (list, tuple)):
             raise ValueError(
@@ -168,7 +168,7 @@ class ProcesadorLotesRut:
         asegurar_booleano(separador_miles, "separador_miles")
         asegurar_booleano(mayusculas, "mayusculas")
 
-        resultado_validacion = self.validar_lista_ruts(ruts, parallel=parallel)
+        resultado_validacion = self.validar_lista_ruts(ruts, paralelo=paralelo)
         partes: List[str] = ["RUTs válidos:"]
         fuentes = resultado_validacion.detalles_validos
 
@@ -189,16 +189,16 @@ class ProcesadorLotesRut:
             mayusculas=mayusculas,
         )
 
-        if parallel:
-            executor_cls = self._executor_class()
-            with executor_cls(max_workers=self.max_workers) as executor:
-                ruts_formateados = list(executor.map(formateador_detalle, fuentes))
+        if paralelo:
+            cls_ejecutor = self._clase_ejecutor()
+            with cls_ejecutor(max_workers=self.max_trabajadores) as ejecutor:
+                ruts_formateados = list(ejecutor.map(formateador_detalle, fuentes))
         else:
             ruts_formateados = [formateador_detalle(item) for item in fuentes]
 
         if formato:
             formatter = FabricaFormateadorRut.obtener_formateador(
-                formato, **formatter_kwargs
+                formato, **kwargs_formateador
             )
             if not formatter:
                 disponibles = FabricaFormateadorRut.obtener_formatos_disponibles()
@@ -235,16 +235,16 @@ class ProcesadorLotesRut:
 
 def validar_lista_ruts(
     ruts: Sequence[str],
-    parallel: bool = False,
-    max_workers: Optional[int] = None,
-    parallel_backend: Literal["thread", "process"] = "process",
+    paralelo: bool = False,
+    max_trabajadores: Optional[int] = None,
+    motor_paralelo: Literal["thread", "process"] = "process",
 ) -> ResumenValidacion:
     """Valida una secuencia de RUTs utilizando ``ProcesadorLotesRut``."""
 
     procesador = ProcesadorLotesRut(
-        max_workers=max_workers, parallel_backend=parallel_backend
+        max_trabajadores=max_trabajadores, motor_paralelo=motor_paralelo
     )
-    resultado = procesador.validar_lista_ruts(ruts, parallel=parallel)
+    resultado = procesador.validar_lista_ruts(ruts, paralelo=paralelo)
     return {"validos": resultado.ruts_validos, "invalidos": resultado.ruts_invalidos}
 
 
@@ -253,53 +253,82 @@ def formatear_lista_ruts(
     separador_miles: bool = False,
     mayusculas: bool = False,
     formato: Optional[str] = None,
-    parallel: bool = False,
-    max_workers: Optional[int] = None,
-    parallel_backend: Literal["thread", "process"] = "process",
-    **formatter_kwargs: Any,
+    paralelo: bool = False,
+    max_trabajadores: Optional[int] = None,
+    motor_paralelo: Literal["thread", "process"] = "process",
+    **kwargs_formateador: Any,
 ) -> str:
     """Valida y formatea una secuencia de RUTs."""
 
     procesador = ProcesadorLotesRut(
-        max_workers=max_workers, parallel_backend=parallel_backend
+        max_trabajadores=max_trabajadores, motor_paralelo=motor_paralelo
     )
     return procesador.formatear_lista_ruts(
         ruts,
         separador_miles=separador_miles,
         mayusculas=mayusculas,
         formato=formato,
-        parallel=parallel,
-        **formatter_kwargs,
+        paralelo=paralelo,
+        **kwargs_formateador,
     )
 
 
-def validar_stream_ruts(
+def validar_flujo_ruts(
     ruts: Iterable[Union[str, int]],
+    paralelo: bool = False,
+    max_trabajadores: Optional[int] = None,
+    motor_paralelo: Literal["thread", "process"] = "process",
 ) -> Iterator[Tuple[bool, Union[str, DetalleError]]]:
-    """Valida RUTs desde cualquier iterable y produce resultados uno a uno."""
+    """Valida RUTs desde cualquier iterable y produce resultados uno a uno.
 
-    procesador = ProcesadorLotesRut()
-    for rut in ruts:
-        es_valido, detalle = _validar_rut_local(rut, procesador.validador)
-        if es_valido:
-            yield True, detalle.valor  # type: ignore[union-attr]
-        else:
-            yield False, detalle
+    Si paralelo es True, distribuye la carga entre múltiples trabajadores
+    manteniendo la naturaleza de generador (no materializa el lote).
+    """
+    procesador = ProcesadorLotesRut(
+        max_trabajadores=max_trabajadores, motor_paralelo=motor_paralelo
+    )
+
+    if paralelo:
+        configuracion = procesador.validador.configuracion
+        modo = procesador.validador.modo
+        cargas = ((str(rut), configuracion, modo) for rut in ruts)
+        cls_ejecutor = procesador._clase_ejecutor()
+
+        with cls_ejecutor(max_workers=procesador.max_trabajadores) as ejecutor:
+            # yield de los resultados conforme los entrega el ejecutor.map (que ya es perezoso)
+            for es_valido, detalle in ejecutor.map(_validar_rut_en_proceso, cargas):
+                yield es_valido, detalle
+    else:
+        for rut in ruts:
+            es_valido, detalle = _validar_rut_local(str(rut), procesador.validador)
+            yield es_valido, detalle
 
 
-def formatear_stream_ruts(
+def formatear_flujo_ruts(
     ruts: Iterable[Union[str, int]],
     separador_miles: bool = False,
     mayusculas: bool = False,
+    paralelo: bool = False,
+    max_trabajadores: Optional[int] = None,
+    motor_paralelo: Literal["thread", "process"] = "process",
 ) -> Iterator[Tuple[bool, Union[str, DetalleError]]]:
-    """Valida y formatea RUTs provenientes de cualquier iterable."""
+    """Valida y formatea RUTs provenientes de cualquier iterable.
 
+    Soporta opcionalmente procesamiento paralelo manteniendo el flujo iterativo.
+    """
     asegurar_booleano(separador_miles, "separador_miles")
     asegurar_booleano(mayusculas, "mayusculas")
-    procesador = ProcesadorLotesRut()
-    for rut in ruts:
-        es_valido, detalle = _validar_rut_local(rut, procesador.validador)
+
+    # Reutilizamos la lógica de validación de flujo y simplemente mapeamos el formateo
+    for es_valido, detalle in validar_flujo_ruts(
+        ruts,
+        paralelo=paralelo,
+        max_trabajadores=max_trabajadores,
+        motor_paralelo=motor_paralelo,
+    ):
         if es_valido:
+            # Si el detalle es de una validación exitosa, es un RutProcesado
+            # que ya tiene el método .formatear()
             yield (
                 True,
                 detalle.formatear(  # type: ignore[union-attr]
@@ -310,7 +339,13 @@ def formatear_stream_ruts(
             yield False, detalle
 
 
-def evaluar_rendimiento(num_ruts: int = 10000, parallel: bool = True) -> Dict[str, Any]:
+def flujo(ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:
+    """Procesa RUTs en flujo continuo sin materializar el lote completo."""
+    procesador = ProcesadorLotesRut()
+    yield from procesador.flujo(ruts)
+
+
+def evaluar_rendimiento(num_ruts: int = 10000, paralelo: bool = True) -> Dict[str, Any]:
     pruebas = []
     for _ in range(num_ruts):
         base = str(random.randint(1_000_000, 99_999_999))
@@ -319,20 +354,20 @@ def evaluar_rendimiento(num_ruts: int = 10000, parallel: bool = True) -> Dict[st
 
     procesador = ProcesadorLotesRut()
     inicio = time.perf_counter()
-    resultado = procesador.validar_lista_ruts(pruebas, parallel=parallel)
+    resultado = procesador.validar_lista_ruts(pruebas, paralelo=paralelo)
     tiempo_validacion = time.perf_counter() - inicio
 
     inicio = time.perf_counter()
-    procesador.formatear_lista_ruts(pruebas[:1000], parallel=parallel)
+    procesador.formatear_lista_ruts(pruebas[:1000], paralelo=paralelo)
     tiempo_formato = time.perf_counter() - inicio
 
     return {
-        "test_ruts_count": num_ruts,
-        "parallel_processing": parallel,
-        "validation_time": tiempo_validacion,
-        "validation_rate": num_ruts / tiempo_validacion if tiempo_validacion else 0,
-        "formatting_time": tiempo_formato,
-        "formatting_rate": 1000 / tiempo_formato if tiempo_formato else 0,
+        "conteo_ruts_prueba": num_ruts,
+        "procesamiento_paralelo": paralelo,
+        "tiempo_validacion": tiempo_validacion,
+        "tasa_validacion": num_ruts / tiempo_validacion if tiempo_validacion else 0,
+        "tiempo_formateo": tiempo_formato,
+        "tasa_formateo": 1000 / tiempo_formato if tiempo_formato else 0,
         "tasa_exito": resultado.tasa_exito,
         "estadisticas_cache": Rut.estadisticas_cache(),
     }
@@ -353,7 +388,7 @@ def _validar_rut_local(
         )
         return True, detalle
     except ErrorRut as exc:
-        codigo = exc.error_code or "SIN_CODIGO"
+        codigo = exc.codigo_error or "SIN_CODIGO"
         detalle_error = crear_detalle_error(
             codigo,
             mensaje=str(exc),
@@ -390,7 +425,8 @@ __all__ = [
     "ProcesadorLotesRut",
     "validar_lista_ruts",
     "formatear_lista_ruts",
-    "validar_stream_ruts",
-    "formatear_stream_ruts",
+    "validar_flujo_ruts",
+    "formatear_flujo_ruts",
     "evaluar_rendimiento",
+    "flujo",
 ]

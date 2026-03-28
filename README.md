@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 [![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
-[![Python](https://img.shields.io/badge/Python-3.9--%3C4.0-blue)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.9--3.14-blue)](https://www.python.org/)
 [![Licencia](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Estilo de código](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Integración continua](https://github.com/cortega26/rutificador/actions/workflows/ci.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/ci.yml)
@@ -55,7 +55,7 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
 - Procesamiento por lotes con separación de válidos/ inválidos y salida en CSV, XML o JSON.
 - Validación configurable por instancia: cada `Rut` reutiliza el `ValidadorRut` inyectado.
 - Metadatos enriquecidos: cada validación genera un `RutProcesado` con duración y modo de rigurosidad.
-- Paralelismo adaptable en la API (`parallel_backend` por procesos o hilos); la CLI usa el backend predeterminado.
+- Paralelismo adaptable en la API (`motor_paralelo` por procesos o hilos); la CLI usa el backend predeterminado.
 - Compatibilidad con Python >=3.9 y <4.0.
 
 ## Alcance y limitaciones
@@ -123,7 +123,7 @@ from rutificador import Rut
 from rutificador.config import RigorValidacion
 
 resultado = Rut.parse("12.345.678-5")
-print(resultado.estado)       # valid
+print(resultado.estado)       # valido
 print(resultado.normalizado)  # 12345678-5
 
 normalizado, errores, advertencias = Rut.normalizar(
@@ -175,25 +175,25 @@ Uso mediante Inyección de Dependencias:
 ```python
 from fastapi import FastAPI, Depends
 from rutificador import Rut
-from rutificador.contrib.fastapi import RutParam
+from rutificador.contrib.fastapi import ParametroRut
 
 app = FastAPI()
 
 @app.get("/usuario/{rut}")
-def obtener_usuario(rut: Rut = Depends(RutParam)):
+def obtener_usuario(rut: Rut = Depends(ParametroRut)):
     # 'rut' ya es un objeto Rut validado y tipado
     return {"rut_normalizado": str(rut), "dv": rut.digito_verificador}
 ```
 
-La dependencia `RutParam` maneja automáticamente los errores de validación, devolviendo un error **422 Unprocessable Entity** con el detalle del error detectado (`DV_MISMATCH`, `INVALID_CHARS`, etc.) compatible con el formato estándar de FastAPI/Pydantic.
+La dependencia `ParametroRut` maneja automáticamente los errores de validación, devolviendo un error **422 Unprocessable Entity** con el detalle del error detectado (`DV_DISCORDANTE`, `CARACTERES_INVALIDOS`, etc.) compatible con el formato estándar de FastAPI/Pydantic.
 
 ### Enmascarado y tokenización
 
 ```python
 from rutificador import Rut
 
-print(Rut.mask("12.345.678-5", keep=3, char="X"))  # XXXXX678-5
-print(Rut.mask("12.345.678-5", modo="token", clave="<CLAVE>"))  # tok_...
+print(Rut.enmascarar("12.345.678-5", mantener=3, caracter="X"))  # XXXXX678-5
+print(Rut.enmascarar("12.345.678-5", modo="token", clave="<CLAVE>"))  # tok_...
 ```
 
 ### Motor de sugerencias (Fuzzy Matching)
@@ -218,7 +218,7 @@ print(mejor_opcion)  # 12345678-5
 from rutificador import ProcesadorLotesRut
 
 ruts = ["12.345.678-5", "12.345.678-1", "abc"]
-for resultado in ProcesadorLotesRut().stream(ruts):
+for resultado in flujo(ruts):
     print(resultado.estado, resultado.normalizado)
 ```
 
@@ -290,12 +290,12 @@ print(rut)
 from rutificador import ProcesadorLotesRut
 
 ruts = ['12.345.678-5', '98.765.432-1', '1-9']
-processor = ProcesadorLotesRut(parallel_backend="process")
-resultado = processor.formatear_lista_ruts(ruts, formato='json')
+procesador = ProcesadorLotesRut(motor_paralelo="process")
+resultado = procesador.formatear_lista_ruts(ruts, formato='json')
 print(resultado)
 ```
 
-Todas las operaciones en lote reutilizan las instancias de `Rut` generadas durante la validación, evitando recalcular cada entrada al momento de formatear o transmitir resultados por streaming. Esto mantiene la coherencia con los validadores personalizados y mejora el rendimiento en conjuntos grandes. Para cargas masivas puedes alternar entre `parallel_backend="thread"` (compatible con I/O intensivo) o `parallel_backend="process"` (ideal para CPU-bound).
+Todas las operaciones en lote reutilizan las instancias de `Rut` generadas durante la validación, evitando recalcular cada entrada al momento de formatear o transmitir resultados por flujo. Esto mantiene la coherencia con los validadores personalizados y mejora el rendimiento en conjuntos grandes. Para cargas masivas puedes alternar entre `motor_paralelo="thread"` (compatible con I/O intensivo) o `motor_paralelo="process"` (ideal para CPU-bound).
 
 ### CLI con archivos grandes
 
@@ -304,7 +304,7 @@ Todas las operaciones en lote reutilizan las instancias de `Rut` generadas duran
 $ rutificador validar datos/ruts_masivos.txt > ruts_validos.txt
 ```
 
-La herramienta lee línea a línea y usa el backend predeterminado; si necesitas seleccionar explícitamente hilos o procesos, hazlo mediante la API (`parallel_backend`) y combina el resultado con tus scripts para generar informes especializados.
+La herramienta lee línea a línea y usa el motor por defecto; si necesitas seleccionar explícitamente hilos o procesos, hazlo mediante la API (`motor_paralelo`) y combina el resultado con tus scripts para generar informes especializados.
 
 ### Registro y depuración
 
@@ -356,7 +356,7 @@ print(info['version'])
 from rutificador import ProcesadorLotesRut
 
 procesador = ProcesadorLotesRut()
-resultado = procesador.validar_lista_ruts(["12.345.678-5"], parallel=False)
+resultado = procesador.validar_lista_ruts(["12.345.678-5"], paralelo=False)
 
 detalle = resultado.detalles_validos[0]
 print(detalle.valor)           # 12345678-5
@@ -388,22 +388,22 @@ Resumen de códigos (v1.x):
 
 | Código | Severidad | Descripción |
 | --- | --- | --- |
-| TYPE_ERROR | error | Tipo inválido |
-| EMPTY_RUT | error | Entrada vacía |
-| INVALID_CHARS | error | Caracteres no permitidos |
-| FORMAT_DOTS | error | Separadores de miles inválidos |
-| FORMAT_HYPHEN | error | Guion inválido |
-| LENGTH_MIN | error | Longitud mínima no alcanzada |
-| LENGTH_MAX | error | Longitud máxima excedida |
-| DV_INVALID | error | DV inválido |
-| DV_MISMATCH | error | DV no coincide |
-| MASK_STATE | error | Enmascarado en estado no válido |
-| TOKEN_KEY_REQUIRED | error | Falta clave de tokenización |
-| NORMALIZED_WS | warning | Espacios eliminados |
-| NORMALIZED_DASH | warning | Guion normalizado |
-| NORMALIZED_DOTS | warning | Puntos eliminados |
-| NORMALIZED_DV | warning | DV en minúscula |
-| LEADING_ZEROS | warning | Ceros a la izquierda eliminados |
+| ERROR_TIPO | error | Tipo inválido |
+| RUT_VACIO | error | Entrada vacía |
+| CARACTERES_INVALIDOS | error | Caracteres no permitidos |
+| FORMATO_PUNTOS | error | Separadores de miles inválidos |
+| FORMATO_GUION | error | Guion inválido |
+| LONGITUD_MINIMA | error | Longitud mínima no alcanzada |
+| LONGITUD_MAXIMA | error | Longitud máxima excedida |
+| DV_INVALIDO | error | DV inválido |
+| DV_DISCORDANTE | error | DV no coincide |
+| ESTADO_ENMASCARADO | error | Enmascarado en estado no válido |
+| CLAVE_TOKEN_REQUERIDA | error | Falta clave de tokenización |
+| NORMALIZACION_ESPACIOS | warning | Espacios eliminados |
+| NORMALIZACION_GUION | warning | Guion normalizado |
+| NORMALIZACION_PUNTOS | warning | Puntos eliminados |
+| NORMALIZACION_DV | warning | DV en minúscula |
+| CEROS_IZQUIERDA | warning | Ceros a la izquierda eliminados |
 
 ### Evaluar rendimiento
 
@@ -428,31 +428,38 @@ FabricaFormateadorRut.registrar_formateador('lista', FormateadorLista)
 
 ### Uso desde la línea de comandos
 
-El paquete incluye un comando de consola llamado `rutificador` con dos subcomandos:
+El paquete incluye la herramienta `rutificador` optimizada para el procesamiento de archivos a gran escala y auditoría de datos.
 
-- `rutificador validar [archivo]`: valida RUTs recibidos por `stdin` o desde un archivo.
-- `rutificador formatear [archivo]`: valida y formatea los RUTs; acepta las opciones `--separador-miles` y `--mayusculas`.
+#### Comandos Principales
 
-Ejemplos:
+- `rutificador validar [archivo]`: Valida RUTs (desde archivo o `stdin`).
+- `rutificador formatear [archivo]`: Valida y formatea RUTs.
+- `rutificador enmascarar [archivo]`: Protege datos sensibles mediante enmascaramiento.
+
+#### Características Avanzadas (v1.4.0)
 
 ```bash
-$ echo "12345678-5" | rutificador formatear --separador-miles
-12.345.678-5
+# Procesamiento paralelo en todos los núcleos para máxima velocidad
+rutificador validar ruts_pesados.txt --paralelo --format jsonl > resultados.jsonl
 
-# Salida estructurada para auditorías
-$ rutificador validar lista_ruts.txt --format json
-[
-  {
-    "valido": true,
-    "resultado": "12345678-5",
-    "original": "12345678-5",
-    ...
-  }
-]
+# Auto-corrección inteligente: limpia y valida en un solo paso
+rutificador validar sucia_db.txt --mejorar --format csv > limpia_db.csv
 
-# Generar reporte CSV
-$ rutificador formatear sucios.txt --format csv --separador-miles > reporte.csv
+# Auditoría con salida estructurada y resumen en STDERR
+rutificador formatear datos.txt --format json --separador-miles
 ```
+
+#### Formatos de Salida
+
+- `text`: Humano-legible con resumen de auditoría detallado.
+- `json`: Array JSON estándar (OOM-Safe mediante streaming).
+- `jsonl`: Una línea por registro (ideal para Big Data).
+- `csv`: Formato de hoja de cálculo con cabecera.
+- `xml`: Estructura incremental compatible con integraciones legacy.
+
+#### Reporte de Auditoría
+
+Todas las operaciones masivas generan un bloque de metadatos (en el footer o STDERR) con la versión del sistema, tasa de éxito y tiempo exacto de ejecución, facilitando el cumplimiento de normativas de trazabilidad.
 
 ## Desarrollo
 

@@ -2,11 +2,16 @@ import argparse
 import csv
 import json
 import sys
+import time
 import xml.etree.ElementTree as ET
 from typing import Any, Dict, Iterator, List, Optional, Union
-from io import StringIO
 
-from .procesador import DetalleError, formatear_stream_ruts, validar_stream_ruts
+from .procesador import (
+    DetalleError,
+    RutProcesado,
+    formatear_flujo_ruts,
+    validar_flujo_ruts,
+)
 from .rut import Rut
 
 
@@ -30,82 +35,166 @@ def _formatear_error(detalle: DetalleError) -> str:
     return f"{detalle.rut} [{codigo}] - {detalle.mensaje}"
 
 
-def _emitir_resultados(resultados: Iterator[tuple[bool, Union[str, DetalleError]]], formato: str) -> int:
+def _emitir_resultados(
+    resultados: Iterator[tuple[bool, Union[str, DetalleError]]],
+    formato: str,
+    usar_sugerencias: bool = True,
+) -> int:
     codigo_salida = 0
-    datos = []
+    total = 0
+    validos = 0
+    inicio_audit = time.perf_counter()
+
+    # Pre-emisión según formato
+    if formato == "json":
+        print("[", end="", flush=True)
+    elif formato == "xml":
+        print("<rutificador>", flush=True)
+    elif formato == "csv":
+        # La cabecera se escribe en el primer elemento o antes
+        pass
+
+    escritor_csv = None
+    primer_elemento = True
 
     for es_valido, resultado in resultados:
+        total += 1
         item: Dict[str, Any] = {
             "valido": es_valido,
             "original": "",
             "resultado": "",
-            "error_mensaje": "",
-            "error_codigo": "",
+            "mensaje_error": "",
+            "codigo_error": "",
+            "sugerencia": "",
         }
         if es_valido:
-            item["resultado"] = str(resultado)
-            item["original"] = str(resultado)
-            item["valido"] = True
+            validos += 1
+            if isinstance(resultado, RutProcesado):
+                item["resultado"] = resultado.valor
+                item["original"] = resultado.valor
+            else:
+                item["resultado"] = str(resultado)
+                item["original"] = str(resultado)
         else:
             codigo_salida = 1
-            item["valido"] = False
             if isinstance(resultado, DetalleError):
                 item["original"] = resultado.rut
-                item["error_mensaje"] = resultado.mensaje
-                item["error_codigo"] = resultado.codigo
+                item["mensaje_error"] = resultado.mensaje
+                item["codigo_error"] = resultado.codigo
+                if usar_sugerencias:
+                    sugerencias = Rut.sugerir(resultado.rut)
+                    if sugerencias:
+                        item["sugerencia"] = sugerencias[0]
             else:
                 item["original"] = str(resultado)
-                item["error_mensaje"] = str(resultado)
-                item["error_codigo"] = "ERROR"
-        
+                item["mensaje_error"] = str(resultado)
+                item["codigo_error"] = "ERROR"
+
+        # Emisión incremental
         if formato == "text":
             if es_valido:
                 print(item["resultado"])
             else:
-                print(f"{item['original']} [{item['error_codigo']}] - {item['error_mensaje']}", file=sys.stderr)
-        else:
-            datos.append(item)
+                msg = f"{item['original']} [{item['codigo_error']}] - {item['mensaje_error']}"
+                if item["sugerencia"]:
+                    msg += f" (¿Quisiste decir {item['sugerencia']}?)"
+                print(msg, file=sys.stderr)
 
-    if formato == "json":
-        print(json.dumps(datos, indent=2, ensure_ascii=False))
-    elif formato == "csv":
-        if datos:
-            escritor = csv.DictWriter(sys.stdout, fieldnames=datos[0].keys())
-            escritor.writeheader()
-            escritor.writerows(datos)
-    elif formato == "xml":
-        raiz = ET.Element("rutificador")
-        for d in datos:
-            reg = ET.SubElement(raiz, "registro")
-            for k, v in d.items():
+        elif formato == "json":
+            if not primer_elemento:
+                print(",", end="")
+            print(json.dumps(item, ensure_ascii=False), end="")
+
+        elif formato == "jsonl":
+            print(json.dumps(item, ensure_ascii=False))
+
+        elif formato == "csv":
+            if escritor_csv is None:
+                escritor_csv = csv.DictWriter(sys.stdout, fieldnames=item.keys())
+                escritor_csv.writeheader()
+            escritor_csv.writerow(item)
+
+        elif formato == "xml":
+            reg = ET.Element("registro")
+            for k, v in item.items():
                 elem = ET.SubElement(reg, k)
                 elem.text = str(v)
-        print(ET.tostring(raiz, encoding="unicode"))
+            print(ET.tostring(reg, encoding="unicode"), end="")
+
+        primer_elemento = False
+
+    # Post-emisión y Metadatos de Auditoría
+    final_audit = time.perf_counter()
+    metadata = {
+        "audit": {
+            "version": "1.4.0",
+            "total": total,
+            "validos": validos,
+            "invalidos": total - validos,
+            "tiempo_segundos": round(final_audit - inicio_audit, 4),
+            "tasa_exito": f"{(validos / total * 100):.1f}%" if total > 0 else "0%",
+        }
+    }
+
+    if formato == "json":
+        print("]")
+        print(json.dumps(metadata, indent=2, ensure_ascii=False), file=sys.stderr)
+    elif formato == "jsonl":
+        print(json.dumps(metadata, ensure_ascii=False))
+    elif formato == "xml":
+        print("</rutificador>")
+        print(f"<!-- Audit: {metadata['audit']} -->", file=sys.stderr)
+    elif formato == "text":
+        print("\n--- RESUMEN DE AUDITORÍA ---")
+        for k, v in metadata["audit"].items():
+            print(f"{k.capitalize()}: {v}")
 
     return codigo_salida
 
 
+def _procesar_con_mejorar(ruts: Iterator[str], mejorar: bool = False) -> Iterator[str]:
+    """Intercala la mejora automática en el flujo de entrada si está activa."""
+    for rut in ruts:
+        if mejorar:
+            mejorado = Rut.mejorar(rut)
+            yield mejorado if mejorado else rut
+        else:
+            yield rut
+
+
 def _comando_validar(args: argparse.Namespace) -> int:
-    return _emitir_resultados(validar_stream_ruts(_leer_ruts(args.archivo)), args.format)
+    ruts = _leer_ruts(args.archivo)
+    ruts_procesados = _procesar_con_mejorar(ruts, args.mejorar)
 
-
-def _comando_formatear(args: argparse.Namespace) -> int:
-    resultados = formatear_stream_ruts(
-        _leer_ruts(args.archivo),
-        separador_miles=args.separador_miles,
-        mayusculas=args.mayusculas,
+    resultados = validar_flujo_ruts(
+        ruts_procesados,
+        paralelo=args.paralelo,
     )
     return _emitir_resultados(resultados, args.format)
 
 
-def _comando_mask(args: argparse.Namespace) -> int:
+def _comando_formatear(args: argparse.Namespace) -> int:
+    ruts = _leer_ruts(args.archivo)
+    ruts_procesados = _procesar_con_mejorar(ruts, args.mejorar)
+
+    resultados = formatear_flujo_ruts(
+        ruts_procesados,
+        separador_miles=args.separador_miles,
+        mayusculas=args.mayusculas,
+        paralelo=args.paralelo,
+    )
+    return _emitir_resultados(resultados, args.format)
+
+
+def _comando_enmascarar(args: argparse.Namespace) -> int:
     codigo_salida = 0
-    for rut_str in _leer_ruts(args.archivo):
+    ruts = _leer_ruts(args.archivo)
+    for rut_str in ruts:
         try:
-            resultado = Rut.mask(
+            resultado = Rut.enmascarar(
                 rut_str,
-                keep=args.keep,
-                char=args.char,
+                mantener=args.mantener,
+                caracter=args.caracter,
                 separador_miles=args.separador_miles,
                 mayusculas=args.mayusculas,
             )
@@ -120,71 +209,36 @@ def _crear_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="rutificador")
     subparsers = parser.add_subparsers(dest="comando", required=True)
 
-    parser_validar = subparsers.add_parser(
-        "validar", help="Valida RUTs desde archivo o stdin"
-    )
-    parser_validar.add_argument(
-        "archivo", nargs="?", help="Ruta de archivo con RUTs (uno por línea)"
-    )
-    parser_validar.add_argument(
-        "--format",
-        choices=["text", "json", "csv", "xml"],
-        default="text",
-        help="Formato de salida (default: text)",
-    )
-    parser_validar.set_defaults(func=_comando_validar)
+    # Comunes
+    for sub in ["validar", "formatear"]:
+        p = subparsers.add_parser(sub)
+        p.add_argument("archivo", nargs="?", help="Ruta de archivo con RUTs")
+        p.add_argument(
+            "--format",
+            choices=["text", "json", "jsonl", "csv", "xml"],
+            default="text",
+            help="Formato de salida",
+        )
+        p.add_argument("--paralelo", action="store_true", help="Procesamiento paralelo")
+        p.add_argument(
+            "--mejorar", action="store_true", help="Auto-corrección inteligente"
+        )
+        if sub == "validar":
+            p.set_defaults(func=_comando_validar)
+        else:
+            p.add_argument("--separador-miles", action="store_true")
+            p.add_argument("--mayusculas", action="store_true")
+            p.set_defaults(func=_comando_formatear)
 
-    parser_formatear = subparsers.add_parser(
-        "formatear",
-        help="Valida y formatea RUTs",
-    )
-    parser_formatear.add_argument(
-        "archivo", nargs="?", help="Ruta de archivo con RUTs (uno por línea)"
-    )
-    parser_formatear.add_argument(
-        "--separador-miles",
-        action="store_true",
-        help="Agrega separador de miles",
-    )
-    parser_formatear.add_argument(
-        "--mayusculas",
-        action="store_true",
-        help="Convierte el resultado a mayúsculas",
-    )
-    parser_formatear.add_argument(
-        "--format",
-        choices=["text", "json", "csv", "xml"],
-        default="text",
-        help="Formato de salida (default: text)",
-    )
-    parser_formatear.set_defaults(func=_comando_formatear)
+    parser_enmascarar = subparsers.add_parser("enmascarar")
+    parser_enmascarar.add_argument("archivo", nargs="?")
+    parser_enmascarar.add_argument("--mantener", type=int, default=4)
+    parser_enmascarar.add_argument("--caracter", default="*")
+    parser_enmascarar.add_argument("--separador-miles", action="store_true")
+    parser_enmascarar.add_argument("--mayusculas", action="store_true")
+    parser_enmascarar.set_defaults(func=_comando_enmascarar)
 
-    parser_mask = subparsers.add_parser(
-        "mask", help="Enmascara RUTs válidos"
-    )
-    parser_mask.add_argument(
-        "archivo", nargs="?", help="Ruta de archivo con RUTs (uno por línea)"
-    )
-    parser_mask.add_argument(
-        "--keep",
-        type=int,
-        default=4,
-        help="Número de dígitos a mantener al final (default: 4)",
-    )
-    parser_mask.add_argument(
-        "--char", default="*", help="Carácter de enmascarado (default: *)"
-    )
-    parser_mask.add_argument(
-        "--separador-miles",
-        action="store_true",
-        help="Agrega separador de miles al resultado",
-    )
-    parser_mask.add_argument(
-        "--mayusculas",
-        action="store_true",
-        help="Convierte el resultado a mayúsculas",
-    )
-    parser_mask.set_defaults(func=_comando_mask)
+    return parser
 
     return parser
 

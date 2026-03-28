@@ -51,25 +51,25 @@ def test_rutstr_normaliza_valores_validos(entrada: str, esperado: str) -> None:
     [
         (
             "12345678-9",
-            "DV_MISMATCH",
+            "DV_DISCORDANTE",
             "El dígito verificador no coincide",
             "Corrija el DV según el cálculo",
         ),
         (
             "12..345",
-            "FORMAT_DOTS",
+            "FORMATO_PUNTOS",
             "Separadores de miles inválidos",
             "Use grupos de 3 dígitos",
         ),
         (
             "abc",
-            "INVALID_CHARS",
+            "CARACTERES_INVALIDOS",
             "El RUT contiene caracteres no permitidos",
             "Use solo dígitos, puntos y guion",
         ),
         (
             "k",
-            "RUT_INVALID",
+            "RUT_INVALIDO",
             "RUT inválido",
             "Verifica formato base-dv",
         ),
@@ -83,14 +83,15 @@ def test_rutstr_mapea_errores_deterministas(
     err = _primer_error(excinfo.value)
     assert err["type"] == tipo
     assert err["msg"] == msg
-    assert err.get("ctx", {}).get("hint") == hint
+    # El hint ahora puede incluir sugerencias dinámicas
+    assert err.get("ctx", {}).get("hint", "").startswith(hint)
 
 
 def test_rutstr_rechaza_tipos_no_str() -> None:
     with pytest.raises(ValidationError) as excinfo:
         _Modelo(rut=123)  # type: ignore[arg-type]
     err = _primer_error(excinfo.value)
-    assert err["type"] == "TYPE_ERROR"
+    assert err["type"] == "ERROR_TIPO"
     assert err["msg"] == "El RUT debe ser una cadena"
     assert err.get("ctx", {}).get("hint") == "Convierta el valor a str"
 
@@ -117,7 +118,7 @@ def test_rutstr_property_based_dv_ok_pasa_y_dv_bad_falla(base: str) -> None:
     with pytest.raises(ValidationError) as excinfo:
         _Modelo(rut=f"{base}-{dv_bad}")
     err = _primer_error(excinfo.value)
-    assert err["type"] == "DV_MISMATCH"
+    assert err["type"] == "DV_DISCORDANTE"
 
 
 def test_require_pydantic_falla_con_mensaje_determinista_si_no_hay_extra() -> None:

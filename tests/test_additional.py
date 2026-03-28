@@ -7,9 +7,9 @@ from rutificador import (
     obtener_informacion_version,
     monitor_de_rendimiento,
     formatear_lista_ruts as formatear_lista_ruts_global,
-    formatear_stream_ruts as formatear_stream_ruts_global,
+    formatear_flujo_ruts as formatear_flujo_ruts_global,
     validar_lista_ruts as validar_lista_ruts_global,
-    validar_stream_ruts as validar_stream_ruts_global,
+    validar_flujo_ruts as validar_flujo_ruts_global,
     configurar_registro,
     evaluar_rendimiento,
     Rut,
@@ -22,6 +22,8 @@ from rutificador import (
 from rutificador.formatter import FormateadorCSV
 from rutificador.exceptions import ErrorValidacionRut
 
+logger = logging.getLogger(__name__)
+
 
 def test_normalizar_base_rut():
     assert normalizar_base_rut("12.345.678") == "12345678"
@@ -32,24 +34,26 @@ def test_calcular_digito_verificador_invalid_inputs():
     with pytest.raises(ErrorValidacionRut):
         calcular_digito_verificador("ABC123")
     with pytest.raises(ErrorValidacionRut):
-        calcular_digito_verificador(12345678)  # type: ignore[arg-type]
+        # type: ignore[arg-type]
+        calcular_digito_verificador(12345678)
 
 
 def test_normalizar_base_rut_invalid_type():
     with pytest.raises(ErrorValidacionRut):
-        normalizar_base_rut(123)  # type: ignore[arg-type]
+        # type: ignore[arg-type]
+        normalizar_base_rut(123)
 
 
 def test_obtener_informacion_version():
     info = obtener_informacion_version()
     assert info["version"] == __version__
-    assert "features" in info
+    assert "funcionalidades" in info
 
 
 def test_rut_cache_management():
     Rut.limpiar_cache()
     stats = Rut.estadisticas_cache()
-    assert stats["cache_size"] == 0
+    assert stats["tamanio_cache"] == 0
 
 
 def test_resultado_lote_expone_metadatos_cacheados():
@@ -74,29 +78,31 @@ def test_global_validar_y_formatear():
     texto = formatear_lista_ruts_global(ruts, formato="csv")
     assert "rut" in texto
     assert "12345678-5" in texto
-    assert "[FORMAT_ERROR]" in texto
+    assert "[CARACTERES_INVALIDOS]" in texto
 
 
-def test_validar_stream_ruts_con_generador():
+def test_validar_flujo_ruts_con_generador():
     ruts = (r for r in ["12345678-5", "12345679-3", "12345678-9"])
-    resultados = list(validar_stream_ruts_global(ruts))
-    assert resultados[0] == (True, "12345678-5")
-    assert resultados[1] == (True, "12345679-3")
+    resultados = list(validar_flujo_ruts_global(ruts))
+    assert resultados[0][0] is True
+    assert resultados[0][1].valor == "12345678-5"  # RutProcesado
+    assert resultados[1][0] is True
+    assert resultados[1][1].valor == "12345679-3"  # RutProcesado
     assert resultados[2][0] is False
     assert isinstance(resultados[2][1], DetalleError)
     assert resultados[2][1].rut == "12345678-9"
-    assert resultados[2][1].codigo == "DIGIT_ERROR"
+    assert resultados[2][1].codigo == "DV_DISCORDANTE"
 
 
-def test_formatear_stream_ruts_con_generador():
+def test_formatear_flujo_ruts_con_generador():
     ruts = (r for r in ["12345678-5", "12345679-3", "12345678-9"])
-    resultados = list(formatear_stream_ruts_global(ruts, separador_miles=True))
+    resultados = list(formatear_flujo_ruts_global(ruts, separador_miles=True))
     assert resultados[0] == (True, "12.345.678-5")
     assert resultados[1] == (True, "12.345.679-3")
     assert resultados[2][0] is False
     assert isinstance(resultados[2][1], DetalleError)
     assert resultados[2][1].rut == "12345678-9"
-    assert resultados[2][1].codigo == "DIGIT_ERROR"
+    assert resultados[2][1].codigo == "DV_DISCORDANTE"
 
 
 def test_configurar_registro_acepta_handler():
@@ -107,8 +113,8 @@ def test_configurar_registro_acepta_handler():
 
 
 def test_evaluar_rendimiento():
-    datos = evaluar_rendimiento(num_ruts=5, parallel=False)
-    assert datos["test_ruts_count"] == 5
+    datos = evaluar_rendimiento(num_ruts=5, paralelo=False)
+    assert datos["conteo_ruts_prueba"] == 5
     assert "tasa_exito" in datos
 
 

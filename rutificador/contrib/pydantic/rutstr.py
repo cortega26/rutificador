@@ -36,11 +36,11 @@ class RutStr(str):
         "Se normaliza automáticamente al formato 'base-dv' (sin puntos)."
     )
 
-    _CODIGO_RUT_INVALIDO: ClassVar[str] = "RUT_INVALID"
+    _CODIGO_RUT_INVALIDO: ClassVar[str] = "RUT_INVALIDO"
     _MENSAJE_RUT_INVALIDO: ClassVar[str] = "RUT inválido"
     _PISTA_RUT_INVALIDO: ClassVar[str] = "Verifica formato base-dv"
 
-    _CODIGO_ERROR_TIPO: ClassVar[str] = "TYPE_ERROR"
+    _CODIGO_ERROR_TIPO: ClassVar[str] = "ERROR_TIPO"
     _MENSAJE_ERROR_TIPO: ClassVar[str] = "El RUT debe ser una cadena"
     _PISTA_ERROR_TIPO: ClassVar[str] = "Convierta el valor a str"
 
@@ -61,11 +61,11 @@ class RutStr(str):
 
         resultado = Rut.parse(valor, modo=RigorValidacion.ESTRICTO)
 
-        if resultado.estado == "valid" and resultado.normalizado is not None:
+        if resultado.estado == "valido" and resultado.normalizado is not None:
             return cls(resultado.normalizado)
 
         if (
-            resultado.estado == "possible"
+            resultado.estado == "posible"
             and resultado.base is not None
             and not resultado.errores
         ):
@@ -74,16 +74,34 @@ class RutStr(str):
 
         if resultado.errores:
             detalle = resultado.errores[0]
+            pista = detalle.hint
+
+            # Intentar obtener una sugerencia para incluir en el mensaje de error
+            sugerencia = Rut.mejorar(valor)
+            if not sugerencia:
+                sug_list = Rut.sugerir(valor)
+                if sug_list:
+                    sugerencia = sug_list[0]
+
+            if sugerencia:
+                pista = f"{pista}. ¿Quisiste decir {sugerencia}?"
+
             raise PydanticCustomError(
                 detalle.codigo,
                 detalle.mensaje,
-                {"hint": detalle.hint},
+                {"hint": pista},
             )
+
+        # Fallback para errores no catalogados
+        sugerencia_fallback = Rut.mejorar(valor)
+        pista_fallback = cls._PISTA_RUT_INVALIDO
+        if sugerencia_fallback:
+            pista_fallback = f"{pista_fallback}. ¿Quisiste decir {sugerencia_fallback}?"
 
         raise cls._error(
             codigo_tipo=cls._CODIGO_RUT_INVALIDO,
             mensaje=cls._MENSAJE_RUT_INVALIDO,
-            pista=cls._PISTA_RUT_INVALIDO,
+            pista=pista_fallback,
         )
 
     @classmethod
@@ -105,13 +123,15 @@ class RutStr(str):
     ) -> dict[str, Any]:
         esquema_json = manejador(esquema_core)
         if isinstance(esquema_json, dict):
-            esquema_json.update({
-                "type": "string",
-                "title": cls._TITULO,
-                "description": cls._DESCRIPCION,
-                "examples": cls._EJEMPLOS,
-                "pattern": cls._PATTERN_CANONICO,
-            })
+            esquema_json.update(
+                {
+                    "type": "string",
+                    "title": cls._TITULO,
+                    "description": cls._DESCRIPCION,
+                    "examples": cls._EJEMPLOS,
+                    "pattern": cls._PATTERN_CANONICO,
+                }
+            )
         return esquema_json
 
 

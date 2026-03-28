@@ -24,7 +24,7 @@ BASE_DIGITS_ONLY_REGEX = re.compile(r"^\d+$")
 class Validador(Protocol):  # pylint: disable=too-few-public-methods
     """Protocolo para validadores de RUT."""
 
-    def validate(self, cadena_rut: str) -> bool:  # pragma: no cover - protocolo
+    def validar(self, cadena_rut: str) -> bool:  # pragma: no cover - protocolo
         """Valida una cadena de RUT."""
         raise NotImplementedError
 
@@ -99,7 +99,7 @@ class ValidadorRut:
             return
         if not isinstance(digito_ingresado, str):
             raise ErrorValidacionRut(
-                "El dígito verificador debe ser una cadena", error_code="TYPE_ERROR"
+                "El dígito verificador debe ser una cadena", codigo_error="ERROR_TIPO"
             )
         if digito_ingresado.lower() != digito_calculado.lower():
             raise ErrorDigitoRut(digito_ingresado, digito_calculado)

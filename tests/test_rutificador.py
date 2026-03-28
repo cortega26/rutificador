@@ -416,7 +416,7 @@ class TestProcesadorLotesRut:
         assert len(resultado.ruts_invalidos) == 1
         detalle = resultado.ruts_invalidos[0]
         assert detalle.rut == "98765432-1"
-        assert detalle.codigo == "DIGIT_ERROR"
+        assert detalle.codigo == "DV_DISCORDANTE"
 
     # La parametrización utiliza la salida esperada para validar toda la cadena
     # formateada (ignorando las líneas de estadísticas que varían). El conjunto
@@ -446,7 +446,7 @@ class TestProcesadorLotesRut:
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
         assert "RUTs válidos:" in resultado
         if "98765432-1" in ruts:
-            assert "[DIGIT_ERROR]" in resultado
+            assert "[DV_DISCORDANTE]" in resultado
 
     def test_formatear_lista_ruts_formato_invalido(self):
         """Prueba que formato inválido lance excepción."""
@@ -459,9 +459,9 @@ class TestProcesadorLotesRut:
     def test_validar_lista_ruts_parallel(self):
         """Compara resultados en modo secuencial y paralelo."""
         ruts = ["12345678-5", "98765432-1", "1-9", "123"]
-        processor = ProcesadorLotesRut(parallel_backend="thread")
-        seq = processor.validar_lista_ruts(ruts, parallel=False)
-        par = processor.validar_lista_ruts(ruts, parallel=True)
+        processor = ProcesadorLotesRut(motor_paralelo="thread")
+        seq = processor.validar_lista_ruts(ruts, paralelo=False)
+        par = processor.validar_lista_ruts(ruts, paralelo=True)
         assert seq.ruts_validos == par.ruts_validos
         assert seq.ruts_invalidos == par.ruts_invalidos
 
@@ -488,8 +488,8 @@ class TestProcesadorLotesRut:
         monkeypatch.setattr(
             "rutificador.procesador.ProcessPoolExecutor", EjecutorPrueba
         )
-        processor = ProcesadorLotesRut(parallel_backend="process")
-        processor.formatear_lista_ruts(["12345678-5"], parallel=True)
+        processor = ProcesadorLotesRut(motor_paralelo="process")
+        processor.formatear_lista_ruts(["12345678-5"], paralelo=True)
         assert llamados == [None, None]
 
     def test_paralelo_con_procesos_cae_a_threads_en_windows(self, monkeypatch):
@@ -515,16 +515,16 @@ class TestProcesadorLotesRut:
         monkeypatch.setattr(
             "rutificador.procesador.ThreadPoolExecutor", ThreadExecutorPrueba
         )
-        processor = ProcesadorLotesRut(parallel_backend="process")
-        processor.validar_lista_ruts(["12345678-5"], parallel=True)
+        processor = ProcesadorLotesRut(motor_paralelo="process")
+        processor.validar_lista_ruts(["12345678-5"], paralelo=True)
         assert llamados == [None]
 
     def test_formatear_lista_ruts_parallel(self):
         """Verifica que el formateo paralelo preserve el orden."""
         ruts = ["12345678-5", "98765432-5", "1-9", "123"]
         processor = ProcesadorLotesRut()
-        seq = processor.formatear_lista_ruts(ruts, parallel=False)
-        par = processor.formatear_lista_ruts(ruts, parallel=True)
+        seq = processor.formatear_lista_ruts(ruts, paralelo=False)
+        par = processor.formatear_lista_ruts(ruts, paralelo=True)
 
         def extraer_validos(texto: str) -> List[str]:
             lineas = texto.splitlines()
@@ -601,7 +601,7 @@ class TestProcesadorLotesRut:
         )
         monkeypatch.setattr("rutificador.procesador.sys.platform", "linux")
         processor = ProcesadorLotesRut()
-        processor.validar_lista_ruts([], parallel=True)
+        processor.validar_lista_ruts([], paralelo=True)
         assert llamados == [None]
 
     def test_executor_thread_backend(self, monkeypatch):
@@ -624,8 +624,8 @@ class TestProcesadorLotesRut:
                 return []
 
         monkeypatch.setattr("rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba)
-        processor = ProcesadorLotesRut(max_workers=4, parallel_backend="thread")
-        processor.validar_lista_ruts([], parallel=True)
+        processor = ProcesadorLotesRut(max_trabajadores=4, motor_paralelo="thread")
+        processor.validar_lista_ruts([], paralelo=True)
         assert llamados == [4]
 
 
