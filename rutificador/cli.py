@@ -13,6 +13,7 @@ from .procesador import (
     validar_flujo_ruts,
 )
 from .rut import Rut
+from .version import obtener_informacion_version
 
 
 def _leer_ruts(ruta_archivo: Optional[str]) -> Iterator[str]:
@@ -38,7 +39,8 @@ def _formatear_error(detalle: DetalleError) -> str:
 def _emitir_resultados(
     resultados: Iterator[tuple[bool, Union[str, DetalleError]]],
     formato: str,
-    usar_sugerencias: bool = True,
+    usar_sugerencias: bool = False,
+    quiet: bool = False,
 ) -> int:
     codigo_salida = 0
     total = 0
@@ -136,18 +138,21 @@ def _emitir_resultados(
         }
     }
 
+    if quiet:
+        return codigo_salida
+
     if formato == "json":
         print("]")
         print(json.dumps(metadata, indent=2, ensure_ascii=False), file=sys.stderr)
     elif formato == "jsonl":
-        print(json.dumps(metadata, ensure_ascii=False))
+        print(json.dumps(metadata, ensure_ascii=False), file=sys.stderr)
     elif formato == "xml":
         print("</rutificador>")
         print(f"<!-- Audit: {metadata['audit']} -->", file=sys.stderr)
     elif formato == "text":
-        print("\n--- RESUMEN DE AUDITORÍA ---")
+        print("\n--- RESUMEN DE AUDITORÍA ---", file=sys.stderr)
         for k, v in metadata["audit"].items():
-            print(f"{k.capitalize()}: {v}")
+            print(f"{k.capitalize()}: {v}", file=sys.stderr)
 
     return codigo_salida
 
@@ -170,7 +175,9 @@ def _comando_validar(args: argparse.Namespace) -> int:
         ruts_procesados,
         paralelo=args.paralelo,
     )
-    return _emitir_resultados(resultados, args.format)
+    return _emitir_resultados(
+        resultados, args.format, usar_sugerencias=args.sugerir, quiet=args.quiet
+    )
 
 
 def _comando_formatear(args: argparse.Namespace) -> int:
@@ -183,7 +190,9 @@ def _comando_formatear(args: argparse.Namespace) -> int:
         mayusculas=args.mayusculas,
         paralelo=args.paralelo,
     )
-    return _emitir_resultados(resultados, args.format)
+    return _emitir_resultados(
+        resultados, args.format, usar_sugerencias=args.sugerir, quiet=args.quiet
+    )
 
 
 def _comando_enmascarar(args: argparse.Namespace) -> int:
@@ -203,6 +212,20 @@ def _comando_enmascarar(args: argparse.Namespace) -> int:
             codigo_salida = 1
             print(f"{rut_str} [ERROR] - {str(exc)}", file=sys.stderr)
     return codigo_salida
+def _comando_info(args: argparse.Namespace) -> int:
+    info = obtener_informacion_version()
+    if args.format == "json":
+        print(json.dumps(info, indent=2, ensure_ascii=False))
+    else:
+        print(f"--- RUTIFICADOR v{info['version']} ---")
+        print(f"Descripción: {info['descripcion']}")
+        print(f"Autor: {info['autor']}")
+        print(f"Licencia: {info['licencia']}")
+        print("\nFuncionalidades principales:")
+        for func in info["funcionalidades"]:
+            print(f"  - {func}")
+        print(f"\nEntorno: Python {sys.version.split()[0]}")
+    return 0
 
 
 def _crear_parser() -> argparse.ArgumentParser:
@@ -223,6 +246,12 @@ def _crear_parser() -> argparse.ArgumentParser:
         p.add_argument(
             "--mejorar", action="store_true", help="Auto-corrección inteligente"
         )
+        p.add_argument(
+            "--sugerir", action="store_true", help="Incluir sugerencias en la salida"
+        )
+        p.add_argument(
+            "--quiet", "-q", action="store_true", help="Suprime el resumen de auditoría"
+        )
         if sub == "validar":
             p.set_defaults(func=_comando_validar)
         else:
@@ -238,7 +267,11 @@ def _crear_parser() -> argparse.ArgumentParser:
     parser_enmascarar.add_argument("--mayusculas", action="store_true")
     parser_enmascarar.set_defaults(func=_comando_enmascarar)
 
-    return parser
+    parser_info = subparsers.add_parser("info")
+    parser_info.add_argument(
+        "--format", choices=["text", "json"], default="text", help="Formato de salida"
+    )
+    parser_info.set_defaults(func=_comando_info)
 
     return parser
 

@@ -25,7 +25,8 @@ def ejecutar_cli(
 
 def test_validar_desde_stdin():
     entrada = "12345678-5\n12345678-9\n"
-    resultado = ejecutar_cli("validar", entrada=entrada)
+    # Ahora las sugerencias son opcionales (--sugerir)
+    resultado = ejecutar_cli("validar", "--sugerir", entrada=entrada)
     assert "12345678-5" in resultado.stdout
     assert "12345678-9" in resultado.stderr
     assert "[DV_DISCORDANTE]" in resultado.stderr
@@ -108,15 +109,14 @@ def test_cli_mejorar_flag():
 def test_cli_jsonl_format():
     entrada = "12345678-5\n12.345.678-k\n"
     resultado = ejecutar_cli("validar", "--format", "jsonl", entrada=entrada)
-    lineas = resultado.stdout.strip().split("\n")
-    # 2 registros + 1 metadata = 3 líneas
-    assert len(lineas) == 3
+    # 2 registros en stdout
+    lineas_data = resultado.stdout.strip().split("\n")
+    assert len(lineas_data) == 2
+    # Metadata en stderr
+    assert "audit" in resultado.stderr
     import json
-
-    data_reg1 = json.loads(lineas[0])
+    data_reg1 = json.loads(lineas_data[0])
     assert data_reg1["valido"] is True
-    data_meta = json.loads(lineas[2])
-    assert "audit" in data_meta
 
 
 def test_cli_paralelo():

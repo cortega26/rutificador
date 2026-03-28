@@ -42,6 +42,21 @@ from .exceptions import (
     RutInvalidoError,
 )
 
+
+def _registrar_contribs() -> None:
+    """Registra extensiones externas si están disponibles."""
+    try:
+        from .contrib import pandas  # noqa: F401
+    except (ImportError, AttributeError):
+        pass
+    try:
+        from .contrib import polars  # noqa: F401
+    except (ImportError, AttributeError):
+        pass
+
+
+_registrar_contribs()
+
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 

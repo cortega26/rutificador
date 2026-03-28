@@ -2,7 +2,7 @@
 
 from typing import List, TypedDict
 
-__version__ = "1.4.0"
+__version__ = "1.4.2"
 
 
 class InformacionVersion(TypedDict):

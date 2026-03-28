@@ -1,5 +1,6 @@
 # SECURITY-CRITICAL
 import logging
+import os
 import random
 import time
 import sys
@@ -113,9 +114,18 @@ class ProcesadorLotesRut:
             else ThreadPoolExecutor
         )
 
+    def _calcular_chunksize(self, n_items: int, max_workers: int) -> int:
+        """Calcula un chunksize óptimo para el procesamiento paralelo."""
+        if n_items <= 0:
+            return 1
+        return max(1, min(1000, n_items // (max_workers * 4)))
+
     @monitor_de_rendimiento
     def validar_lista_ruts(
-        self, ruts: Sequence[str], paralelo: bool = False
+        self,
+        ruts: Sequence[str],
+        paralelo: bool = False,
+        chunksize: Optional[int] = None,
     ) -> ResultadoLote:
         inicio = time.perf_counter()
         resultado = ResultadoLote()
@@ -125,8 +135,11 @@ class ProcesadorLotesRut:
             modo = self.validador.modo
             cargas = ((cadena, configuracion, modo) for cadena in ruts)
             cls_ejecutor = self._clase_ejecutor()
+            n_workers = self.max_trabajadores or (os.cpu_count() or 1)
+            c_size = chunksize or self._calcular_chunksize(len(ruts), n_workers)
+            
             with cls_ejecutor(max_workers=self.max_trabajadores) as ejecutor:
-                resultados = ejecutor.map(_validar_rut_en_proceso, cargas)
+                resultados = ejecutor.map(_validar_rut_en_proceso, cargas, chunksize=c_size)
         else:
             resultados = (_validar_rut_local(cadena, self.validador) for cadena in ruts)
 

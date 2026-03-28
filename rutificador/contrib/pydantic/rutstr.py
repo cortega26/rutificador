@@ -12,7 +12,7 @@ Contrato:
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal, Optional, Type, cast
 
 from pydantic_core import PydanticCustomError, core_schema as cs
 
@@ -21,19 +21,22 @@ from rutificador.rut import Rut
 from rutificador.utils import calcular_digito_verificador
 
 
+FormatoRut = Literal["base-dv", "canonico", "miles", "miles-con-guion"]
+
+
 class RutStr(str):
     """Tipo `str` validado/normalizado para Pydantic v2.
 
     Este tipo pertenece a un extra opcional que se instala explícitamente.
     """
 
-    _PATTERN_CANONICO: ClassVar[str] = r"^\d{1,8}-[0-9kK]$"
+    _PATTERN_BASE: ClassVar[str] = r"^\d{1,8}-[0-9kK]$"
     _EJEMPLOS: ClassVar[list[str]] = ["12.345.678-5", "12345678-5"]
 
     _TITULO: ClassVar[str] = "Identificador de RUT Chileno"
     _DESCRIPCION: ClassVar[str] = (
         "Cadena que representa un Rol Único Tributario (RUT) chileno. "
-        "Se normaliza automáticamente al formato 'base-dv' (sin puntos)."
+        "Se normaliza automáticamente al formato deseado."
     )
 
     _CODIGO_RUT_INVALIDO: ClassVar[str] = "RUT_INVALIDO"
@@ -51,7 +54,7 @@ class RutStr(str):
         return PydanticCustomError(codigo_tipo, mensaje, {"hint": pista})
 
     @classmethod
-    def _validar_y_normalizar(cls, valor: Any) -> "RutStr":
+    def _validar_y_normalizar(cls, valor: Any, formato: FormatoRut = "base-dv") -> "RutStr":
         if not isinstance(valor, str):
             raise cls._error(
                 codigo_tipo=cls._CODIGO_ERROR_TIPO,
@@ -62,21 +65,24 @@ class RutStr(str):
         resultado = Rut.parse(valor, modo=RigorValidacion.ESTRICTO)
 
         if resultado.estado == "valido" and resultado.normalizado is not None:
-            return cls(resultado.normalizado)
+            obj = Rut(resultado.normalizado)
+            return cls(cls._formatear(obj, formato))
 
         if (
             resultado.estado == "posible"
             and resultado.base is not None
             and not resultado.errores
         ):
+            # Caso donde falta el DV pero la base es viable
             dv = calcular_digito_verificador(resultado.base).lower()
-            return cls(f"{resultado.base}-{dv}")
+            obj = Rut(f"{resultado.base}-{dv}")
+            return cls(cls._formatear(obj, formato))
 
         if resultado.errores:
             detalle = resultado.errores[0]
             pista = detalle.hint
 
-            # Intentar obtener una sugerencia para incluir en el mensaje de error
+            # Intentar obtener una sugerencia
             sugerencia = Rut.mejorar(valor)
             if not sugerencia:
                 sug_list = Rut.sugerir(valor)
@@ -92,25 +98,29 @@ class RutStr(str):
                 {"hint": pista},
             )
 
-        # Fallback para errores no catalogados
-        sugerencia_fallback = Rut.mejorar(valor)
-        pista_fallback = cls._PISTA_RUT_INVALIDO
-        if sugerencia_fallback:
-            pista_fallback = f"{pista_fallback}. ¿Quisiste decir {sugerencia_fallback}?"
-
         raise cls._error(
             codigo_tipo=cls._CODIGO_RUT_INVALIDO,
             mensaje=cls._MENSAJE_RUT_INVALIDO,
-            pista=pista_fallback,
+            pista=cls._PISTA_RUT_INVALIDO,
         )
+
+    @classmethod
+    def _formatear(cls, obj: Rut, formato: FormatoRut) -> str:
+        if formato == "base-dv":
+            return obj.formatear(separador_miles=False)
+        if formato == "miles":
+            return obj.formatear(separador_miles=True)
+        if formato == "canonico":
+            return obj.formatear(separador_miles=False, mayusculas=True)
+        if formato == "miles-con-guion":
+            return obj.formatear(separador_miles=True, mayusculas=True)
+        return obj.formatear(separador_miles=False)
 
     @classmethod
     def __get_pydantic_core_schema__(
         cls, _tipo_origen: Any, _manejador: Any
     ) -> cs.CoreSchema:
-        # Validador estricto: se encarga del chequeo de tipo (solo str) y del mapeo
-        # de errores; no dependemos del esquema por defecto de `str` para mantener
-        # códigos de tipo deterministas.
+        # Por defecto usa 'base-dv'
         return cs.no_info_plain_validator_function(
             cls._validar_y_normalizar,
             json_schema_input_schema=cs.str_schema(),
@@ -129,10 +139,27 @@ class RutStr(str):
                     "title": cls._TITULO,
                     "description": cls._DESCRIPCION,
                     "examples": cls._EJEMPLOS,
-                    "pattern": cls._PATTERN_CANONICO,
+                    "pattern": cls._PATTERN_BASE,
                 }
             )
         return esquema_json
 
 
-__all__ = ["RutStr"]
+def RutStrAnnotated(formato: FormatoRut = "base-dv") -> Type[RutStr]:
+    """Genera un tipo RutStr con un formato específico para Pydantic."""
+
+    class RutStrForFormat(RutStr):
+        @classmethod
+        def __get_pydantic_core_schema__(
+            cls, _tipo_origen: Any, _manejador: Any
+        ) -> cs.CoreSchema:
+            return cs.no_info_plain_validator_function(
+                lambda v: cls._validar_y_normalizar(v, formato=formato),
+                json_schema_input_schema=cs.str_schema(),
+                serialization=cs.to_string_ser_schema(),
+            )
+
+    return cast(Type[RutStr], RutStrForFormat)
+
+
+__all__ = ["RutStr", "RutStrAnnotated", "FormatoRut"]

@@ -9,19 +9,18 @@ logger = logging.getLogger(__name__)
 class ErrorRut(Exception):
     """Excepción base para todos los errores relacionados con RUT."""
 
-
-class ErrorRut(Exception):
-    """Excepción base para todos los errores relacionados con RUT."""
-
     def __init__(
         self, mensaje: str, codigo_error: Optional[str] = None, **kwargs: Any
     ) -> None:
         super().__init__(mensaje)
         self.mensaje = mensaje
         self.codigo_error = codigo_error
-        self.contexto = kwargs
+        # Sanitizar valores PII (RUT) de los metadatos antes de loguear
+        self.contexto = {
+            k: ("********" if "rut" in k.lower() else v) for k, v in kwargs.items()
+        }
         # Evitar registrar valores completos de RUT en logs por defecto.
-        logger.error("Error de RUT [%s]", codigo_error, extra=kwargs)
+        logger.error("Error de RUT [%s]", codigo_error, extra=self.contexto)
 
 
 class ErrorValidacionRut(ErrorRut):
