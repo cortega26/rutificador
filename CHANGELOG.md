@@ -2,7 +2,7 @@
 
 ## 1.3.0 - 2026-03-28
 
-- [FEATURE] Motor de sugerencias inteligente (Fuzzy Matching) con `Rut.suggest()` y `Rut.mejorar()`.
+- [FEATURE] Motor de sugerencias inteligente (Fuzzy Matching) con `Rut.sugerir()` y `Rut.mejorar()`.
 - [FEATURE] Soporte para salida estructurada en CLI mediante `--format [json|csv|xml]`.
 - [FEATURE] Integración nativa con FastAPI mediante la dependencia `RutParam`.
 - [ENHANCEMENT] Esquemas JSON enriquecidos para `RutStr` (Pydantic v2) para mejor documentación OpenAPI/Swagger.

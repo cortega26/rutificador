@@ -29,9 +29,9 @@ def test_sugestor_falta_digito():
     sugerencias = sugerir_ruts("12345678")
     assert "12345678-5" in sugerencias
 
-def test_rut_suggest_api():
+def test_rut_sugerir_api():
     # Probar la API de alto nivel
-    sugerencias = Rut.suggest("12345678-0")
+    sugerencias = Rut.sugerir("12345678-0")
     assert len(sugerencias) > 0
     assert "12345678-5" in sugerencias
 

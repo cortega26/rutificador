@@ -204,7 +204,7 @@ Ideal para interfaces de usuario que necesitan corregir errores tipográficos co
 from rutificador import Rut
 
 # Sugerir correcciones para un RUT con transposición o DV erróneo
-sugerencias = Rut.suggest("12.345.687-5")
+sugerencias = Rut.sugerir("12.345.687-5")
 print(sugerencias)  # ['12345678-5', ...]
 
 # Intentar mejorar/corregir automáticamente la entrada

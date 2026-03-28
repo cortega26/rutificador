@@ -407,7 +407,7 @@ class Rut:
         return formateado[::-1]
 
     @staticmethod
-    def suggest(valor: str) -> list[str]:
+    def sugerir(valor: str) -> list[str]:
         """Sugiere RUTs válidos cercanos a la entrada.
 
         Útil para capturar errores de digitación o 'Did you mean?' en interfaces.
