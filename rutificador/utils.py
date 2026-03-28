@@ -2,7 +2,9 @@
 """Funciones utilitarias para Rutificador."""
 
 import logging
+import re
 import time
+import unicodedata
 from functools import lru_cache, wraps
 from itertools import cycle
 from typing import Any, Callable, Optional, TypeVar
@@ -166,6 +168,34 @@ def normalizar_base_rut(base: str) -> str:
         )
     base_normalizada = base.translate(_PUNTOS_TRADUCCION).lstrip("0")
     return base_normalizada if base_normalizada else "0"
+
+
+def _limpiar_entrada(valor: str) -> tuple[str, bool]:
+    """Limpia la entrada de RUT (Unicode, espacios, guiones).
+
+    Args:
+        valor: Cadena a limpiar.
+
+    Returns:
+        Tupla con (cadena_limpia, hubo_cambios).
+    """
+    if not isinstance(valor, str):
+        return valor, False
+
+    cadena_original = valor
+    # Normalización Unicode NFKC
+    cadena = unicodedata.normalize("NFKC", cadena_original)
+    # Limpieza de espacios
+    cadena = re.sub(r"\s+", "", cadena)
+    # Normalización de guiones
+    cadena = (
+        cadena.replace("_", "-")
+        .replace("–", "-")
+        .replace("—", "-")
+        .replace("−", "-")  # Minus sign unicode
+    )
+
+    return cadena, cadena != cadena_original
 
 
 __all__ = [

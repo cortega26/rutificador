@@ -50,10 +50,11 @@ cadenas_base_validas = [
     ("123.456", "123.456", "123456"),
     ("1.234.567", "1.234.567", "1234567"),
     ("12.345.678", "12.345.678", "12345678"),
+    ("123.456.789", "123.456.789", "123456789"),
 ]
 
 cadenas_base_invalidas = [
-    ("123456789", "123456789"),  # Más de 8 dígitos
+    ("1234567890", "1234567890"),  # Más de 9 dígitos
     ("123.4567", "123.4567"),  # Más de 3 dígitos luego del punto
     ("12.32", "12.32"),  # Menos de 3 dígitos luego del punto
     ("12.3a5.678", "12.3a5.678"),  # Letras en el RUT base
@@ -74,7 +75,7 @@ cadenas_rut_validas = [
     " 25.005.183-2 ",  # Con puntos, espacios y D.V.
 ]
 
-cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "123456789"]
+cadenas_rut_invalidas = ["12345678-9", "98765432-1", "12345.67", "1234567890"]
 
 # Datos de prueba para formateo (actualizados con JSON válido)
 datos_test_formato = [
@@ -358,6 +359,10 @@ class TestRut:
     def test_str_representation(self, rut_valido):
         """Prueba la representación string del RUT."""
         assert str(rut_valido) == "12345678-5"
+
+    def test_repr_representation(self, rut_valido):
+        """Prueba la representación repr de Rut (enmascarada)."""
+        assert repr(rut_valido) == "Rut(base='********', dv='*')"
 
     def test_rut_respeta_configuracion_personalizada(self):
         """Permite crear RUTs con configuraciones extendidas de dígitos."""

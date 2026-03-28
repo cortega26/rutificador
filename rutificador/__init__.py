@@ -3,6 +3,7 @@
 from typing import List
 
 from .version import __version__, obtener_informacion_version
+from .config import ConfiguracionRut, RigorValidacion, RutConfig
 from .validador import Validador, ValidadorRut, RutValidator
 from .rut import Rut, RutBase, ValidacionResultado, obtener_rut
 from .procesador import (
@@ -78,5 +79,8 @@ __all__: List[str] = [
     "ErrorLongitudRut",
     "ErrorProcesamientoRut",
     "RutInvalidoError",
+    "ConfiguracionRut",
+    "RigorValidacion",
+    "RutConfig",
     "__version__",
 ]

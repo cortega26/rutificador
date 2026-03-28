@@ -10,7 +10,7 @@ from .exceptions import (
     ErrorLongitudRut,
     ErrorValidacionRut,
 )
-from .utils import normalizar_base_rut, asegurar_cadena_no_vacia
+from .utils import normalizar_base_rut, asegurar_cadena_no_vacia, _limpiar_entrada
 
 logger = logging.getLogger(__name__)
 
@@ -109,8 +109,7 @@ class ValidadorRut:
 
     def _normalizar_entrada(self, cadena_rut: str) -> str:
         """Normaliza la entrada en modo de validación flexible."""
-        normalizado = re.sub(r"\s+", "", cadena_rut)
-        normalizado = normalizado.replace("_", "-").replace("–", "-")
+        normalizado, _ = _limpiar_entrada(cadena_rut)
         return normalizado
 
 

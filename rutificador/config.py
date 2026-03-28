@@ -11,7 +11,7 @@ class ConfiguracionRut:
 
     factores_verificacion: Tuple[int, ...] = (2, 3, 4, 5, 6, 7)
     modulo: int = 11
-    max_digitos: int = 8
+    max_digitos: int = 9
     min_digitos: int = 1
 
     def __post_init__(self) -> None:

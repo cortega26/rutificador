@@ -15,7 +15,8 @@ from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut, RigorValidacion
 from .errores import DetalleError, crear_detalle_error
 from .exceptions import ErrorValidacionRut
 from .validador import ValidadorRut
-from .utils import calcular_digito_verificador, asegurar_booleano
+from .utils import calcular_digito_verificador, asegurar_booleano, _limpiar_entrada
+from .sugestor import sugerir_ruts
 
 logger = logging.getLogger(__name__)
 
@@ -90,32 +91,16 @@ class Rut:
             return None, errores, advertencias
 
         cadena_original = str(valor)
-        if any(
-            caracter.isdigit() and caracter not in "0123456789"
-            for caracter in cadena_original
-        ):
-            errores.append(crear_detalle_error("INVALID_CHARS"))
-            return None, errores, advertencias
-        cadena = unicodedata.normalize("NFKC", cadena_original)
-        cambio_unicode = cadena != cadena_original
+        cadena, _ = _limpiar_entrada(cadena_original)
 
-        cadena_recortada = cadena.strip()
-        if cadena_recortada != cadena:
-            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_WS")
-        cadena = cadena_recortada
-
-        if any(simbolo in cadena for simbolo in ("_", "–", "—")):
-            cadena = cadena.replace("_", "-").replace("–", "-").replace("—", "-")
-            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_DASH")
-
-        if re.search(r"\s", cadena):
+        if re.search(r"\s", cadena_original):
             if modo == RigorValidacion.ESTRICTO:
                 errores.append(crear_detalle_error("INVALID_CHARS"))
                 return None, errores, advertencias
-            sin_espacios = re.sub(r"\s+", "", cadena)
-            if sin_espacios != cadena:
-                Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_WS")
-            cadena = sin_espacios
+            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_WS")
+
+        if any(simbolo in cadena_original for simbolo in ("_", "–", "—", "−")):
+            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_DASH")
 
         if cadena == "":
             errores.append(crear_detalle_error("EMPTY_RUT"))
@@ -169,12 +154,6 @@ class Rut:
             dv_normalizado = dv_raw.lower()
             if dv_raw != dv_normalizado:
                 Rut._agregar_advertencia(advertencias, vistos, "NORMALIZED_DV")
-
-        if cambio_unicode and not (
-            "NORMALIZED_WS" in vistos or "NORMALIZED_DASH" in vistos
-        ):
-            errores.append(crear_detalle_error("INVALID_CHARS"))
-            return None, errores, advertencias
 
         if dv_normalizado is None and dv_faltante:
             normalizado = f"{base_normalizada}-"
@@ -335,7 +314,8 @@ class Rut:
                 f"El RUT debe ser cadena o entero, se recibió: {type(rut).__name__}",
                 error_code="TYPE_ERROR",
             )
-        self.cadena_rut = str(rut).strip()
+        # Normalizar entrada antes de validar
+        self.cadena_rut, _ = _limpiar_entrada(str(rut).strip())
         if not self.cadena_rut:
             raise ErrorValidacionRut(
                 "El RUT no puede estar vacío", error_code="EMPTY_RUT"
@@ -363,7 +343,7 @@ class Rut:
         return f"{self.base}-{self.digito_verificador}"
 
     def __repr__(self) -> str:  # pragma: no cover - trivial
-        return f"Rut('{self}')"
+        return f"Rut(base='********', dv='*')"
 
     def __eq__(self, other: Any) -> bool:  # pragma: no cover - trivial
         if not isinstance(other, Rut):
@@ -425,6 +405,20 @@ class Rut:
         ]
         formateado = separador.join(grupos)
         return formateado[::-1]
+
+    @staticmethod
+    def suggest(valor: str) -> list[str]:
+        """Sugiere RUTs válidos cercanos a la entrada.
+
+        Útil para capturar errores de digitación o 'Did you mean?' en interfaces.
+        """
+        return sugerir_ruts(valor)
+
+    @staticmethod
+    def mejorar(valor: str) -> Optional[str]:
+        """Intenta mejorar/corregir un RUT devolviendo la mejor sugerencia si existe."""
+        sugerencias = sugerir_ruts(valor, limite=1)
+        return sugerencias[0] if sugerencias else None
 
     @classmethod
     def limpiar_cache(cls) -> None:

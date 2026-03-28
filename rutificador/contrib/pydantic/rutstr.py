@@ -27,8 +27,14 @@ class RutStr(str):
     Este tipo pertenece a un extra opcional que se instala explícitamente.
     """
 
-    _PATTERN_CANONICO: ClassVar[str] = r"^\d{1,8}-[0-9k]$"
+    _PATTERN_CANONICO: ClassVar[str] = r"^\d{1,8}-[0-9kK]$"
     _EJEMPLOS: ClassVar[list[str]] = ["12.345.678-5", "12345678-5"]
+
+    _TITULO: ClassVar[str] = "Identificador de RUT Chileno"
+    _DESCRIPCION: ClassVar[str] = (
+        "Cadena que representa un Rol Único Tributario (RUT) chileno. "
+        "Se normaliza automáticamente al formato 'base-dv' (sin puntos)."
+    )
 
     _CODIGO_RUT_INVALIDO: ClassVar[str] = "RUT_INVALID"
     _MENSAJE_RUT_INVALIDO: ClassVar[str] = "RUT inválido"
@@ -99,9 +105,13 @@ class RutStr(str):
     ) -> dict[str, Any]:
         esquema_json = manejador(esquema_core)
         if isinstance(esquema_json, dict):
-            esquema_json.setdefault("type", "string")
-            esquema_json.setdefault("examples", cls._EJEMPLOS)
-            esquema_json.setdefault("pattern", cls._PATTERN_CANONICO)
+            esquema_json.update({
+                "type": "string",
+                "title": cls._TITULO,
+                "description": cls._DESCRIPCION,
+                "examples": cls._EJEMPLOS,
+                "pattern": cls._PATTERN_CANONICO,
+            })
         return esquema_json
 
 

@@ -16,17 +16,33 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
 - [Rutificador](#rutificador)
   - [Tabla de Contenidos](#tabla-de-contenidos)
   - [Características](#características)
+  - [Alcance y limitaciones](#alcance-y-limitaciones)
   - [Instalación](#instalación)
   - [Uso](#uso)
     - [Importar la clase Rut](#importar-la-clase-rut)
-    - [Crear Un Objeto](#crear-un-objeto)
+    - [Crear un objeto](#crear-un-objeto)
     - [Validar un RUT](#validar-un-rut)
-    - [Calcular el Dígito Verificador de un RUT](#calcular-el-dígito-verificador-de-un-rut)
+    - [Calcular el Dígito Verificador de un RUT](#calcular-el-digito-verificador-de-un-rut)
     - [Formatear un RUT](#formatear-un-rut)
+    - [Parseo incremental y normalización](#parseo-incremental-y-normalizacion)
+    - [Motor de sugerencias (Fuzzy Matching)](#motor-de-sugerencias-fuzzy-matching)
+    - [Pydantic v2](#pydantic-v2)
+    - [Enmascarado y tokenización](#enmascarado-y-tokenizacion)
+    - [Streaming con resultados estructurados](#streaming-con-resultados-estructurados)
     - [Validar y Formatear una lista de RUTs en diversos formatos](#validar-y-formatear-una-lista-de-ruts-en-diversos-formatos)
+    - [Personalizar la validación](#personalizar-la-validacion)
+    - [Procesamiento en lotes](#procesamiento-en-lotes)
+    - [CLI con archivos grandes](#cli-con-archivos-grandes)
+    - [Registro y depuración](#registro-y-depuracion)
+    - [Información de versión](#informacion-de-version)
+    - [Acceder a metadatos de validación](#acceder-a-metadatos-de-validacion)
+    - [Política de errores](#politica-de-errores)
+    - [Evaluar rendimiento](#evaluar-rendimiento)
+    - [Registrar un formateador personalizado](#registrar-un-formateador-personalizado)
+    - [Uso desde la línea de comandos](#uso-desde-la-linea-de-comandos)
   - [Desarrollo](#desarrollo)
-    - [Configuración del Entorno](#configuración-del-entorno)
-    - [Ejecutar Pruebas](#ejecutar-pruebas)
+    - [Configuración del Entorno](#configuracion-del-entorno)
+    - [Ejecutar pruebas y linters](#ejecutar-pruebas-y-linters)
   - [Problemas o Requerimientos](#problemas-o-requerimientos)
   - [Contribuciones](#contribuciones)
   - [Licencia](#licencia)
@@ -146,6 +162,31 @@ Anti-ejemplos:
 - No uses `RutStr` para autocorregir entradas de usuario de forma silenciosa.
 - No trates la normalización como verificación de identidad.
 
+### FastAPI (extra opcional)
+
+Instalación:
+
+```bash
+pip install rutificador[fastapi]
+```
+
+Uso mediante Inyección de Dependencias:
+
+```python
+from fastapi import FastAPI, Depends
+from rutificador import Rut
+from rutificador.contrib.fastapi import RutParam
+
+app = FastAPI()
+
+@app.get("/usuario/{rut}")
+def obtener_usuario(rut: Rut = Depends(RutParam)):
+    # 'rut' ya es un objeto Rut validado y tipado
+    return {"rut_normalizado": str(rut), "dv": rut.digito_verificador}
+```
+
+La dependencia `RutParam` maneja automáticamente los errores de validación, devolviendo un error **422 Unprocessable Entity** con el detalle del error detectado (`DV_MISMATCH`, `INVALID_CHARS`, etc.) compatible con el formato estándar de FastAPI/Pydantic.
+
 ### Enmascarado y tokenización
 
 ```python
@@ -153,6 +194,22 @@ from rutificador import Rut
 
 print(Rut.mask("12.345.678-5", keep=3, char="X"))  # XXXXX678-5
 print(Rut.mask("12.345.678-5", modo="token", clave="<CLAVE>"))  # tok_...
+```
+
+### Motor de sugerencias (Fuzzy Matching)
+
+Ideal para interfaces de usuario que necesitan corregir errores tipográficos comunes en tiempo real.
+
+```python
+from rutificador import Rut
+
+# Sugerir correcciones para un RUT con transposición o DV erróneo
+sugerencias = Rut.suggest("12.345.687-5")
+print(sugerencias)  # ['12345678-5', ...]
+
+# Intentar mejorar/corregir automáticamente la entrada
+mejor_opcion = Rut.mejorar("12a345678-k")
+print(mejor_opcion)  # 12345678-5
 ```
 
 ### Streaming con resultados estructurados
@@ -330,7 +387,7 @@ for err in res.errores:
 Resumen de códigos (v1.x):
 
 | Código | Severidad | Descripción |
-|---|---|---|
+| --- | --- | --- |
 | TYPE_ERROR | error | Tipo inválido |
 | EMPTY_RUT | error | Entrada vacía |
 | INVALID_CHARS | error | Caracteres no permitidos |
@@ -379,11 +436,22 @@ El paquete incluye un comando de consola llamado `rutificador` con dos subcomand
 Ejemplos:
 
 ```bash
-$ echo "12345678-5" | rutificador validar
-12345678-5
-
 $ echo "12345678-5" | rutificador formatear --separador-miles
 12.345.678-5
+
+# Salida estructurada para auditorías
+$ rutificador validar lista_ruts.txt --format json
+[
+  {
+    "valido": true,
+    "resultado": "12345678-5",
+    "original": "12345678-5",
+    ...
+  }
+]
+
+# Generar reporte CSV
+$ rutificador formatear sucios.txt --format csv --separador-miles > reporte.csv
 ```
 
 ## Desarrollo
@@ -409,7 +477,7 @@ $ echo "12345678-5" | rutificador formatear --separador-miles
 
 Antes de enviar tus cambios, verifica la calidad del código con:
 
-pre-commit run --files <archivos>
+pre-commit run --files `<archivos>`
 pytest
 
 ### Notas de validación y seguridad

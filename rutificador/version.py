@@ -2,7 +2,7 @@
 
 from typing import List, TypedDict
 
-__version__ = "1.2.2"
+__version__ = "1.3.0"
 
 
 class InformacionVersion(TypedDict):
@@ -26,7 +26,8 @@ def obtener_informacion_version() -> InformacionVersion:
             "Validación de alto rendimiento con caché",
             "Procesamiento por lotes en paralelo",
             "Modelo de errores estructurado",
-            "Múltiples formatos de salida",
+            "Múltiples formatos de salida (JSON, CSV, XML)",
+            "Motor de sugerencias inteligente (Fuzzy Matching)",
             "Modos de validación configurables",
             "Monitoreo de rendimiento",
             "Operaciones seguras en hilos",
