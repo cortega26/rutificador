@@ -101,7 +101,7 @@ class ProcesadorLotesRut:
         self.max_trabajadores: Optional[int] = max_trabajadores
         self.motor_paralelo = motor_paralelo
 
-    def _clase_ejecutor(self):
+    def obtener_clase_ejecutor(self):
         if self.motor_paralelo == "process" and sys.platform == "win32":
             logger.warning(
                 "Procesamiento en paralelo con procesos no está soportado en Windows; "
@@ -134,12 +134,14 @@ class ProcesadorLotesRut:
             configuracion = self.validador.configuracion
             modo = self.validador.modo
             cargas = ((cadena, configuracion, modo) for cadena in ruts)
-            cls_ejecutor = self._clase_ejecutor()
+            cls_ejecutor = self.obtener_clase_ejecutor()
             n_workers = self.max_trabajadores or (os.cpu_count() or 1)
             c_size = chunksize or self._calcular_chunksize(len(ruts), n_workers)
-            
+
             with cls_ejecutor(max_workers=self.max_trabajadores) as ejecutor:
-                resultados = ejecutor.map(_validar_rut_en_proceso, cargas, chunksize=c_size)
+                resultados = ejecutor.map(
+                    _validar_rut_en_proceso, cargas, chunksize=c_size
+                )
         else:
             resultados = (_validar_rut_local(cadena, self.validador) for cadena in ruts)
 
@@ -203,7 +205,7 @@ class ProcesadorLotesRut:
         )
 
         if paralelo:
-            cls_ejecutor = self._clase_ejecutor()
+            cls_ejecutor = self.obtener_clase_ejecutor()
             with cls_ejecutor(max_workers=self.max_trabajadores) as ejecutor:
                 ruts_formateados = list(ejecutor.map(formateador_detalle, fuentes))
         else:
@@ -305,7 +307,7 @@ def validar_flujo_ruts(
         configuracion = procesador.validador.configuracion
         modo = procesador.validador.modo
         cargas = ((str(rut), configuracion, modo) for rut in ruts)
-        cls_ejecutor = procesador._clase_ejecutor()
+        cls_ejecutor = procesador.obtener_clase_ejecutor()
 
         with cls_ejecutor(max_workers=procesador.max_trabajadores) as ejecutor:
             # yield de los resultados conforme los entrega el ejecutor.map (que ya es perezoso)

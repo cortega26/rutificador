@@ -108,8 +108,8 @@ def test_formatear_flujo_ruts_con_generador():
 def test_configurar_registro_acepta_handler():
     handler = logging.StreamHandler()
     configurar_registro(handler=handler)
-    logger = logging.getLogger("rutificador")
-    assert handler in logger.handlers
+    log = logging.getLogger("rutificador")
+    assert handler in log.handlers
 
 
 def test_evaluar_rendimiento():

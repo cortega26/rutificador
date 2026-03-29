@@ -10,7 +10,7 @@ def test_cli_validate_json_file(tmp_path, capsys):
     f.write_text("12345678-5\n8.765.432-1\ninvalido")
 
     main(["validar", str(f), "--format", "json"])
-    out, err = capsys.readouterr()
+    out, _ = capsys.readouterr()
 
     data = json.loads(out)
     assert len(data) == 3
@@ -26,7 +26,7 @@ def test_cli_format_csv_file(tmp_path, capsys):
     f.write_text("12345678-5\n1-9")
 
     main(["formatear", str(f), "--format", "csv", "--separador-miles"])
-    out, err = capsys.readouterr()
+    out, _ = capsys.readouterr()
 
     reader = csv.DictReader(StringIO(out))
     rows = list(reader)
@@ -40,7 +40,7 @@ def test_cli_validate_xml_file(tmp_path, capsys):
     f.write_text("12345678-5")
 
     main(["validar", str(f), "--format", "xml"])
-    out, err = capsys.readouterr()
+    out, _ = capsys.readouterr()
 
     root = ET.fromstring(out)
     assert root.tag == "rutificador"

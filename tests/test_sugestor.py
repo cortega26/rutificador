@@ -1,4 +1,9 @@
-from rutificador.sugestor import sugerir_ruts, distancia_levenshtein
+from rutificador.sugestor import (
+    sugerir_ruts,
+    distancia_levenshtein,
+    mejorar_con_confianza,
+)
+import rutificador.sugestor
 
 
 def test_distancia_levenshtein():
@@ -56,7 +61,6 @@ def test_sugerir_ruts_muy_lejano():
 
 
 def test_mejorar_con_confianza_seguro():
-    from rutificador.sugestor import mejorar_con_confianza
 
     # Caso NO ambiguo: Solo el DV está mal
     # 12.345.678-1 (El real es 5)
@@ -67,15 +71,13 @@ def test_mejorar_con_confianza_seguro():
 
 
 def test_mejorar_con_confianza_inseguro_por_distancia():
-    from rutificador.sugestor import mejorar_con_confianza
 
-    # Caso ambiguo real: 12.354.678-5 
+    # Caso ambiguo real: 12.354.678-5
     # Solución A (dist 1): 12354678-4 (Cambiar 5 por 4)
     # Solución B (dist 1): 12345678-5 (Transponer 54 a 45)
     # El motor SEGURO debe retornar None al detectar el empate
     mal = "12.354.678-5"
     assert mejorar_con_confianza(mal) is None
-    
     # Caso distancia > 1
     # '123456pp' requiere cambiar dos caracteres para ser un RUT válido
     mal_lejos = "123456pp"
@@ -83,11 +85,10 @@ def test_mejorar_con_confianza_inseguro_por_distancia():
 
 
 def test_mejorar_con_confianza_ambiguedad(monkeypatch):
-    from rutificador.sugestor import mejorar_con_confianza
-    import rutificador.sugestor
 
     # Simulamos un caso de ambigüedad (dos sugerencias a la misma distancia)
     def mock_sugerir_dist(valor, limite):
+        _ = (valor, limite)
         return [("12345678-5", 1), ("87654321-k", 1)]
 
     monkeypatch.setattr(

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rutificador"
-version = "1.4.3"
+version = "1.4.4"
 description = "Herramientas para validar, calcular y formatear el Rol Único Tributario (RUT) en Chile, con procesamiento por lotes y salida en múltiples formatos."
 authors = ["Carlos Ortega González <carlosortega77@gmail.com>"]
 license = "MIT"
@@ -61,10 +61,6 @@ testpaths = ["tests"]
 # funcione como se documenta en el README.
 addopts = ""
 
-[tool.poetry-dynamic-versioning]
-enable = true
-from-file = {source = "rutificador/version.py", pattern = "^__version__ = \"(.+)\""}
-
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry_dynamic_versioning.backend"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

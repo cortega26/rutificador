@@ -96,8 +96,12 @@ def mejorar_con_confianza(valor: str, distancia_max: int = 1) -> Optional[str]:
         segundo_rut, segunda_dist = candidatos[1]
         if mejor_dist == segunda_dist:
             logger.warning(
-                f"Ambigüedad detectada para '{valor}': varios candidatos a distancia {mejor_dist}. "
-                f"Opciones: {mejor_rut}, {segundo_rut}"
+                "Ambigüedad detectada para '%s': varios candidatos a distancia %d. "
+                "Opciones: %s, %s",
+                valor,
+                mejor_dist,
+                mejor_rut,
+                segundo_rut,
             )
             return None
 
@@ -153,7 +157,7 @@ def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> List[Tuple[str, 
         try:
             dv_c = calcular_digito_verificador(base_1).lower()
             sugerencias.add(f"{base_1}-{dv_c}")
-            
+
             # Probar transposiciones en esta base tentativa
             digitos_base = list(base_1)
             for i in range(len(digitos_base) - 1):

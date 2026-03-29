@@ -12,14 +12,13 @@ Contrato:
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Literal, Optional, Type, cast
+from typing import Any, ClassVar, Literal, Type, cast
 
 from pydantic_core import PydanticCustomError, core_schema as cs
 
 from rutificador.config import RigorValidacion
 from rutificador.rut import Rut
 from rutificador.utils import calcular_digito_verificador
-
 
 FormatoRut = Literal["base-dv", "canonico", "miles", "miles-con-guion"]
 
@@ -54,7 +53,9 @@ class RutStr(str):
         return PydanticCustomError(codigo_tipo, mensaje, {"hint": pista})
 
     @classmethod
-    def _validar_y_normalizar(cls, valor: Any, formato: FormatoRut = "base-dv") -> "RutStr":
+    def _validar_y_normalizar(
+        cls, valor: Any, formato: FormatoRut = "base-dv"
+    ) -> "RutStr":
         if not isinstance(valor, str):
             raise cls._error(
                 codigo_tipo=cls._CODIGO_ERROR_TIPO,
@@ -145,10 +146,12 @@ class RutStr(str):
         return esquema_json
 
 
-def RutStrAnnotated(formato: FormatoRut = "base-dv") -> Type[RutStr]:
+def rut_str_annotated(formato: FormatoRut = "base-dv") -> Type[RutStr]:
     """Genera un tipo RutStr con un formato específico para Pydantic."""
 
     class RutStrForFormat(RutStr):
+        """Tipo RutStr especializado para un formato de salida específico."""
+
         @classmethod
         def __get_pydantic_core_schema__(
             cls, _tipo_origen: Any, _manejador: Any
@@ -162,4 +165,8 @@ def RutStrAnnotated(formato: FormatoRut = "base-dv") -> Type[RutStr]:
     return cast(Type[RutStr], RutStrForFormat)
 
 
-__all__ = ["RutStr", "RutStrAnnotated", "FormatoRut"]
+# Alias para compatibilidad retroactiva
+RutStrAnnotated = rut_str_annotated  # pylint: disable=invalid-name
+
+
+__all__ = ["RutStr", "rut_str_annotated", "RutStrAnnotated", "FormatoRut"]

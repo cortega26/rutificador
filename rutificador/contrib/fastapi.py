@@ -3,7 +3,7 @@ import logging
 from typing import Annotated, Any, Optional
 
 try:
-    from fastapi import Depends, HTTPException, Path, Query
+    from fastapi import Depends, HTTPException, Query
     from starlette import status
 
     # Usar el nombre moderno si está disponible, fallback al antiguo para compatibilidad
@@ -33,7 +33,7 @@ async def obtener_param_rut(
     try:
         return Rut(rut)
     except ErrorValidacionRut as exc:
-        logger.warning(f"Error de validación en parámetro FastAPI: {exc}")
+        logger.warning("Error de validación en parámetro FastAPI: %s", exc)
         raise HTTPException(
             status_code=HTTP_422,
             detail=[
@@ -43,10 +43,10 @@ async def obtener_param_rut(
                     "type": exc.codigo_error or "valor_error.rut_invalido",
                 }
             ],
-        )
+        ) from exc
 
 
-def ConsultaRut(
+def consulta_rut(
     default: Any = ...,
     *,
     alias: Optional[str] = None,
@@ -62,7 +62,18 @@ def ConsultaRut(
     ]
 
 
-# Alias para facilitar el descubrimiento
-ParametroRut = obtener_param_rut
+# Alias para compatibilidad retroactiva
+ConsultaRut = consulta_rut  # pylint: disable=invalid-name
 
-__all__ = ["obtener_param_rut", "ParametroRut", "ConsultaRut"]
+
+# Alias para facilitar el descubrimiento
+parametro_rut = obtener_param_rut
+ParametroRut = parametro_rut  # pylint: disable=invalid-name
+
+__all__ = [
+    "obtener_param_rut",
+    "parametro_rut",
+    "ParametroRut",
+    "consulta_rut",
+    "ConsultaRut",
+]

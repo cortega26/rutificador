@@ -481,7 +481,7 @@ class TestProcesadorLotesRut:
             def __exit__(self, exc_type, exc_val, exc_tb):
                 return False
 
-            def map(self, funcion, iterable, **kwargs):
+            def map(self, funcion, iterable, **_kwargs):
                 return list(funcion(item) for item in iterable)
 
         monkeypatch.setattr("rutificador.procesador.sys.platform", "linux")
@@ -508,7 +508,7 @@ class TestProcesadorLotesRut:
             def __exit__(self, exc_type, exc_val, exc_tb):
                 return False
 
-            def map(self, funcion, iterable, **kwargs):
+            def map(self, funcion, iterable, **_kwargs):
                 return list(funcion(item) for item in iterable)
 
         monkeypatch.setattr("rutificador.procesador.sys.platform", "win32")
@@ -592,7 +592,7 @@ class TestProcesadorLotesRut:
             def __exit__(self, exc_type, exc_val, exc_tb):
                 return False
 
-            def map(self, _funcion, iterable, **kwargs):
+            def map(self, _funcion, iterable, **_kwargs):
                 list(iterable)
                 return []
 
@@ -620,7 +620,7 @@ class TestProcesadorLotesRut:
             def __exit__(self, exc_type, exc_val, exc_tb):
                 return False
 
-            def map(self, _funcion, _iterable, **kwargs):
+            def map(self, _funcion, _iterable, **_kwargs):
                 return []
 
         monkeypatch.setattr("rutificador.procesador.ThreadPoolExecutor", EjecutorPrueba)

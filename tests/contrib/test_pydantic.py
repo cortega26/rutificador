@@ -4,6 +4,8 @@ from rutificador.contrib.pydantic.rutstr import RutStr
 
 
 class MiModelo(BaseModel):
+    """Modelo de prueba para RutStr."""
+
     rut: RutStr
 
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import importlib
 
-
 PYDANTIC_IMPORT_ERROR_MESSAGE = "Instala rutificador[pydantic] para usar RutStr"
 
 

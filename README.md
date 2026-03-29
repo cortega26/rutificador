@@ -15,9 +15,9 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
 
 - [Rutificador](#rutificador)
   - [Tabla de Contenidos](#tabla-de-contenidos)
-  - [Características](#características)
+  - [Características](#caracteristicas)
   - [Alcance y limitaciones](#alcance-y-limitaciones)
-  - [Instalación](#instalación)
+  - [Instalación](#instalacion)
   - [Uso](#uso)
     - [Importar la clase Rut](#importar-la-clase-rut)
     - [Crear un objeto](#crear-un-objeto)
@@ -46,7 +46,7 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
   - [Problemas o Requerimientos](#problemas-o-requerimientos)
   - [Contribuciones](#contribuciones)
   - [Licencia](#licencia)
-  - [Créditos](#créditos)
+  - [Créditos](#creditos)
 
 ## Características
 
@@ -144,10 +144,17 @@ Uso con Pydantic v2:
 
 ```python
 from pydantic import BaseModel
-from rutificador.contrib.pydantic import RutStr
+from rutificador.contrib.pydantic import RutStr, rut_str_annotated
 
+# Para validación simple (formato base-dv por defecto)
 class Modelo(BaseModel):
     rut: RutStr
+
+# Para formatos específicos (ej: con puntos)
+RutConPuntos = rut_str_annotated(formato="miles-con-guion")
+
+class ModeloAvanzado(BaseModel):
+    rut: RutConPuntos
 
 m = Modelo(rut="12.345.678-5")
 print(m.rut)  # 12345678-5
@@ -175,17 +182,17 @@ Uso mediante Inyección de Dependencias:
 ```python
 from fastapi import FastAPI, Depends
 from rutificador import Rut
-from rutificador.contrib.fastapi import ParametroRut
+from rutificador.contrib.fastapi import parametro_rut
 
 app = FastAPI()
 
 @app.get("/usuario/{rut}")
-def obtener_usuario(rut: Rut = Depends(ParametroRut)):
+def obtener_usuario(rut: Rut = Depends(parametro_rut)):
     # 'rut' ya es un objeto Rut validado y tipado
     return {"rut_normalizado": str(rut), "dv": rut.digito_verificador}
 ```
 
-La dependencia `ParametroRut` maneja automáticamente los errores de validación, devolviendo un error **422 Unprocessable Entity** con el detalle del error detectado (`DV_DISCORDANTE`, `CARACTERES_INVALIDOS`, etc.) compatible con el formato estándar de FastAPI/Pydantic.
+La dependencia `parametro_rut` (anteriormente `ParametroRut`) maneja automáticamente los errores de validación, devolviendo un error **422 Unprocessable Entity** con el detalle del error detectado (`DV_DISCORDANTE`, `CARACTERES_INVALIDOS`, etc.) compatible con el formato estándar de FastAPI/Pydantic.
 
 ### Enmascarado y tokenización
 

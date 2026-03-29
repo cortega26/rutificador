@@ -6,7 +6,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Literal, Optional, TypedDict
 
-
 Severidad = Literal["error", "advertencia"]
 
 

@@ -15,7 +15,6 @@ from rutificador.contrib.pydantic import RutStr
 from rutificador.contrib.pydantic._compat import PYDANTIC_IMPORT_ERROR_MESSAGE
 from rutificador.utils import calcular_digito_verificador
 
-
 modulo_pydantic = importlib.import_module("pydantic")
 BaseModel = getattr(modulo_pydantic, "BaseModel")
 ValidationError = getattr(modulo_pydantic, "ValidationError")
@@ -124,8 +123,7 @@ def test_rutstr_property_based_dv_ok_pasa_y_dv_bad_falla(base: str) -> None:
 def test_require_pydantic_falla_con_mensaje_determinista_si_no_hay_extra() -> None:
     raiz_repo = Path(__file__).resolve().parents[3]
     # Bandit/Codacy (B603): subprocess sin `shell=True`, argumentos controlados y codigo estatico.
-    codigo = textwrap.dedent(
-        """
+    codigo = textwrap.dedent("""
         from rutificador.contrib.pydantic._compat import (
             PYDANTIC_IMPORT_ERROR_MESSAGE,
             _require_pydantic,
@@ -138,8 +136,7 @@ def test_require_pydantic_falla_con_mensaje_determinista_si_no_hay_extra() -> No
             raise SystemExit(0)
 
         raise SystemExit(1)
-        """
-    ).strip()
+        """).strip()
 
     entorno = os.environ.copy()
     # No heredar PYTHONPATH del padre: fijamos uno controlado (solo el repo).

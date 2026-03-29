@@ -4,6 +4,21 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.4.4] - 2026-03-29
+
+### Cambiado
+
+- [STYLE] Renombrado de funciones públicas a `snake_case` en `contrib/fastapi` (`consulta_rut`, `parametro_rut`) y `contrib/pydantic` (`rut_str_annotated`) para cumplir con PEP 8. Se mantienen alias para asegurar compatibilidad retroactiva.
+- [MAINTENANCE] Centralización de la versión en `pyproject.toml` como única fuente de verdad, utilizando recuperación dinámica vía `importlib.metadata` con fallback para desarrollo local.
+- [MAINTENANCE] Refactorización integral del codebase para alcanzar una puntuación de 10/10 en Pylint.
+- [MAINTENANCE] Mejora de la estructura de imports en `rutificador/rut.py` eliminando imports locales innecesarios y comentarios de desactivación de Pylint.
+- [MAINTENANCE] Implementación de `lazy % formatting` en logs y mejora de la trazabilidad de excepciones con `from exc`.
+
+### Corregido
+
+- [FIX] Error de miembro inexistente `RigorValidacion.HOLGADO` en las integraciones de Pandas y Polars (corregido a `FLEXIBLE`).
+- [FIX] Eliminación de importaciones no utilizadas y limpieza de espacios en blanco en todo el proyecto y suite de pruebas.
+
 ## [1.4.3] - 2026-03-29
 
 ### Corregido
@@ -12,14 +27,14 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [1.4.2] - 2026-03-28
 
-### Added
+### Añadido
 
 - [PERF] Integración nativa (accessors) para **Pandas** y **Polars**.
 - [PERF] Soporte para `chunksize` en `ProcesadorLotesRut` para optimizar el procesamiento paralelo masivo.
 - [PERF] Cálculo automático de `chunksize` basado en la carga y el número de núcleos.
 - Extras `[pandas]`, `[polars]` y `[full]` en dependencias.
 
-### Fixed
+### Corregido
 
 - Optimización del overhead de comunicación IPC en procesamiento multiproceso.
 
@@ -71,6 +86,9 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.4.4]: https://github.com/cortega26/rutificador/compare/v1.4.3...v1.4.4
+[1.4.3]: https://github.com/cortega26/rutificador/compare/v1.4.2...v1.4.3
+[1.4.2]: https://github.com/cortega26/rutificador/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/cortega26/rutificador/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/cortega26/rutificador/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/cortega26/rutificador/compare/v1.2.1...v1.3.0

@@ -212,6 +212,8 @@ def _comando_enmascarar(args: argparse.Namespace) -> int:
             codigo_salida = 1
             print(f"{rut_str} [ERROR] - {str(exc)}", file=sys.stderr)
     return codigo_salida
+
+
 def _comando_info(args: argparse.Namespace) -> int:
     info = obtener_informacion_version()
     if args.format == "json":

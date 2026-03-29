@@ -15,7 +15,7 @@ from .errores import DetalleError, crear_detalle_error
 from .exceptions import ErrorValidacionRut
 from .validador import ValidadorRut
 from .utils import calcular_digito_verificador, asegurar_booleano, _limpiar_entrada
-from .sugestor import sugerir_ruts
+from .sugestor import sugerir_ruts, mejorar_con_confianza
 
 logger = logging.getLogger(__name__)
 
@@ -424,8 +424,6 @@ class Rut:
 
         Solo una sugerencia inequívoca (distancia 1 y sin ambigüedad) será devuelta.
         """
-        from .sugestor import mejorar_con_confianza
-
         return mejorar_con_confianza(valor)
 
     @classmethod

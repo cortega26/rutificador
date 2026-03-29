@@ -1,5 +1,7 @@
 """Pruebas para la interfaz de línea de comandos."""
 
+import json
+
 import subprocess
 import sys
 import tracemalloc
@@ -114,7 +116,6 @@ def test_cli_jsonl_format():
     assert len(lineas_data) == 2
     # Metadata en stderr
     assert "audit" in resultado.stderr
-    import json
     data_reg1 = json.loads(lineas_data[0])
     assert data_reg1["valido"] is True
 
