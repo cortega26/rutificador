@@ -65,31 +65,44 @@ class RutStr(str):
 
         resultado = Rut.parse(valor, modo=RigorValidacion.ESTRICTO)
 
-        if resultado.estado == "valido" and resultado.normalizado is not None:
-            obj = Rut(resultado.normalizado)
-            return cls(cls._formatear(obj, formato))
-
-        if (
-            resultado.estado == "posible"
-            and resultado.base is not None
-            and not resultado.errores
+        # 1. Manejar casos de éxito (valido o posible/autocompletado)
+        if resultado.estado == "valido" or (
+            resultado.estado == "posible" and not resultado.errores
         ):
-            # Caso donde falta el DV pero la base es viable
-            dv = calcular_digito_verificador(resultado.base).lower()
-            obj = Rut(f"{resultado.base}-{dv}")
-            return cls(cls._formatear(obj, formato))
+            return cls._manejar_resultado_exitoso(resultado, formato)
 
+        # 2. Manejar casos de error
+        return cls._manejar_resultado_error(valor, resultado)
+
+    @classmethod
+    def _manejar_resultado_exitoso(
+        cls, resultado: Any, formato: FormatoRut
+    ) -> "RutStr":
+        """Maneja los estados 'valido' y 'posible' (autocompletado)."""
+        base = resultado.normalizado or resultado.base
+        if not base:
+            # Fallback de seguridad, no debería ocurrir si el estado es coherente
+            raise cls._error(
+                codigo_tipo=cls._CODIGO_RUT_INVALIDO,
+                mensaje=cls._MENSAJE_RUT_INVALIDO,
+                pista=cls._PISTA_RUT_INVALIDO,
+            )
+
+        if resultado.estado == "posible":
+            dv = calcular_digito_verificador(base).lower()
+            base = f"{base}-{dv}"
+
+        obj = Rut(base)
+        return cls(cls._formatear(obj, formato))
+
+    @classmethod
+    def _manejar_resultado_error(cls, valor: str, resultado: Any) -> "RutStr":
+        """Maneja los errores de validación, extrayendo sugerencias si es posible."""
         if resultado.errores:
             detalle = resultado.errores[0]
             pista = detalle.hint
 
-            # Intentar obtener una sugerencia
-            sugerencia = Rut.mejorar(valor)
-            if not sugerencia:
-                sug_list = Rut.sugerir(valor)
-                if sug_list:
-                    sugerencia = sug_list[0]
-
+            sugerencia = cls._obtener_sugerencia(valor)
             if sugerencia:
                 pista = f"{pista}. ¿Quisiste decir {sugerencia}?"
 
@@ -104,6 +117,16 @@ class RutStr(str):
             mensaje=cls._MENSAJE_RUT_INVALIDO,
             pista=cls._PISTA_RUT_INVALIDO,
         )
+
+    @classmethod
+    def _obtener_sugerencia(cls, valor: str) -> str | None:
+        """Intenta obtener una sugerencia inteligente para un valor erróneo."""
+        sugerencia = Rut.mejorar(valor)
+        if not sugerencia:
+            sug_list = Rut.sugerir(valor)
+            if sug_list:
+                sugerencia = sug_list[0]
+        return sugerencia
 
     @classmethod
     def _formatear(cls, obj: Rut, formato: FormatoRut) -> str:

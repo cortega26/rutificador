@@ -4,6 +4,16 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.4.5] - 2026-03-29
+
+### Cambiado
+
+- [MAINTENANCE] Refactorización de la clase `RutStr` para reducir la complejidad ciclomática de sus validadores internos de 11 a menos de 8.
+
+### Corregido
+
+- [FIX] Endurecimiento del manejo de excepciones en la detección dinámica de la versión del paquete en `version.py`, reemplazando capturas genéricas por excepciones específicas (`OSError`, `re.error`, `UnicodeDecodeError`).
+
 ## [1.4.4] - 2026-03-29
 
 ### Cambiado
@@ -86,6 +96,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.4.5]: https://github.com/cortega26/rutificador/compare/v1.4.4...v1.4.5
 [1.4.4]: https://github.com/cortega26/rutificador/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/cortega26/rutificador/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/cortega26/rutificador/compare/v1.4.1...v1.4.2

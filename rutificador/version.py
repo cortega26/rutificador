@@ -28,7 +28,7 @@ def _obtener_version_dinamica() -> str:
                 match = re.search(r'^version\s*=\s*"([^"]+)"', content, re.MULTILINE)
                 if match:
                     return match.group(1)
-    except Exception:  # pylint: disable=broad-exception-caught
+    except (OSError, re.error, UnicodeDecodeError):
         pass
 
     return "0.0.0-dev"
