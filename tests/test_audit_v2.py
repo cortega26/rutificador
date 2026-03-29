@@ -18,7 +18,7 @@ def ejecutar_cli(*args):
 def test_cli_info_text():
     res = ejecutar_cli("info")
     assert res.returncode == 0
-    assert "--- RUTIFICADOR v1.4.2 ---" in res.stdout
+    assert "--- RUTIFICADOR v1.4.3 ---" in res.stdout
     assert "Descripción:" in res.stdout
     assert "Python" in res.stdout
 
@@ -26,7 +26,7 @@ def test_cli_info_json():
     res = ejecutar_cli("info", "--format", "json")
     assert res.returncode == 0
     data = json.loads(res.stdout)
-    assert data["version"] == "1.4.2"
+    assert data["version"] == "1.4.3"
     assert "funcionalidades" in data
 
 def test_pydantic_rutstr_formatos():

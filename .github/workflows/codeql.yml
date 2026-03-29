@@ -45,7 +45,7 @@ jobs:
         # ver https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
     steps:
     - name: Obtener repositorio (checkout)
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     # Inicializa las herramientas de CodeQL para el escaneo.
     - name: Inicializar CodeQL

@@ -4,6 +4,12 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.4.3] - 2026-03-29
+
+### Corregido
+
+- [DEVOPS] Actualización de GitHub Actions (`checkout`, `setup-python`, `upload-artifact`, `cache`) para soportar Node.js 24 y resolver advertencias de deprecación.
+
 ## [1.4.2] - 2026-03-28
 
 ### Added
