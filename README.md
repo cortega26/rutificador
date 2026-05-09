@@ -1,11 +1,9 @@
 <!-- markdownlint-disable MD041 -->
 [![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
-[![Python](https://img.shields.io/badge/Python-3.9--3.14-blue)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10--3.14-blue)](https://www.python.org/)
 [![Licencia](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Estilo de código](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Integración continua](https://github.com/cortega26/rutificador/actions/workflows/ci.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/cortega26/rutificador/actions/workflows/codeql.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/codeql.yml)
-[![Estado de cobertura](https://coveralls.io/repos/github/cortega26/rutificador/badge.svg)](https://coveralls.io/github/cortega26/rutificador)
 
 # Rutificador
 
@@ -56,7 +54,7 @@ Biblioteca en Python para validar, calcular y formatear RUTs (Rol Único Tributa
 - Validación configurable por instancia: cada `Rut` reutiliza el `ValidadorRut` inyectado.
 - Metadatos enriquecidos: cada validación genera un `RutProcesado` con duración y modo de rigurosidad.
 - Paralelismo adaptable en la API (`motor_paralelo` por procesos o hilos); la CLI usa el backend predeterminado.
-- Compatibilidad con Python >=3.9 y <4.0.
+- Compatibilidad con Python >=3.10 y <4.0.
 
 ## Alcance y limitaciones
 
@@ -89,7 +87,7 @@ rut2 = Rut('12.345.670')
 
 ### Validar un RUT
 
-La validación del RUT se realiza automáticamente al crear un objeto `Rut`. La clase `Rut` acepta RUTs con y sin dígito verificador, así como RUTs con y sin separador de miles. Si el RUT ingresado no es válido, se lanzará una excepción `RutInvalidoError`.
+La validación del RUT se realiza automáticamente al crear un objeto `Rut`. La clase `Rut` acepta RUTs con y sin dígito verificador, así como RUTs con y sin separador de miles. Si el RUT ingresado no es válido, se lanzará una excepción `ErrorValidacionRut`.
 
 ### Calcular el Dígito Verificador de un RUT
 
@@ -222,7 +220,7 @@ print(mejor_opcion)  # 12345678-5
 ### Streaming con resultados estructurados
 
 ```python
-from rutificador import ProcesadorLotesRut
+from rutificador import flujo
 
 ruts = ["12.345.678-5", "12.345.678-1", "abc"]
 for resultado in flujo(ruts):
@@ -231,7 +229,7 @@ for resultado in flujo(ruts):
 
 ### Validar y formatear una lista de RUTs en diversos formatos
 
-Al igual que con los RUTs individuales, el uso de `formatear_lista_ruts` realiza la validación de forma automática cuando se trabaja con secuencias de RUTs. En lugar de lanzar una excepción `RutInvalidoError`, separará los RUTs válidos de los inválidos. Veamos algunos ejemplos:
+Al igual que con los RUTs individuales, el uso de `formatear_lista_ruts` realiza la validación de forma automática cuando se trabaja con secuencias de RUTs. En lugar de lanzar una excepción `ErrorValidacionRut`, separará los RUTs válidos de los inválidos. Veamos algunos ejemplos:
 
 ```python
 from rutificador import formatear_lista_ruts
@@ -424,7 +422,7 @@ print(resultados['tasa_exito'])
 ### Registrar un formateador personalizado
 
 ```python
-from rutificador import FormateadorRut, FabricaFormateadorRut
+from rutificador.formatter import FormateadorRut, FabricaFormateadorRut
 
 class FormateadorLista(FormateadorRut):
     def formatear(self, ruts):
