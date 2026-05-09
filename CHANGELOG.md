@@ -4,6 +4,14 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.5.2] - 2026-05-09
+
+### Corregido
+
+- [SECURITY] pytest actualizado de `^7.2.1` a `>=9.0.3` para corregir vulnerabilidad de tmpdir (CVE en `/tmp/pytest-of-{user}`).
+- [FIX] Tests de `test_audit_v2.py` usaban versión hardcodeada `1.4.5` en vez de `__version__`.
+- [FIX] Tests de pandas/polars `test_validar_series` corregidos: validación inválida retorna `ValidacionResultado`, no `None`.
+
 ## [1.5.1] - 2026-05-09
 
 ### Corregido
@@ -144,6 +152,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.5.2]: https://github.com/cortega26/rutificador/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/cortega26/rutificador/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/cortega26/rutificador/compare/v1.4.5...v1.5.0
 [1.4.5]: https://github.com/cortega26/rutificador/compare/v1.4.4...v1.4.5

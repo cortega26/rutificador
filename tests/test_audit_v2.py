@@ -5,6 +5,7 @@ import sys
 from pydantic import BaseModel
 
 from rutificador.contrib.pydantic.rutstr import RutStr, RutStrAnnotated
+from rutificador.version import __version__
 
 
 def ejecutar_cli(*args):
@@ -16,7 +17,7 @@ def ejecutar_cli(*args):
 def test_cli_info_text():
     res = ejecutar_cli("info")
     assert res.returncode == 0
-    assert "--- RUTIFICADOR v1.4.5 ---" in res.stdout
+    assert f"--- RUTIFICADOR v{__version__} ---" in res.stdout
     assert "Descripción:" in res.stdout
     assert "Python" in res.stdout
 
@@ -25,7 +26,7 @@ def test_cli_info_json():
     res = ejecutar_cli("info", "--format", "json")
     assert res.returncode == 0
     data = json.loads(res.stdout)
-    assert data["version"] == "1.4.5"
+    assert data["version"] == __version__
     assert "funcionalidades" in data
 
 

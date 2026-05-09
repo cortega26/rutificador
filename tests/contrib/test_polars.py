@@ -17,7 +17,7 @@ def test_validar_series():
     s = polars.Series(["12345678-5", "invalido"])
     resultado = s.rut.validar()
     assert resultado[0].estado == "valido"
-    assert resultado[1] is None
+    assert resultado[1].estado == "invalido"
 
 
 def test_formatear_base_dv():
