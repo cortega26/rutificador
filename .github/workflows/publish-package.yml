@@ -2,7 +2,6 @@ name: Publicar paquete de Python en PyPI
 
 on:
   push:
-    branches: [master]
     tags:
       - "v*" # Publicar solo en tags de version
   release:
