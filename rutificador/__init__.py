@@ -1,5 +1,6 @@
 """Rutificador: utilidades para validar y formatear RUTs chilenos."""
 
+import warnings
 from typing import List
 
 from .version import __version__, obtener_informacion_version
@@ -69,8 +70,6 @@ _DEPRECATED_EXPORTS: dict[str, str] = {
 
 def __getattr__(name: str):
     if name in _DEPRECATED_EXPORTS:
-        import warnings
-
         warnings.warn(
             f"{name} está obsoleto, usa {_DEPRECATED_EXPORTS[name]} en su lugar",
             DeprecationWarning,
@@ -90,7 +89,6 @@ __all__: List[str] = [
     "obtener_rut",
     "Validador",
     "ValidadorRut",
-    "RutValidator",
     "DetalleError",
     "RutProcesado",
     "ProcesadorLotesRut",
@@ -118,9 +116,7 @@ __all__: List[str] = [
     "ErrorDigitoRut",
     "ErrorLongitudRut",
     "ErrorProcesamientoRut",
-    "RutInvalidoError",
     "ConfiguracionRut",
     "RigorValidacion",
-    "RutConfig",
     "__version__",
 ]

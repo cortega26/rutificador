@@ -1,4 +1,5 @@
 """Pruebas para el accessor de Pandas."""
+# pylint: disable=wrong-import-position
 
 import pytest
 

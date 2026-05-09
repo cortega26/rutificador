@@ -2,7 +2,7 @@
 
 import pytest
 
-from rutificador import Rut, flujo
+from rutificador import ErrorValidacionRut, Rut, flujo
 from rutificador.config import RigorValidacion
 
 
@@ -118,18 +118,12 @@ def test_normalizacion_puntos_advertencia():
 
 
 def test_enmascarado_estado_invalido():
-    import pytest
-    from rutificador.exceptions import ErrorValidacionRut
-
     with pytest.raises(ErrorValidacionRut) as exc:
         Rut.enmascarar("invalido")
     assert exc.value.codigo_error == "ESTADO_ENMASCARADO"
 
 
 def test_token_clave_requerida():
-    import pytest
-    from rutificador.exceptions import ErrorValidacionRut
-
     with pytest.raises(ErrorValidacionRut) as exc:
         Rut.enmascarar("12.345.678-5", modo="token")
     assert exc.value.codigo_error == "CLAVE_TOKEN_REQUERIDA"
@@ -157,17 +151,11 @@ def test_enmascarar_mantener_excede_base():
 
 
 def test_enmascarar_parametro_mantener_invalido():
-    import pytest
-    from rutificador.exceptions import ErrorValidacionRut
-
     with pytest.raises(ErrorValidacionRut):
         Rut.enmascarar("12.345.678-5", mantener="3")
 
 
 def test_enmascarar_parametro_caracter_invalido():
-    import pytest
-    from rutificador.exceptions import ErrorValidacionRut
-
     with pytest.raises(ErrorValidacionRut):
         Rut.enmascarar("12.345.678-5", caracter="**")
 

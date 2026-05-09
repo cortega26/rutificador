@@ -1,6 +1,7 @@
 # SECURITY-CRITICAL
 import logging
 import re
+import warnings
 from typing import Optional, Protocol, runtime_checkable, Match
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut, RigorValidacion
@@ -34,8 +35,6 @@ class Validador(Protocol):  # pylint: disable=too-few-public-methods
 
     def validar(self, cadena_rut: str) -> bool:  # pragma: no cover - protocolo
         """Valida una cadena de RUT."""
-        import warnings
-
         warnings.warn(
             "Validador está obsoleto, usa ValidadorRut en su lugar",
             DeprecationWarning,
@@ -133,8 +132,6 @@ _DEPRECATED_ALIASES: dict[str, str] = {
 
 def __getattr__(name: str):
     if name in _DEPRECATED_ALIASES:
-        import warnings
-
         warnings.warn(
             f"{name} está obsoleto, usa {_DEPRECATED_ALIASES[name]} en su lugar",
             DeprecationWarning,

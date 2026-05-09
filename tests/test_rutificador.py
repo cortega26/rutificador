@@ -8,9 +8,9 @@ import pytest
 
 import rutificador.procesador as proc
 from rutificador import (
+    ErrorValidacionRut,
     Rut,
     RutBase,
-    RutInvalidoError,
     ValidadorRut,
     ProcesadorLotesRut,
     RutProcesado,
@@ -118,7 +118,7 @@ class TestCalcularDigitoVerificador:
 
     def test_calcular_digito_verificador_base_vacia(self):
         """Prueba que una base vacía lance una excepción."""
-        with pytest.raises(RutInvalidoError):
+        with pytest.raises(ErrorValidacionRut):
             calcular_digito_verificador("")
 
 
@@ -147,7 +147,7 @@ class TestValidadorRut:
     def test_validar_formato_none(self):
         """Prueba que None lance excepción."""
         validador = ValidadorRut()
-        with pytest.raises(RutInvalidoError):
+        with pytest.raises(ErrorValidacionRut):
             validador.validar_formato(None)
 
     @pytest.mark.parametrize("base, rut_original, esperado", cadenas_base_validas)
@@ -161,14 +161,14 @@ class TestValidadorRut:
     def test_validar_base_invalida(self, base, rut_original):
         """Prueba que bases inválidas lancen excepción."""
         validador = ValidadorRut()
-        with pytest.raises(RutInvalidoError):
+        with pytest.raises(ErrorValidacionRut):
             validador.validar_base(base, rut_original)
 
     def test_validar_base_respeta_min_digitos(self):
         """Verifica que se aplique la longitud mínima configurada."""
         configuracion = ConfiguracionRut(min_digitos=2, max_digitos=5)
         validador = ValidadorRut(configuracion=configuracion)
-        with pytest.raises(RutInvalidoError):
+        with pytest.raises(ErrorValidacionRut):
             validador.validar_base("1", "1")
         assert validador.validar_base("12", "12") == "12"
 
@@ -181,7 +181,7 @@ class TestValidadorRut:
     def test_validar_digito_verificador_incorrecto(self):
         """Prueba validación de dígito verificador incorrecto."""
         validador = ValidadorRut()
-        with pytest.raises(RutInvalidoError):
+        with pytest.raises(ErrorValidacionRut):
             validador.validar_digito_verificador("1", "5")
 
     def test_validar_digito_verificador_none(self):
@@ -278,8 +278,8 @@ class TestRutBase:
 
     @pytest.mark.parametrize("base, rut_original", cadenas_base_invalidas)
     def test_cadenas_base_invalidas(self, base, rut_original):
-        """Prueba que las cadenas base inválidas generen un RutInvalidoError."""
-        with pytest.raises(RutInvalidoError):
+        """Prueba que las cadenas base inválidas generen un ErrorValidacionRut."""
+        with pytest.raises(ErrorValidacionRut):
             RutBase(base, rut_original)
 
     def test_equality(self):
@@ -320,8 +320,8 @@ class TestRut:
 
     @pytest.mark.parametrize("cadena_rut", cadenas_rut_invalidas)
     def test_cadenas_rut_invalidas(self, cadena_rut):
-        """Prueba que las cadenas RUT inválidas generen un RutInvalidoError."""
-        with pytest.raises(RutInvalidoError):
+        """Prueba que las cadenas RUT inválidas generen un ErrorValidacionRut."""
+        with pytest.raises(ErrorValidacionRut):
             Rut(cadena_rut)
 
     def test_formatear_rut_con_separador_miles(self, rut_valido):
@@ -725,7 +725,7 @@ class TestRutInitConInt:
         assert str(rut) == "1-9"
 
 
-class TestProcesadorConProcessBackend:
+class TestProcesadorConProcessBackend:  # pylint: disable=too-few-public-methods
     """Pruebas para el backend ProcessPoolExecutor."""
 
     @pytest.mark.skipif(

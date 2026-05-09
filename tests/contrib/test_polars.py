@@ -1,4 +1,5 @@
 """Pruebas para el namespace de Polars."""
+# pylint: disable=wrong-import-position
 
 import pytest
 

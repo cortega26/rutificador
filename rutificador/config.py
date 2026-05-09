@@ -1,5 +1,6 @@
 """Definiciones de configuración para Rutificador."""
 
+import warnings
 from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple
@@ -62,8 +63,6 @@ _DEPRECATED_ALIASES: dict[str, str] = {
 
 def __getattr__(name: str):
     if name in _DEPRECATED_ALIASES:
-        import warnings
-
         warnings.warn(
             f"{name} está obsoleto, usa {_DEPRECATED_ALIASES[name]} en su lugar",
             DeprecationWarning,
