@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple
 
+from .exceptions import ErrorValidacionRut
+
 
 @dataclass(frozen=True)
 class ConfiguracionRut:
@@ -17,11 +19,19 @@ class ConfiguracionRut:
     def __post_init__(self) -> None:
         """Valida los parámetros de configuración."""
         if self.modulo <= 0:
-            raise ValueError("El módulo debe ser positivo")
+            raise ErrorValidacionRut(
+                "El módulo debe ser positivo", codigo_error="CONFIGURACION_INVALIDA"
+            )
         if self.max_digitos <= 0 or self.min_digitos <= 0:
-            raise ValueError("Los límites de dígitos deben ser positivos")
+            raise ErrorValidacionRut(
+                "Los límites de dígitos deben ser positivos",
+                codigo_error="CONFIGURACION_INVALIDA",
+            )
         if self.min_digitos > self.max_digitos:
-            raise ValueError("El mínimo de dígitos no puede exceder al máximo")
+            raise ErrorValidacionRut(
+                "El mínimo de dígitos no puede exceder al máximo",
+                codigo_error="CONFIGURACION_INVALIDA",
+            )
 
 
 # Instancia de configuración predeterminada
@@ -44,3 +54,20 @@ __all__ = [
 
 # Alias para compatibilidad retroactiva
 RutConfig = ConfiguracionRut
+
+_DEPRECATED_ALIASES: dict[str, str] = {
+    "RutConfig": "ConfiguracionRut",
+}
+
+
+def __getattr__(name: str):
+    if name in _DEPRECATED_ALIASES:
+        import warnings
+
+        warnings.warn(
+            f"{name} está obsoleto, usa {_DEPRECATED_ALIASES[name]} en su lugar",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return globals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

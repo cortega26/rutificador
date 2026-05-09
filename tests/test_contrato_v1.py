@@ -74,6 +74,109 @@ def test_unicode_fullwidth_digits_aceptado(valor):
     assert res.estado == "valido"
 
 
+def test_formato_guion_multiple():
+    res = Rut.parse("12-345-678-5")
+    assert res.estado == "invalido"
+    assert _contiene_codigo(res.errores, "FORMATO_GUION")
+
+
+def test_formato_guion_base_vacia():
+    res = Rut.parse("-5")
+    assert res.estado == "invalido"
+    assert _contiene_codigo(res.errores, "FORMATO_GUION")
+
+
+def test_dv_invalido():
+    # DV con múltiples caracteres (pasa filtro de caracteres pero DV inválido)
+    res = Rut.parse("12-34")
+    assert res.estado == "invalido"
+    assert _contiene_codigo(res.errores, "DV_INVALIDO")
+
+
+def test_longitud_maxima():
+    res = Rut.parse("1234567890-5")
+    assert res.estado == "invalido"
+    assert _contiene_codigo(res.errores, "LONGITUD_MAXIMA")
+
+
+def test_normalizacion_dv_advertencia():
+    res = Rut.parse("999999-K")
+    assert res.estado == "valido"
+    assert _contiene_codigo(res.advertencias, "NORMALIZACION_DV")
+
+
+def test_ceros_izquierda_advertencia():
+    res = Rut.parse("0012345678-5")
+    assert res.estado == "valido"
+    assert _contiene_codigo(res.advertencias, "CEROS_IZQUIERDA")
+
+
+def test_normalizacion_puntos_advertencia():
+    res = Rut.parse("12.345.678-5")
+    assert res.estado == "valido"
+    assert _contiene_codigo(res.advertencias, "NORMALIZACION_PUNTOS")
+
+
+def test_enmascarado_estado_invalido():
+    import pytest
+    from rutificador.exceptions import ErrorValidacionRut
+
+    with pytest.raises(ErrorValidacionRut) as exc:
+        Rut.enmascarar("invalido")
+    assert exc.value.codigo_error == "ESTADO_ENMASCARADO"
+
+
+def test_token_clave_requerida():
+    import pytest
+    from rutificador.exceptions import ErrorValidacionRut
+
+    with pytest.raises(ErrorValidacionRut) as exc:
+        Rut.enmascarar("12.345.678-5", modo="token")
+    assert exc.value.codigo_error == "CLAVE_TOKEN_REQUERIDA"
+
+
+def test_enmascarar_con_separador_miles():
+    assert (
+        Rut.enmascarar("12.345.678-5", mantener=3, caracter="X", separador_miles=True)
+        == "XX.XXX.678-5"
+    )
+
+
+def test_enmascarar_con_mayusculas():
+    assert Rut.enmascarar("999999-k", mantener=3, mayusculas=True) == "***999-K"
+
+
+def test_enmascarar_mantener_cero():
+    assert Rut.enmascarar("12.345.678-5", mantener=0, caracter="#") == "########-5"
+
+
+def test_enmascarar_mantener_excede_base():
+    # Cuando mantener > len(base), la base completa es visible
+    resultado = Rut.enmascarar("1-9", mantener=5, caracter="X")
+    assert resultado == "1-9"
+
+
+def test_enmascarar_parametro_mantener_invalido():
+    import pytest
+    from rutificador.exceptions import ErrorValidacionRut
+
+    with pytest.raises(ErrorValidacionRut):
+        Rut.enmascarar("12.345.678-5", mantener="3")
+
+
+def test_enmascarar_parametro_caracter_invalido():
+    import pytest
+    from rutificador.exceptions import ErrorValidacionRut
+
+    with pytest.raises(ErrorValidacionRut):
+        Rut.enmascarar("12.345.678-5", caracter="**")
+
+
+def test_token_con_clave_bytes():
+    tok = Rut.enmascarar("12.345.678-5", modo="token", clave=b"k-secreta")
+    assert tok.startswith("tok_")
+
+
 def test_espacios_internos_por_modo():
     normalizado, errores, advertencias = Rut.normalizar(
         "12 345 678-5", modo=RigorValidacion.ESTRICTO

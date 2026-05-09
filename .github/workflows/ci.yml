@@ -43,12 +43,19 @@ jobs:
       run: |
         pip install -e .
 
-    - name: Ejecutar tests (pytest)
+    - name: Ejecutar tests con cobertura
       run: |
-        python -m pytest -v tests/ --tb=short
+        python -m pytest --cov=rutificador --cov-report=xml --cov-report=lcov --cov-report=html -v tests/ --tb=short
 
-    - name: Ejecutar verificacion de tipos (solo Python 3.10+)
-      if: matrix.python-version != '3.8'
+    - name: Subir cobertura a Coveralls
+      if: matrix.python-version != '3.14'
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./coverage.lcov
+        flag-name: python-${{ matrix.python-version }}
+        parallel: true
+
+    - name: Generar reporte de cobertura
       run: |
-        pip install mypy
-        python -m mypy rutificador/ --ignore-missing-imports || true  # No bloqueante por ahora
+        coverage report --show-missing

@@ -4,6 +4,48 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.5.0] - 2026-05-09
+
+### Añadido
+
+- [SECURITY] Sanitización de PII (RUT) en los logs de `ErrorRut.__init__`: el mensaje que recibe `logger.exception()` ya no contiene RUTs en texto plano.
+- [SECURITY] Mitigación de inyección de fórmulas CSV en la salida de la CLI (`_emitir_resultados`), alineada con el `FormateadorCSV` del módulo `formatter`.
+- [TEST] Suite de tests para CLI (`test_cli.py`), incluyendo `_comando_enmascarar`, `_comando_info` y tests de memoria con pipeline real.
+- [TEST] Tests de cobertura para 9 códigos de error faltantes (`FORMATO_GUION`, `DV_INVALIDO`, `LONGITUD_MAXIMA`, `NORMALIZACION_DV`, `CEROS_IZQUIERDA`, `NORMALIZACION_PUNTOS`, `ESTADO_ENMASCARADO`, `CLAVE_TOKEN_REQUERIDA`, `LONGITUD_MAXIMA`).
+- [TEST] Tests basados en propiedades con Hypothesis: roundtrip de `Rut.parse`, idempotencia de `normalizar`, enmascarado preserva DV, seguridad CSV.
+- [TEST] Tests de integración para contrib/pandas y contrib/polars (`s.rut.es_valido`, `formatear`, `validar`, `normalizar`).
+- [TEST] Tests para `Rut.__init__` con argumento `int`, `Rut.enmascarar` con paths extremos (`mantener=0`, `separador_miles`, `mayusculas`, token con `clave=bytes`).
+- [TEST] Test end-to-end con backend `ProcessPoolExecutor`.
+
+### Cambiado
+
+- [REFACTOR] Descomposición de `Rut.normalizar()` (87→9 métodos helper estáticos) para reducir complejidad ciclomática.
+- [REFACTOR] Estrategias de emisión en CLI: `_emitir_resultados` extraído en 5 clases Strategy (`_EmisionTexto`, `_EmisionJSON`, `_EmisionJSONL`, `_EmisionCSV`, `_EmisionXML`).
+- [REFACTOR] Lógica de transposición duplicada en `sugestor.py` consolidada en helper `_generar_transposiciones`.
+- [REFACTOR] Regex `RE_BASE_CON_PUNTOS`/`RE_BASE_DIGITOS` deduplicados: movidos a `utils.py`, reimportados en `rut.py` / `validador.py`.
+- [REFACTOR] Lógica de formato de Pandas/Polars deduplicada en helper compartido `contrib/_formato_comun.py`.
+- [REFACTOR] `_normalizar_entrada` eliminado de `ValidadorRut` (inline directo de `_limpiar_entrada`).
+- [REFACTOR] `monitor_de_rendimiento` actualizado con `ParamSpec` para tipos precisos (Python 3.10+).
+- [REFACTOR] `ConfiguracionRut.__post_init__` levanta `ErrorValidacionRut` en vez de `ValueError` para consistencia.
+- [DEVOPS] Cobertura de tests unificada en `ci.yml`; eliminado `coveralls.yml`.
+- [DEVOPS] Workflow `security.yml` corregido: triggers apuntan a `master` en vez de `main`.
+- [DEVOPS] `publish-package.yml` ya no se dispara en cada push.
+- [DEVOPS] `quality.yml`: mypy con `continue-on-error: true` (no bloqueante); tests removidos (se ejecutan en `ci.yml`).
+- [DEVOPS] Clasificador Python 3.9 eliminado de `pyproject.toml` (requerido 3.10+).
+- [DEVOPS] Pines de FastAPI/httpx flexibilizados (`^0.110.0` → `>=0.110.0,<2.0.0`, `^0.27.0` → `>=0.27.0,<1.0.0`).
+
+### Corregido
+
+- [FIX] Versión hardcodeada `"1.4.0"` en metadatos de auditoría CLI: ahora usa `obtener_informacion_version()["version"]`.
+- [FIX] `__init__.py` (`_registrar_contribs`): cambio de `except (ImportError, AttributeError)` a solo `except ImportError`.
+- [FIX] `_leer_ruts`: captura de `FileNotFoundError` y `UnicodeDecodeError` con mensajes legibles y `sys.exit(1)`.
+- [FIX] Tests de memoria: reemplazados monkeypatches no-op por pipeline real con 1000 RUTs.
+- [FIX] Parámetro muerto en test (`_ = esperado`) corregido a aserción real.
+
+### Deprecado
+
+- [DEPR] Aliases de compatibilidad (`RutInvalidoError`, `RutError`, `RutValidationError`, `RutFormatError`, `RutDigitError`, `RutLengthError`, `RutProcessingError`, `RutValidator`, `RutConfig`) emiten `DeprecationWarning` al ser accedidos. Se eliminarán en v2.0.
+
 ## [1.4.5] - 2026-03-29
 
 ### Cambiado
@@ -96,6 +138,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.5.0]: https://github.com/cortega26/rutificador/compare/v1.4.5...v1.5.0
 [1.4.5]: https://github.com/cortega26/rutificador/compare/v1.4.4...v1.4.5
 [1.4.4]: https://github.com/cortega26/rutificador/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/cortega26/rutificador/compare/v1.4.2...v1.4.3

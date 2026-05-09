@@ -10,22 +10,37 @@ from .exceptions import (
     ErrorLongitudRut,
     ErrorValidacionRut,
 )
-from .utils import normalizar_base_rut, asegurar_cadena_no_vacia, _limpiar_entrada
+from .utils import (
+    RE_BASE_CON_PUNTOS,
+    RE_BASE_DIGITOS,
+    normalizar_base_rut,
+    asegurar_cadena_no_vacia,
+    _limpiar_entrada,
+)
 
 logger = logging.getLogger(__name__)
 
 # Expresiones regulares compiladas una vez
 RUT_REGEX = re.compile(r"^((?:\d{1,3}(?:\.\d{3})*)|\d+)(-([0-9kK]))?$")
-BASE_WITH_DOTS_REGEX = re.compile(r"^\d{1,3}(?:\.\d{3})*$")
-BASE_DIGITS_ONLY_REGEX = re.compile(r"^\d+$")
 
 
 @runtime_checkable
 class Validador(Protocol):  # pylint: disable=too-few-public-methods
-    """Protocolo para validadores de RUT."""
+    """Protocolo para validadores de RUT.
+
+    .. deprecated::
+        Use :class:`ValidadorRut` en su lugar. ``Validador`` se eliminará en v2.0.
+    """
 
     def validar(self, cadena_rut: str) -> bool:  # pragma: no cover - protocolo
         """Valida una cadena de RUT."""
+        import warnings
+
+        warnings.warn(
+            "Validador está obsoleto, usa ValidadorRut en su lugar",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         raise NotImplementedError
 
 
@@ -46,7 +61,7 @@ class ValidadorRut:
         cadena_rut = asegurar_cadena_no_vacia(cadena_rut, "RUT")
 
         if self.modo == RigorValidacion.FLEXIBLE:
-            cadena_rut = self._normalizar_entrada(cadena_rut)
+            cadena_rut, _ = _limpiar_entrada(cadena_rut)
 
         match = RUT_REGEX.fullmatch(cadena_rut)
         if not match:
@@ -71,7 +86,7 @@ class ValidadorRut:
         """Valida y normaliza el número base del RUT."""
         base = asegurar_cadena_no_vacia(base, "base")
 
-        if not (BASE_WITH_DOTS_REGEX.match(base) or BASE_DIGITS_ONLY_REGEX.match(base)):
+        if not (RE_BASE_CON_PUNTOS.match(base) or RE_BASE_DIGITOS.match(base)):
             raise ErrorFormatoRut(
                 base, "cadena numérica con separadores de miles opcionales"
             )
@@ -107,14 +122,27 @@ class ValidadorRut:
             "Dígito verificador validado: %s == %s", digito_ingresado, digito_calculado
         )
 
-    def _normalizar_entrada(self, cadena_rut: str) -> str:
-        """Normaliza la entrada en modo de validación flexible."""
-        normalizado, _ = _limpiar_entrada(cadena_rut)
-        return normalizado
-
 
 # Alias para compatibilidad retroactiva
 RutValidator = ValidadorRut
+
+_DEPRECATED_ALIASES: dict[str, str] = {
+    "RutValidator": "ValidadorRut",
+}
+
+
+def __getattr__(name: str):
+    if name in _DEPRECATED_ALIASES:
+        import warnings
+
+        warnings.warn(
+            f"{name} está obsoleto, usa {_DEPRECATED_ALIASES[name]} en su lugar",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return globals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "Validador",

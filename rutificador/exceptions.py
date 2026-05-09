@@ -1,9 +1,19 @@
 """Jerarquía de excepciones personalizadas para Rutificador."""
 
 import logging
+import re
+import warnings
 from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
+
+# Patrón para detectar RUTs en mensajes de error (base-dv)
+_PATRON_RUT = re.compile(r"\d{1,3}(?:\.?\d{3})*\d?-[0-9kK]")
+
+
+def _sanitizar_mensaje(mensaje: str) -> str:
+    """Reemplaza valores de RUT en un mensaje con ``****-*``."""
+    return _PATRON_RUT.sub("****-*", mensaje)
 
 
 class ErrorRut(Exception):
@@ -12,7 +22,8 @@ class ErrorRut(Exception):
     def __init__(
         self, mensaje: str, codigo_error: Optional[str] = None, **kwargs: Any
     ) -> None:
-        super().__init__(mensaje)
+        mensaje_sanitizado = _sanitizar_mensaje(mensaje)
+        super().__init__(mensaje_sanitizado)
         self.mensaje = mensaje
         self.codigo_error = codigo_error
         # Sanitizar valores PII (RUT) de los metadatos antes de loguear
@@ -20,7 +31,12 @@ class ErrorRut(Exception):
             k: ("********" if "rut" in k.lower() else v) for k, v in kwargs.items()
         }
         # Evitar registrar valores completos de RUT en logs por defecto.
-        logger.error("Error de RUT [%s]", codigo_error, extra=self.contexto)
+        logger.error(
+            "Error de RUT [%s] — %s",
+            codigo_error,
+            mensaje_sanitizado,
+            extra=self.contexto,
+        )
 
 
 class ErrorValidacionRut(ErrorRut):
@@ -89,6 +105,7 @@ class ErrorProcesamientoRut(ErrorRut):
 
 
 # Alias para compatibilidad retroactiva
+# Mantenidos a nivel de módulo para importaciones internas silenciosas
 RutInvalidoError = ErrorValidacionRut
 RutError = ErrorRut
 RutValidationError = ErrorValidacionRut
@@ -96,6 +113,27 @@ RutFormatError = ErrorFormatoRut
 RutDigitError = ErrorDigitoRut
 RutLengthError = ErrorLongitudRut
 RutProcessingError = ErrorProcesamientoRut
+
+_DEPRECATED_ALIASES: dict[str, str] = {
+    "RutInvalidoError": "ErrorValidacionRut",
+    "RutError": "ErrorRut",
+    "RutValidationError": "ErrorValidacionRut",
+    "RutFormatError": "ErrorFormatoRut",
+    "RutDigitError": "ErrorDigitoRut",
+    "RutLengthError": "ErrorLongitudRut",
+    "RutProcessingError": "ErrorProcesamientoRut",
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name in _DEPRECATED_ALIASES:
+        warnings.warn(
+            f"{name} está obsoleto, usa {_DEPRECATED_ALIASES[name]} en su lugar",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return globals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 __all__ = [

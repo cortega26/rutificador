@@ -1,6 +1,7 @@
 # pylint: disable=missing-module-docstring, cyclic-import
 
 import json
+import sys
 from typing import List
 
 import pytest
@@ -425,13 +426,12 @@ class TestProcesadorLotesRut:
     @pytest.mark.parametrize("formato, esperado", datos_test_formato)
     def test_formatear_lista_ruts_con_formato(self, formato, esperado):
         """Prueba formateo de lista con formato específico."""
-        _ = esperado
         ruts = ["12345678-5", "98765432-5", "1-9"]
         processor = ProcesadorLotesRut()
         resultado = processor.formatear_lista_ruts(ruts, formato=formato)
 
-        # Verificar que contiene el contenido esperado
-        assert "RUTs válidos:" in resultado
+        # Verificar que la salida comienza con el formato esperado
+        assert resultado.startswith(esperado)
 
         if formato == "json":
             # Para JSON, verificar que es válido
@@ -709,3 +709,36 @@ class TestIntegracion:
         json_str = "\n".join(json_lines)
         json_data = json.loads(json_str)
         assert len(json_data) == 2  # Solo 2 RUTs válidos
+
+
+class TestRutInitConInt:
+    """Pruebas para Rut.__init__ con enteros."""
+
+    def test_rut_init_con_int_sin_dv(self):
+        """Rut con int sin DV debe computar el DV automáticamente."""
+        rut = Rut(12345678)
+        assert str(rut) == "12345678-5"
+
+    def test_rut_init_con_int_minimo(self):
+        """Rut con int de 1 dígito."""
+        rut = Rut(1)
+        assert str(rut) == "1-9"
+
+
+class TestProcesadorConProcessBackend:
+    """Pruebas para el backend ProcessPoolExecutor."""
+
+    @pytest.mark.skipif(
+        sys.platform == "win32",
+        reason="ProcessPoolExecutor no está soportado en Windows para pruebas",
+    )
+    def test_validar_lista_ruts_process_backend(self):
+        """Verifica que el backend process funcione correctamente."""
+        # '123' es base sin DV, auto-computa DV '6' y resulta válido
+        ruts = ["12345678-5", "98765432-1", "1-9", "123456789-0"]
+        processor = ProcesadorLotesRut(motor_paralelo="process")
+        resultado = processor.validar_lista_ruts(ruts, paralelo=True)
+        assert len(resultado.ruts_validos) == 2
+        assert len(resultado.ruts_invalidos) == 2
+        assert resultado.ruts_validos[0] == "12345678-5"
+        assert resultado.ruts_validos[1] == "1-9"

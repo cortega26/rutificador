@@ -14,14 +14,17 @@ from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut, RigorValidacion
 from .errores import DetalleError, crear_detalle_error
 from .exceptions import ErrorValidacionRut
 from .validador import ValidadorRut
-from .utils import calcular_digito_verificador, asegurar_booleano, _limpiar_entrada
+from .utils import (
+    RE_BASE_CON_PUNTOS,
+    calcular_digito_verificador,
+    asegurar_booleano,
+    _limpiar_entrada,
+)
 from .sugestor import sugerir_ruts, mejorar_con_confianza
 
 logger = logging.getLogger(__name__)
 
 EstadoValidacion = Literal["incompleto", "posible", "valido", "invalido"]
-
-_BASE_CON_PUNTOS = re.compile(r"^\d{1,3}(?:\.\d{3})*$")
 
 
 @dataclass(frozen=True)
@@ -74,6 +77,130 @@ class Rut:
         vistos.add(codigo)
 
     @staticmethod
+    def _validar_tipo_entrada(
+        valor: Union[str, int],
+    ) -> tuple[Optional[str], Optional[str], list[DetalleError], list[DetalleError]]:
+        errores: list[DetalleError] = []
+        advertencias: list[DetalleError] = []
+        if not isinstance(valor, (str, int)):
+            errores.append(crear_detalle_error("ERROR_TIPO"))
+            return None, None, errores, advertencias
+        cadena_original = str(valor)
+        cadena, _ = _limpiar_entrada(cadena_original)
+        return cadena_original, cadena, errores, advertencias
+
+    @staticmethod
+    def _verificar_espacios(
+        cadena_original: str,
+        modo: RigorValidacion,
+        errores: list[DetalleError],
+        advertencias: list[DetalleError],
+        vistos: set[str],
+    ) -> bool:
+        if not re.search(r"\s", cadena_original):
+            return True
+        if modo == RigorValidacion.ESTRICTO:
+            errores.append(crear_detalle_error("CARACTERES_INVALIDOS"))
+            return False
+        Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_ESPACIOS")
+        return True
+
+    @staticmethod
+    def _verificar_guiones_alternativos(
+        cadena_original: str,
+        advertencias: list[DetalleError],
+        vistos: set[str],
+    ) -> None:
+        if any(simbolo in cadena_original for simbolo in ("_", "–", "—", "−")):
+            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_GUION")
+
+    @staticmethod
+    def _validar_caracteres_base(
+        cadena: str,
+        errores: list[DetalleError],
+    ) -> bool:
+        if cadena == "":
+            errores.append(crear_detalle_error("RUT_VACIO"))
+            return False
+        if re.search(r"[^0-9kK\.-]", cadena):
+            errores.append(crear_detalle_error("CARACTERES_INVALIDOS"))
+            return False
+        if not re.search(r"\d", cadena):
+            return False
+        if cadena.count("-") > 1:
+            errores.append(crear_detalle_error("FORMATO_GUION"))
+            return False
+        return True
+
+    @staticmethod
+    def _separar_base_dv(
+        cadena: str,
+        errores: list[DetalleError],
+    ) -> tuple[Optional[str], Optional[str], bool]:
+        if "-" not in cadena:
+            return cadena, None, False
+        base_raw, dv_raw = cadena.split("-", 1)
+        if base_raw == "":
+            errores.append(crear_detalle_error("FORMATO_GUION"))
+            return None, None, False
+        if dv_raw == "":
+            return base_raw, None, True
+        return base_raw, dv_raw, False
+
+    @staticmethod
+    def _normalizar_puntos(
+        base_raw: str,
+        advertencias: list[DetalleError],
+        vistos: set[str],
+    ) -> Optional[str]:
+        if "." not in base_raw:
+            return base_raw
+        if not RE_BASE_CON_PUNTOS.fullmatch(base_raw):
+            return None
+        Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_PUNTOS")
+        return base_raw.replace(".", "")
+
+    @staticmethod
+    def _normalizar_ceros(
+        base_sin_puntos: str,
+        advertencias: list[DetalleError],
+        vistos: set[str],
+    ) -> str:
+        base_normalizada = base_sin_puntos.lstrip("0")
+        if base_normalizada == "":
+            base_normalizada = "0"
+        if base_normalizada != base_sin_puntos:
+            Rut._agregar_advertencia(advertencias, vistos, "CEROS_IZQUIERDA")
+        return base_normalizada
+
+    @staticmethod
+    def _normalizar_dv(
+        dv_raw: Optional[str],
+        advertencias: list[DetalleError],
+        vistos: set[str],
+    ) -> tuple[Optional[str], bool]:
+        if dv_raw is None:
+            return None, True
+        if len(dv_raw) != 1 or not re.fullmatch(r"[0-9kK]", dv_raw):
+            return None, False
+        dv_normalizado = dv_raw.lower()
+        if dv_raw != dv_normalizado:
+            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_DV")
+        return dv_normalizado, True
+
+    @staticmethod
+    def _reconstruir_normalizado(
+        base_normalizada: str,
+        dv_normalizado: Optional[str],
+        dv_faltante: bool,
+    ) -> str:
+        if dv_normalizado is None and dv_faltante:
+            return f"{base_normalizada}-"
+        if dv_normalizado is None:
+            return base_normalizada
+        return f"{base_normalizada}-{dv_normalizado}"
+
+    @staticmethod
     def normalizar(
         valor: Union[str, int],
         *,
@@ -81,86 +208,45 @@ class Rut:
     ) -> tuple[Optional[str], list[DetalleError], list[DetalleError]]:
         """Normaliza un RUT sin validar su dígito verificador."""
 
-        errores: list[DetalleError] = []
-        advertencias: list[DetalleError] = []
+        cadena_original, cadena, errores, advertencias = Rut._validar_tipo_entrada(
+            valor
+        )
+        if cadena is None:
+            return None, errores, advertencias
+
+        assert cadena_original is not None  # garantizado tras validar tipo
+
         vistos: set[str] = set()
 
-        if not isinstance(valor, (str, int)):
-            errores.append(crear_detalle_error("ERROR_TIPO"))
+        if not Rut._verificar_espacios(
+            cadena_original, modo, errores, advertencias, vistos
+        ):
             return None, errores, advertencias
 
-        cadena_original = str(valor)
-        cadena, _ = _limpiar_entrada(cadena_original)
+        Rut._verificar_guiones_alternativos(cadena_original, advertencias, vistos)
 
-        if re.search(r"\s", cadena_original):
-            if modo == RigorValidacion.ESTRICTO:
-                errores.append(crear_detalle_error("CARACTERES_INVALIDOS"))
-                return None, errores, advertencias
-            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_ESPACIOS")
-
-        if any(simbolo in cadena_original for simbolo in ("_", "–", "—", "−")):
-            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_GUION")
-
-        if cadena == "":
-            errores.append(crear_detalle_error("RUT_VACIO"))
+        if not Rut._validar_caracteres_base(cadena, errores):
             return None, errores, advertencias
 
-        if re.search(r"[^0-9kK\.-]", cadena):
-            errores.append(crear_detalle_error("CARACTERES_INVALIDOS"))
+        base_raw, dv_raw, dv_faltante = Rut._separar_base_dv(cadena, errores)
+        if base_raw is None:
             return None, errores, advertencias
 
-        if not re.search(r"\d", cadena):
+        base_sin_puntos = Rut._normalizar_puntos(base_raw, advertencias, vistos)
+        if base_sin_puntos is None:
+            errores.append(crear_detalle_error("FORMATO_PUNTOS"))
             return None, errores, advertencias
 
-        if cadena.count("-") > 1:
-            errores.append(crear_detalle_error("FORMATO_GUION"))
+        base_normalizada = Rut._normalizar_ceros(base_sin_puntos, advertencias, vistos)
+
+        dv_normalizado, dv_ok = Rut._normalizar_dv(dv_raw, advertencias, vistos)
+        if not dv_ok:
+            errores.append(crear_detalle_error("DV_INVALIDO"))
             return None, errores, advertencias
 
-        guion_presente = "-" in cadena
-        base_raw = cadena
-        dv_raw: Optional[str] = None
-        dv_faltante = False
-
-        if guion_presente:
-            base_raw, dv_raw = cadena.split("-", 1)
-            if base_raw == "":
-                errores.append(crear_detalle_error("FORMATO_GUION"))
-                return None, errores, advertencias
-            if dv_raw == "":
-                dv_faltante = True
-                dv_raw = None
-
-        if "." in base_raw:
-            if not _BASE_CON_PUNTOS.fullmatch(base_raw):
-                errores.append(crear_detalle_error("FORMATO_PUNTOS"))
-                return None, errores, advertencias
-            base_sin_puntos = base_raw.replace(".", "")
-            Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_PUNTOS")
-        else:
-            base_sin_puntos = base_raw
-
-        base_normalizada = base_sin_puntos.lstrip("0")
-        if base_normalizada == "":
-            base_normalizada = "0"
-        if base_normalizada != base_sin_puntos:
-            Rut._agregar_advertencia(advertencias, vistos, "CEROS_IZQUIERDA")
-
-        dv_normalizado: Optional[str] = None
-        if dv_raw is not None:
-            if len(dv_raw) != 1 or not re.fullmatch(r"[0-9kK]", dv_raw):
-                errores.append(crear_detalle_error("DV_INVALIDO"))
-                return None, errores, advertencias
-            dv_normalizado = dv_raw.lower()
-            if dv_raw != dv_normalizado:
-                Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_DV")
-
-        if dv_normalizado is None and dv_faltante:
-            normalizado = f"{base_normalizada}-"
-        elif dv_normalizado is None:
-            normalizado = base_normalizada
-        else:
-            normalizado = f"{base_normalizada}-{dv_normalizado}"
-
+        normalizado = Rut._reconstruir_normalizado(
+            base_normalizada, dv_normalizado, dv_faltante
+        )
         return normalizado, errores, advertencias
 
     @staticmethod
@@ -281,6 +367,7 @@ class Rut:
             clave_bytes = (
                 clave if isinstance(clave, bytes) else str(clave).encode("utf-8")
             )
+            assert resultado.normalizado is not None  # garantizado por estado valido
             mensaje = resultado.normalizado.encode("utf-8")
             digest = hmac.new(clave_bytes, mensaje, hashlib.sha256).digest()
             token = base64.b32encode(digest).decode("ascii").rstrip("=").lower()

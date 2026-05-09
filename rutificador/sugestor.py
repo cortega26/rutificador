@@ -108,6 +108,17 @@ def mejorar_con_confianza(valor: str, distancia_max: int = 1) -> Optional[str]:
     return mejor_rut
 
 
+def _generar_transposiciones(base: str) -> List[str]:
+    """Genera todas las variantes de base con un par de dígitos transpuestos."""
+    digitos = list(base)
+    resultados: List[str] = []
+    for i in range(len(digitos) - 1):
+        copia = digitos[:]
+        copia[i], copia[i + 1] = copia[i + 1], copia[i]
+        resultados.append("".join(copia))
+    return resultados
+
+
 def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> List[Tuple[str, int]]:
     """Lógica interna que devuelve tuplas (rut, distancia) ordenadas."""
     sugerencias: Set[str] = set()
@@ -124,53 +135,33 @@ def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> List[Tuple[str, 
     if not cadena:
         return []
 
+    def _agregar_con_transposiciones(base: str) -> None:
+        """Agrega el RUT con DV correcto para la base y sus transposiciones."""
+        try:
+            dv = calcular_digito_verificador(base).lower()
+            sugerencias.add(f"{base}-{dv}")
+        except Exception:
+            pass
+        for base_t in _generar_transposiciones(base):
+            try:
+                dv_t = calcular_digito_verificador(base_t).lower()
+                sugerencias.add(f"{base_t}-{dv_t}")
+            except Exception:
+                pass
+
     # 2. Estrategia: Manejo de RUTs con guion (asumimos separación tentativa)
     if "-" in cadena:
         partes = cadena.split("-")
         base_orig = "".join(c for c in partes[0] if c.isdigit())
-
-        # Probar la base tal cual con su DV correcto calculado
         if base_orig:
-            try:
-                dv_calc = calcular_digito_verificador(base_orig).lower()
-                sugerencias.add(f"{base_orig}-{dv_calc}")
-            except Exception:
-                pass
-
-            # Probar transposiciones simples en la base (error 1243 -> 1234)
-            digitos_base = list(base_orig)
-            for i in range(len(digitos_base) - 1):
-                copia = digitos_base[:]
-                copia[i], copia[i + 1] = copia[i + 1], copia[i]
-                base_cand = "".join(copia)
-                try:
-                    dv_cand = calcular_digito_verificador(base_cand).lower()
-                    sugerencias.add(f"{base_cand}-{dv_cand}")
-                except Exception:
-                    pass
+            _agregar_con_transposiciones(base_orig)
 
     # 3. Estrategia: Cadena continua (probar cortes razonables)
     solo_digitos = "".join(c for c in cadena if c.isdigit() or c.lower() == "k")
     if len(solo_digitos) >= 7:
         # 3.1 Asumir que el último es DV (si es dígito o K)
         base_1 = solo_digitos[:-1]
-        try:
-            dv_c = calcular_digito_verificador(base_1).lower()
-            sugerencias.add(f"{base_1}-{dv_c}")
-
-            # Probar transposiciones en esta base tentativa
-            digitos_base = list(base_1)
-            for i in range(len(digitos_base) - 1):
-                copia = digitos_base[:]
-                copia[i], copia[i + 1] = copia[i + 1], copia[i]
-                base_cand = "".join(copia)
-                try:
-                    dv_cand = calcular_digito_verificador(base_cand).lower()
-                    sugerencias.add(f"{base_cand}-{dv_cand}")
-                except Exception:
-                    pass
-        except Exception:
-            pass
+        _agregar_con_transposiciones(base_1)
 
         # 3.2 Asumir que todos son parte de la base y falta el DV
         # Solo probar esto si la longitud sugiere que solo tenemos la base (7-8 caracteres)

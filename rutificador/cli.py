@@ -4,6 +4,7 @@ import json
 import sys
 import time
 import xml.etree.ElementTree as ET
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .procesador import (
@@ -19,21 +20,148 @@ from .version import obtener_informacion_version
 def _leer_ruts(ruta_archivo: Optional[str]) -> Iterator[str]:
     """Lee RUTs desde un archivo o desde la entrada estándar."""
     if ruta_archivo:
+        try:
 
-        def _desde_archivo() -> Iterator[str]:
-            with open(ruta_archivo, encoding="utf-8") as archivo:
-                for linea in archivo:
-                    linea = linea.strip()
-                    if linea:
-                        yield linea
+            def _desde_archivo() -> Iterator[str]:
+                with open(ruta_archivo, encoding="utf-8") as archivo:
+                    for linea in archivo:
+                        linea = linea.strip()
+                        if linea:
+                            yield linea
 
-        return _desde_archivo()
+            return _desde_archivo()
+        except FileNotFoundError:
+            print(f"Error: archivo no encontrado — '{ruta_archivo}'", file=sys.stderr)
+            sys.exit(1)
+        except UnicodeDecodeError:
+            print(
+                f"Error: el archivo '{ruta_archivo}' no es un texto UTF-8 válido",
+                file=sys.stderr,
+            )
+            sys.exit(1)
     return (linea.strip() for linea in sys.stdin if linea.strip())
 
 
 def _formatear_error(detalle: DetalleError) -> str:
     codigo = detalle.codigo or "SIN_CODIGO"
     return f"{detalle.rut} [{codigo}] - {detalle.mensaje}"
+
+
+class _EstrategiaEmision(ABC):
+    """Estrategia base para emitir resultados en diferentes formatos."""
+
+    def __init__(self) -> None:
+        self.primer_elemento = True
+
+    @abstractmethod
+    def iniciar(self) -> None:
+        """Pre-emisión antes del bucle."""
+
+    @abstractmethod
+    def emitir(self, item: Dict[str, Any]) -> None:
+        """Emite un elemento individual."""
+
+    @abstractmethod
+    def finalizar(self, metadata: Dict[str, Any]) -> None:
+        """Post-emisión y metadatos."""
+
+
+class _EmisionTexto(_EstrategiaEmision):
+    def iniciar(self) -> None:
+        pass
+
+    def emitir(self, item: Dict[str, Any]) -> None:
+        if item["valido"]:
+            print(item["resultado"])
+        else:
+            msg = (
+                f"{item['original']} [{item['codigo_error']}]"
+                f" - {item['mensaje_error']}"
+            )
+            if item["sugerencia"]:
+                msg += f" (¿Quisiste decir {item['sugerencia']}?)"
+            print(msg, file=sys.stderr)
+
+    def finalizar(self, metadata: Dict[str, Any]) -> None:
+        print("\n--- RESUMEN DE AUDITORÍA ---", file=sys.stderr)
+        for k, v in metadata["audit"].items():
+            print(f"{k.capitalize()}: {v}", file=sys.stderr)
+
+
+class _EmisionJSON(_EstrategiaEmision):
+    def iniciar(self) -> None:
+        print("[", end="", flush=True)
+
+    def emitir(self, item: Dict[str, Any]) -> None:
+        if not self.primer_elemento:
+            print(",", end="")
+        print(json.dumps(item, ensure_ascii=False), end="")
+        self.primer_elemento = False
+
+    def finalizar(self, metadata: Dict[str, Any]) -> None:
+        print("]")
+        print(json.dumps(metadata, indent=2, ensure_ascii=False), file=sys.stderr)
+
+
+class _EmisionJSONL(_EstrategiaEmision):
+    def iniciar(self) -> None:
+        pass
+
+    def emitir(self, item: Dict[str, Any]) -> None:
+        print(json.dumps(item, ensure_ascii=False))
+
+    def finalizar(self, metadata: Dict[str, Any]) -> None:
+        print(json.dumps(metadata, ensure_ascii=False), file=sys.stderr)
+
+
+class _EmisionCSV(_EstrategiaEmision):
+    def __init__(self) -> None:
+        super().__init__()
+        self._escritor: Optional[csv.DictWriter] = None
+
+    def iniciar(self) -> None:
+        pass
+
+    def emitir(self, item: Dict[str, Any]) -> None:
+        # Mitigación de inyección de fórmulas (CSV injection)
+        item_csv = {
+            k: f"'{v}"
+            if isinstance(v, str) and v and v[0] in {"=", "+", "-", "@"}
+            else v
+            for k, v in item.items()
+        }
+        if self._escritor is None:
+            self._escritor = csv.DictWriter(sys.stdout, fieldnames=item_csv.keys())
+            self._escritor.writeheader()
+        self._escritor.writerow(item_csv)
+
+    def finalizar(self, metadata: Dict[str, Any]) -> None:
+        pass
+
+
+class _EmisionXML(_EstrategiaEmision):
+    def iniciar(self) -> None:
+        print("<rutificador>", flush=True)
+
+    def emitir(self, item: Dict[str, Any]) -> None:
+        reg = ET.Element("registro")
+        for k, v in item.items():
+            elem = ET.SubElement(reg, k)
+            elem.text = str(v)
+        print(ET.tostring(reg, encoding="unicode"), end="")
+
+    def finalizar(self, metadata: Dict[str, Any]) -> None:
+        print("</rutificador>")
+        print(f"<!-- Audit: {metadata['audit']} -->", file=sys.stderr)
+
+
+_ESTRATEGIAS_FORMATO: Dict[str, type] = {
+    "text": _EmisionTexto,
+    "json": _EmisionJSON,
+    "jsonl": _EmisionJSONL,
+    "csv": _EmisionCSV,
+    "xml": _EmisionXML,
+}
 
 
 def _emitir_resultados(
@@ -47,17 +175,11 @@ def _emitir_resultados(
     validos = 0
     inicio_audit = time.perf_counter()
 
-    # Pre-emisión según formato
-    if formato == "json":
-        print("[", end="", flush=True)
-    elif formato == "xml":
-        print("<rutificador>", flush=True)
-    elif formato == "csv":
-        # La cabecera se escribe en el primer elemento o antes
-        pass
-
-    escritor_csv = None
-    primer_elemento = True
+    estrategia_cls = _ESTRATEGIAS_FORMATO.get(formato)
+    if not estrategia_cls:
+        raise ValueError(f"Formato no soportado: {formato}")
+    estrategia = estrategia_cls()
+    estrategia.iniciar()
 
     for es_valido, resultado in resultados:
         total += 1
@@ -83,7 +205,7 @@ def _emitir_resultados(
                 item["original"] = resultado.rut
                 item["mensaje_error"] = resultado.mensaje
                 item["codigo_error"] = resultado.codigo
-                if usar_sugerencias:
+                if usar_sugerencias and resultado.rut is not None:
                     sugerencias = Rut.sugerir(resultado.rut)
                     if sugerencias:
                         item["sugerencia"] = sugerencias[0]
@@ -92,44 +214,12 @@ def _emitir_resultados(
                 item["mensaje_error"] = str(resultado)
                 item["codigo_error"] = "ERROR"
 
-        # Emisión incremental
-        if formato == "text":
-            if es_valido:
-                print(item["resultado"])
-            else:
-                msg = f"{item['original']} [{item['codigo_error']}] - {item['mensaje_error']}"
-                if item["sugerencia"]:
-                    msg += f" (¿Quisiste decir {item['sugerencia']}?)"
-                print(msg, file=sys.stderr)
+        estrategia.emitir(item)
 
-        elif formato == "json":
-            if not primer_elemento:
-                print(",", end="")
-            print(json.dumps(item, ensure_ascii=False), end="")
-
-        elif formato == "jsonl":
-            print(json.dumps(item, ensure_ascii=False))
-
-        elif formato == "csv":
-            if escritor_csv is None:
-                escritor_csv = csv.DictWriter(sys.stdout, fieldnames=item.keys())
-                escritor_csv.writeheader()
-            escritor_csv.writerow(item)
-
-        elif formato == "xml":
-            reg = ET.Element("registro")
-            for k, v in item.items():
-                elem = ET.SubElement(reg, k)
-                elem.text = str(v)
-            print(ET.tostring(reg, encoding="unicode"), end="")
-
-        primer_elemento = False
-
-    # Post-emisión y Metadatos de Auditoría
     final_audit = time.perf_counter()
     metadata = {
         "audit": {
-            "version": "1.4.0",
+            "version": obtener_informacion_version()["version"],
             "total": total,
             "validos": validos,
             "invalidos": total - validos,
@@ -138,21 +228,8 @@ def _emitir_resultados(
         }
     }
 
-    if quiet:
-        return codigo_salida
-
-    if formato == "json":
-        print("]")
-        print(json.dumps(metadata, indent=2, ensure_ascii=False), file=sys.stderr)
-    elif formato == "jsonl":
-        print(json.dumps(metadata, ensure_ascii=False), file=sys.stderr)
-    elif formato == "xml":
-        print("</rutificador>")
-        print(f"<!-- Audit: {metadata['audit']} -->", file=sys.stderr)
-    elif formato == "text":
-        print("\n--- RESUMEN DE AUDITORÍA ---", file=sys.stderr)
-        for k, v in metadata["audit"].items():
-            print(f"{k.capitalize()}: {v}", file=sys.stderr)
+    if not quiet:
+        estrategia.finalizar(metadata)
 
     return codigo_salida
 

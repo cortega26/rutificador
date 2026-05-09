@@ -44,51 +44,25 @@ def test_formatear_desde_archivo(tmp_path: Path):
     assert resultado.returncode == 0
 
 
-def test_memoria_validar_archivo_grande(tmp_path: Path, monkeypatch):
+def test_memoria_validar_archivo_grande(tmp_path: Path):
     archivo = tmp_path / "ruts.txt"
-    # Reducimos a 10k para mayor estabilidad en el entorno de pruebas
-    archivo.write_text("12345678-5\n" * 10_000, encoding="utf-8")
-
-    def _consumir(
-        ruts, paralelo=False, max_trabajadores=None, motor_paralelo="process"
-    ):
-        del paralelo, max_trabajadores, motor_paralelo
-        for _ in ruts:
-            pass
-        return iter([])
-
-    monkeypatch.setattr(cli, "validar_flujo_ruts", _consumir)
+    archivo.write_text("12345678-5\n" * 1_000, encoding="utf-8")
 
     tracemalloc.start()
-    codigo_salida = cli.main(["validar", str(archivo)])
+    codigo_salida = cli.main(["validar", "--quiet", str(archivo)])
     _, pico = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     assert codigo_salida == 0
+    # 1000 RUTs validados no debería exceder 20MB
     assert pico < 20 * 1024 * 1024
 
 
-def test_memoria_formatear_archivo_grande(tmp_path: Path, monkeypatch):
+def test_memoria_formatear_archivo_grande(tmp_path: Path):
     archivo = tmp_path / "ruts.txt"
-    # Reducimos a 10k para mayor estabilidad en el entorno de pruebas
-    archivo.write_text("12345678-5\n" * 10_000, encoding="utf-8")
-
-    def _consumir(
-        ruts,
-        separador_miles=False,
-        mayusculas=False,
-        paralelo=False,
-        max_trabajadores=None,
-        motor_paralelo="process",
-    ):
-        del separador_miles, mayusculas, paralelo, max_trabajadores, motor_paralelo
-        for _ in ruts:
-            pass
-        return iter([])
-
-    monkeypatch.setattr(cli, "formatear_flujo_ruts", _consumir)
+    archivo.write_text("12345678-5\n" * 1_000, encoding="utf-8")
 
     tracemalloc.start()
-    codigo_salida = cli.main(["formatear", str(archivo)])
+    codigo_salida = cli.main(["formatear", "--quiet", str(archivo)])
     _, pico = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     assert codigo_salida == 0
@@ -118,6 +92,42 @@ def test_cli_jsonl_format():
     assert "audit" in resultado.stderr
     data_reg1 = json.loads(lineas_data[0])
     assert data_reg1["valido"] is True
+
+
+def test_enmascarar_desde_stdin():
+    entrada = "12345678-5\n"
+    resultado = ejecutar_cli("enmascarar", entrada=entrada)
+    assert resultado.returncode == 0
+    assert "****5678-5" in resultado.stdout
+
+
+def test_enmascarar_con_flags(tmp_path: Path):
+    archivo = tmp_path / "ruts.txt"
+    archivo.write_text("12345678-5\n", encoding="utf-8")
+    resultado = ejecutar_cli(
+        "enmascarar",
+        str(archivo),
+        "--mantener",
+        "2",
+        "--caracter",
+        "X",
+        "--separador-miles",
+        "--mayusculas",
+    )
+    assert resultado.returncode == 0
+    assert "XX.XXX.X78-5" in resultado.stdout
+
+
+def test_enmascarar_rut_invalido():
+    entrada = "invalido\n"
+    resultado = ejecutar_cli("enmascarar", entrada=entrada)
+    assert resultado.returncode == 1
+    assert "[ERROR]" in resultado.stderr
+
+
+def test_enmascarar_entrada_vacia():
+    resultado = ejecutar_cli("enmascarar", entrada="")
+    assert resultado.returncode == 0
 
 
 def test_cli_paralelo():

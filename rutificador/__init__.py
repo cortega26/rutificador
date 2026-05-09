@@ -3,8 +3,8 @@
 from typing import List
 
 from .version import __version__, obtener_informacion_version
-from .config import ConfiguracionRut, RigorValidacion, RutConfig
-from .validador import Validador, ValidadorRut, RutValidator
+from .config import ConfiguracionRut, RigorValidacion
+from .validador import Validador, ValidadorRut
 from .rut import Rut, RutBase, ValidacionResultado, obtener_rut
 from .procesador import (
     DetalleError,
@@ -39,7 +39,6 @@ from .exceptions import (
     ErrorDigitoRut,
     ErrorLongitudRut,
     ErrorProcesamientoRut,
-    RutInvalidoError,
 )
 
 
@@ -49,17 +48,37 @@ def _registrar_contribs() -> None:
         from .contrib import (  # pylint: disable=import-outside-toplevel,unused-import
             pandas,  # noqa: F401
         )
-    except (ImportError, AttributeError):
+    except ImportError:
         pass
     try:
         from .contrib import (  # pylint: disable=import-outside-toplevel,unused-import
             polars,  # noqa: F401
         )
-    except (ImportError, AttributeError):
+    except ImportError:
         pass
 
 
 _registrar_contribs()
+
+_DEPRECATED_EXPORTS: dict[str, str] = {
+    "RutConfig": "ConfiguracionRut",
+    "RutValidator": "ValidadorRut",
+    "RutInvalidoError": "ErrorValidacionRut",
+}
+
+
+def __getattr__(name: str):
+    if name in _DEPRECATED_EXPORTS:
+        import warnings
+
+        warnings.warn(
+            f"{name} está obsoleto, usa {_DEPRECATED_EXPORTS[name]} en su lugar",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return globals()[_DEPRECATED_EXPORTS[name]]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"

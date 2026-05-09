@@ -2,9 +2,9 @@ name: Escaneo de seguridad
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
   schedule:
     # Ejecutar escaneos de seguridad semanalmente (lunes a las 02:00 UTC)
     - cron: '0 2 * * 1'
@@ -24,7 +24,6 @@ jobs:
           cache: 'pip'
           cache-dependency-path: |
             requirements-dev.txt
-            poetry.lock
 
       - name: Actualizar pip e instalar herramientas de seguridad
         run: |

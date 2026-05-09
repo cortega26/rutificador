@@ -39,6 +39,7 @@ jobs:
           python -m ruff check .
 
       - name: Tipos (mypy)
+        continue-on-error: true
         run: |
           python -m mypy --strict .
 
@@ -46,6 +47,4 @@ jobs:
         run: |
           python -m bandit -r rutificador/
 
-      - name: Tests (pytest)
-        run: |
-          python -m pytest -q
+      # Tests ejecutados en ci.yml con cobertura

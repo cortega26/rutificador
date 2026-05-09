@@ -61,7 +61,6 @@ def test_sugerir_ruts_muy_lejano():
 
 
 def test_mejorar_con_confianza_seguro():
-
     # Caso NO ambiguo: Solo el DV está mal
     # 12.345.678-1 (El real es 5)
     # Sugerencia dist 1 -> 12345678-5
@@ -71,7 +70,6 @@ def test_mejorar_con_confianza_seguro():
 
 
 def test_mejorar_con_confianza_inseguro_por_distancia():
-
     # Caso ambiguo real: 12.354.678-5
     # Solución A (dist 1): 12354678-4 (Cambiar 5 por 4)
     # Solución B (dist 1): 12345678-5 (Transponer 54 a 45)
@@ -85,7 +83,6 @@ def test_mejorar_con_confianza_inseguro_por_distancia():
 
 
 def test_mejorar_con_confianza_ambiguedad(monkeypatch):
-
     # Simulamos un caso de ambigüedad (dos sugerencias a la misma distancia)
     def mock_sugerir_dist(valor, limite):
         _ = (valor, limite)

@@ -7,18 +7,23 @@ import time
 import unicodedata
 from functools import lru_cache, wraps
 from itertools import cycle
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Optional, ParamSpec, TypeVar
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut
 from .exceptions import ErrorValidacionRut
 
 logger = logging.getLogger(__name__)
 
-# Tipo genérico para el valor de retorno de funciones decoradas
+# Parámetros genéricos para decoradores y funciones
+P = ParamSpec("P")
 R = TypeVar("R")
 
 # Tabla de traducción para eliminar separadores de miles de forma eficiente
 _PUNTOS_TRADUCCION = str.maketrans("", "", ".")
+
+# Expresiones regulares compartidas
+RE_BASE_CON_PUNTOS = re.compile(r"^\d{1,3}(?:\.\d{3})*$")
+RE_BASE_DIGITOS = re.compile(r"^\d+$")
 
 
 def configurar_registro(
@@ -84,7 +89,7 @@ def asegurar_booleano(valor: Any, nombre: str) -> bool:
     return valor
 
 
-def monitor_de_rendimiento(func: Callable[..., R]) -> Callable[..., R]:
+def monitor_de_rendimiento(func: Callable[P, R]) -> Callable[P, R]:
     """Decora una función midiendo y registrando su rendimiento.
 
     Args:
@@ -96,7 +101,7 @@ def monitor_de_rendimiento(func: Callable[..., R]) -> Callable[..., R]:
     """
 
     @wraps(func)
-    def envoltura(*args: Any, **kwargs: Any) -> R:
+    def envoltura(*args: P.args, **kwargs: P.kwargs) -> R:
         tiempo_inicio = time.perf_counter()
         try:
             resultado: R = func(*args, **kwargs)

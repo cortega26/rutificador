@@ -9,6 +9,7 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 from ..rut import Rut, RigorValidacion
+from ._formato_comun import aplicar_formato
 
 logger = logging.getLogger(__name__)
 
@@ -41,21 +42,7 @@ class RutAccessor:
         def _fmt(x):
             try:
                 res = Rut.parse(x, modo=modo)
-                if res.estado == "valido":
-                    # Usamos la lógica de formateo interno
-                    Rut(res.normalizado)
-                    # Aquí recreamos la lógica de formateo o usamos un helper
-                    # Por simplicidad ahora usamos f-strings o los métodos de Rut
-                    if formato == "miles":
-                        base_masc = Rut.agregar_separador_miles(res.base)
-                        return f"{base_masc}-{res.dv}"
-                    if formato == "canonico":
-                        return res.normalizado.upper()
-                    if formato == "miles-con-guion":
-                        base_masc = Rut.agregar_separador_miles(res.base)
-                        return f"{base_masc}-{res.dv}".upper()
-                    return res.normalizado
-                return None
+                return aplicar_formato(res, formato)
             except Exception:
                 return None
 
