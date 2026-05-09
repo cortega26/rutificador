@@ -4,6 +4,14 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.5.4] - 2026-05-09
+
+### Corregido
+
+- [FIX] Todos los `import warnings` movidos a toplevel para cumplir con pylint `C0415`.
+- [FIX] Aliases deprecados removidos de `__all__` en `__init__.py` (pylint `E0603`).
+- [FIX] Tests actualizados: `RutInvalidoError` → `ErrorValidacionRut` (pylint `E0611`); imports locales duplicados consolidados (pylint `W0404`/`W0621`).
+
 ## [1.5.3] - 2026-05-09
 
 ### Corregido
@@ -159,6 +167,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.5.4]: https://github.com/cortega26/rutificador/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/cortega26/rutificador/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/cortega26/rutificador/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/cortega26/rutificador/compare/v1.5.0...v1.5.1
