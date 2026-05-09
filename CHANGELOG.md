@@ -4,6 +4,12 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.5.1] - 2026-05-09
+
+### Corregido
+
+- [DEVOPS] Workflow `security.yml`: reemplazada la lectura de `poetry.lock` (no versionado) por `pip freeze` para la exportación de dependencias runtime.
+
 ## [1.5.0] - 2026-05-09
 
 ### Añadido
@@ -138,6 +144,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.5.1]: https://github.com/cortega26/rutificador/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/cortega26/rutificador/compare/v1.4.5...v1.5.0
 [1.4.5]: https://github.com/cortega26/rutificador/compare/v1.4.4...v1.4.5
 [1.4.4]: https://github.com/cortega26/rutificador/compare/v1.4.3...v1.4.4
