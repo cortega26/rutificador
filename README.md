@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10--3.14-blue)](https://www.python.org/)
 [![Downloads](https://img.shields.io/pypi/dm/rutificador)](https://pypi.org/project/rutificador/)
 [![Licencia](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Estilo de código](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Estilo de código](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://docs.astral.sh/ruff/)
 [![Integración continua](https://github.com/cortega26/rutificador/actions/workflows/ci.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/ci.yml)
 
 </div>
