@@ -4,6 +4,29 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.5.7] - 2026-05-13
+
+### Añadido
+
+- [DOC] Google-style docstrings en español en métodos públicos clave (`Rut.__init__`, `Rut.formatear`, `ValidadorRut`, `ProcesadorLotesRut`, `FormateadorJSON`, `aplicar_formato`).
+- [DOC] Docstrings de módulo en 9 archivos: `version.py`, `rut.py`, `validador.py`, `procesador.py`, `cli.py`, `sugestor.py`, `contrib/fastapi.py`, `contrib/pandas.py`, `contrib/polars.py`.
+- [DOC] Texto `help=` para los subcomandos `formatear` (`--separador-miles`, `--mayusculas`) y `enmascarar` (descripción del comando, `archivo`, `--mantener`, `--caracter`, `--separador-miles`, `--mayusculas`).
+- [DOC] `CONTRIBUTING.md` — guía de contribución completa en español con setup, quality gates, estilo Google-style, Conventional Commits, estructura del proyecto y PR process.
+
+### Mantenimiento
+
+- [DEVOPS] `filterwarnings` eliminado de `pyproject.toml` — las causas raíz ya están corregidas vía `spawn` en `conftest.py`.
+
+## [1.5.6] - 2026-05-13
+
+### Corregido
+
+- [FIX] `conftest.py` global con `multiprocessing.set_start_method("spawn")` para eliminar los 48 DeprecationWarnings de `fork()` con hilos en Python 3.13+.
+
+### Mantenimiento
+
+- [DEVOPS] mypy ahora bloquea el CI (`continue-on-error` eliminado en `quality.yml`).
+
 ## [1.5.5] - 2026-05-13
 
 ### Añadido
@@ -197,6 +220,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.5.7]: https://github.com/cortega26/rutificador/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/cortega26/rutificador/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/cortega26/rutificador/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/cortega26/rutificador/compare/v1.5.3...v1.5.4
