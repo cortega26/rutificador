@@ -1,3 +1,8 @@
+ci:
+  autofix_commit_msg: "chore: auto-fix by pre-commit.ci"
+  autoupdate_commit_msg: "chore: pre-commit autoupdate"
+  autoupdate_schedule: monthly
+
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.12

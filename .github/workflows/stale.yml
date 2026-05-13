@@ -1,0 +1,30 @@
+name: Cerrar issues/PRs inactivos
+
+on:
+  schedule:
+    - cron: "30 7 * * 1"  # Lunes 07:30 UTC
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@v9
+        with:
+          days-before-stale: 90
+          days-before-close: 14
+          stale-issue-label: "stale"
+          stale-pr-label: "stale"
+          stale-issue-message: |
+            Este issue ha estado inactivo por 90 días. Sin actividad adicional en
+            14 días se cerrará automáticamente.
+          stale-pr-message: |
+            Este PR ha estado inactivo por 90 días. Sin actividad adicional en
+            14 días se cerrará automáticamente.
+          close-issue-message: "Cerrado por inactividad prolongada."
+          close-pr-message: "Cerrado por inactividad prolongada."
+          exempt-issue-labels: "bug,enhancement,dependencies,security"
+          exempt-pr-labels: "dependencies,security"

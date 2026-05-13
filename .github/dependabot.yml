@@ -1,0 +1,45 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "pytest*"
+          - "mypy"
+          - "ruff"
+          - "bandit"
+          - "pre-commit"
+          - "hypothesis"
+          - "types-*"
+      optional-extras:
+        patterns:
+          - "pydantic"
+          - "fastapi"
+          - "httpx"
+          - "pandas"
+          - "polars"
+          - "pydantic-core"
+    ignore:
+      - dependency-name: "pip"
+        versions: [">=25.2"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
