@@ -59,11 +59,6 @@ testpaths = ["tests"]
 # sin instalarlo. Esto asegura que ejecutar `pytest` desde la raiz del proyecto
 # funcione como se documenta en el README.
 addopts = ""
-filterwarnings = [
-    # Python 3.13+: multiprocessing fork con threads emite DeprecationWarning
-    # Este es un aviso de la stdlib, no controlado por el proyecto
-    'ignore::DeprecationWarning:multiprocessing.*',
-]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
