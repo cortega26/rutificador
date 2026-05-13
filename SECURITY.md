@@ -2,7 +2,7 @@
 
 ## Reportar una Vulnerabilidad
 
-Si descubres una vulnerabilidad de seguridad en **rutificador**, por favor repórtala enviando un correo a [carlosortega77@gmail.com](mailto:carlosortega77@gmail.com) con los siguientes detalles:
+Si descubres una vulnerabilidad de seguridad en **rutificador**, por favor repórtala enviando un correo a [carlos@tooltician.com](mailto:carlos@tooltician.com) con los siguientes detalles:
 
 - Descripción del problema
 - Pasos para reproducirla (código mínimo, entorno)
