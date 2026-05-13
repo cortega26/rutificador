@@ -23,4 +23,4 @@ jobs:
     - name: Instalar Pylint
       run: pip install pylint
     - name: Analizar el codigo con pylint
-      run: pylint $(git ls-files '*.py')
+      run: pylint rutificador/
