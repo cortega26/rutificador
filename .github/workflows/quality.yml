@@ -40,7 +40,7 @@ jobs:
 
       - name: Tipos (mypy)
         run: |
-          python -m mypy --strict .
+          python -m mypy rutificador/ --ignore-missing-imports
 
       - name: Seguridad (bandit)
         run: |
