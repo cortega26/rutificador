@@ -1,6 +1,7 @@
 # Archivos bytecode / optimizados / DLL
 __pycache__/
 *.py[cod]
+*.pyo
 *$py.class
 
 # Extensiones en C
@@ -59,3 +60,10 @@ codex_env_diagnosis_*.txt
 .wheeltest/
 .qodo/
 temp/
+tmp/
+
+# Entorno local pyenv
+.python-version
+
+# Respaldo de merges
+*.orig
