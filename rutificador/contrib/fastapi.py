@@ -1,4 +1,11 @@
 # SECURITY-CRITICAL
+"""Integración con FastAPI para validar RUTs como dependencia.
+
+Proporciona ``obtener_param_rut`` (dependencia inyectable) y ``consulta_rut``
+(factory para ``Query`` + ``Depends``) para validar RUTs automáticamente en
+parámetros de ruta y query.
+"""
+
 import logging
 from typing import Annotated, Any, Optional
 

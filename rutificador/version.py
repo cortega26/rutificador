@@ -1,3 +1,10 @@
+"""Obtención dinámica de la versión del paquete.
+
+Lee la versión desde los metadatos del paquete instalado (``importlib.metadata``)
+o, en entornos de desarrollo, desde ``pyproject.toml``. Proporciona también la
+estructura tipada ``InformacionVersion`` con metadatos del proyecto.
+"""
+
 import re
 from pathlib import Path
 from typing import List, TypedDict

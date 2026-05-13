@@ -1,3 +1,10 @@
+"""Interfaz de línea de comandos (CLI) del paquete rutificador.
+
+Proporciona los subcomandos ``validar``, ``formatear``, ``enmascarar`` e
+``info`` con soporte para múltiples formatos de salida (texto, JSON, JSONL,
+CSV, XML), procesamiento en paralelo y corrección automática de errores.
+"""
+
 import argparse
 import csv
 import json
@@ -333,16 +340,48 @@ def _crear_parser() -> argparse.ArgumentParser:
         if sub == "validar":
             p.set_defaults(func=_comando_validar)
         else:
-            p.add_argument("--separador-miles", action="store_true")
-            p.add_argument("--mayusculas", action="store_true")
+            p.add_argument(
+                "--separador-miles",
+                action="store_true",
+                help="Agrega separadores de miles (ej: 12.345.678-5)",
+            )
+            p.add_argument(
+                "--mayusculas",
+                action="store_true",
+                help="Muestra el DV en mayúscula",
+            )
             p.set_defaults(func=_comando_formatear)
 
-    parser_enmascarar = subparsers.add_parser("enmascarar")
-    parser_enmascarar.add_argument("archivo", nargs="?")
-    parser_enmascarar.add_argument("--mantener", type=int, default=4)
-    parser_enmascarar.add_argument("--caracter", default="*")
-    parser_enmascarar.add_argument("--separador-miles", action="store_true")
-    parser_enmascarar.add_argument("--mayusculas", action="store_true")
+    parser_enmascarar = subparsers.add_parser(
+        "enmascarar",
+        help="Ofusca parcialmente los RUTs (ej: ******78-5)",
+    )
+    parser_enmascarar.add_argument(
+        "archivo",
+        nargs="?",
+        help="Ruta de archivo con RUTs a enmascarar",
+    )
+    parser_enmascarar.add_argument(
+        "--mantener",
+        type=int,
+        default=4,
+        help="Cantidad de dígitos visibles al final de la base (por defecto: 4)",
+    )
+    parser_enmascarar.add_argument(
+        "--caracter",
+        default="*",
+        help="Carácter de ofuscación (por defecto: *)",
+    )
+    parser_enmascarar.add_argument(
+        "--separador-miles",
+        action="store_true",
+        help="Agrega separadores de miles al resultado",
+    )
+    parser_enmascarar.add_argument(
+        "--mayusculas",
+        action="store_true",
+        help="Muestra el DV en mayúscula",
+    )
     parser_enmascarar.set_defaults(func=_comando_enmascarar)
 
     parser_info = subparsers.add_parser("info")

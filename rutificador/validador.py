@@ -1,4 +1,11 @@
 # SECURITY-CRITICAL
+"""Validación de formato y dígito verificador de RUTs.
+
+Proporciona ``ValidadorRut`` con tres modos de rigor (``ESTRICTO``,
+``FLEXIBLE``, ``LEGADO``) y el protocolo ``Validador`` para implementar
+validadores personalizados.
+"""
+
 import logging
 import re
 import warnings
@@ -51,6 +58,14 @@ class ValidadorRut:
         configuracion: ConfiguracionRut = CONFIGURACION_POR_DEFECTO,
         modo: RigorValidacion = RigorValidacion.ESTRICTO,
     ) -> None:
+        """Inicializa el validador con configuración y rigor.
+
+        Args:
+            configuracion: Parámetros de validación (factores, módulo,
+                dígitos mínimo/máximo).
+            modo: Nivel de rigurosidad (``ESTRICTO``, ``FLEXIBLE``
+                o ``LEGADO``).
+        """
         self.configuracion = configuracion
         self.modo = modo
         logger.debug("ValidadorRut inicializado con modo: %s", modo.value)

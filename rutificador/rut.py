@@ -1,4 +1,12 @@
 # SECURITY-CRITICAL
+"""Clase principal RUT y lógica de validación.
+
+Define ``Rut``, la clase inmutable que representa un RUT chileno validado,
+junto con ``RutBase`` (base numérica) y ``ValidacionResultado`` (resultado
+tolerante a fallos). Incluye métodos de formateo, enmascaramiento,
+sugerencias y administración de caché.
+"""
+
 import base64
 import hashlib
 import hmac
@@ -407,6 +415,18 @@ class Rut:
     def __init__(
         self, rut: Union[str, int], validador: Optional[ValidadorRut] = None
     ) -> None:
+        """Construye y valida un RUT.
+
+        Args:
+            rut: RUT como cadena (``"12.345.678-5"``) o entero (``12345678``).
+                Acepta puntos, guiones y espacios como separadores.
+            validador: Validador personalizado. Por defecto usa ``ValidadorRut()``
+                en modo ``ESTRICTO``.
+
+        Raises:
+            ErrorValidacionRut: Si el RUT no pasa la validación de tipo,
+                formato o dígito verificador.
+        """
         if not isinstance(rut, (str, int)):
             raise ErrorValidacionRut(
                 f"El RUT debe ser cadena o entero, se recibió: {type(rut).__name__}",
@@ -465,6 +485,23 @@ class Rut:
         mayusculas: bool = False,
         separador_personalizado: str = ".",
     ) -> str:
+        """Formatea el RUT con las opciones especificadas.
+
+        Args:
+            separador_miles: Si ``True``, agrega separadores de miles
+                (ej: ``12.345.678-5``).
+            mayusculas: Si ``True``, la 'k' del DV se muestra en mayúscula.
+            separador_personalizado: Carácter usado como separador de miles
+                (por defecto ``"."``). Solo se aplica si ``separador_miles``
+                es ``True``.
+
+        Returns:
+            El RUT formateado como cadena.
+
+        Raises:
+            ErrorValidacionRut: Si ``separador_personalizado`` no es un
+                único carácter.
+        """
         asegurar_booleano(separador_miles, "separador_miles")
         asegurar_booleano(mayusculas, "mayusculas")
         if (
@@ -522,11 +559,17 @@ class Rut:
 
     @classmethod
     def limpiar_cache(cls) -> None:
+        """Limpia la caché de la fábrica ``obtener_rut``."""
         obtener_rut.cache_clear()
         logger.info("Caché de RUT limpiada")
 
     @classmethod
     def estadisticas_cache(cls) -> "EstadisticasCache":
+        """Retorna estadísticas de la caché de ``obtener_rut``.
+
+        Returns:
+            Diccionario con ``tamanio_cache`` y ``tamanio_max_cache``.
+        """
         info = obtener_rut.cache_info()
         return {"tamanio_cache": info.currsize, "tamanio_max_cache": info.maxsize}
 

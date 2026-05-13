@@ -1,4 +1,10 @@
 # SECURITY-CRITICAL
+"""Namespace de polars para validar y formatear RUTs en ``Expr``.
+
+Registra ``RutNamespace`` como extensión de polars (``Expr.rut``) con los
+métodos ``validar``, ``formatear``, ``es_valido`` y ``normalizar``.
+"""
+
 import logging
 
 # No additional imports needed from typing for now

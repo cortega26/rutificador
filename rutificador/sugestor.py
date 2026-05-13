@@ -1,4 +1,11 @@
 # SECURITY-CRITICAL
+"""Motor de sugerencias y corrección automática de RUTs.
+
+Utiliza distancia Damerau-Levenshtein, sustituciones OCR y generación de
+transposiciones para encontrar el RUT válido más cercano a una entrada
+posiblemente errónea.
+"""
+
 import logging
 from typing import Dict, List, Optional, Set, Tuple
 

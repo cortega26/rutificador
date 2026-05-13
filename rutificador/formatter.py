@@ -95,6 +95,14 @@ class FormateadorJSON(FormateadorRut):
         self.imprimir_bonito = imprimir_bonito
 
     def formatear(self, ruts: Sequence[str]) -> str:
+        """Formatea una lista de RUTs como JSON.
+
+        Args:
+            ruts: Secuencia de cadenas con RUTs.
+
+        Returns:
+            Cadena JSON con los RUTs formateados.
+        """
         self.validar_entrada(ruts)
 
         ruts_json = [{self.nombre_clave: str(rut)} for rut in ruts]

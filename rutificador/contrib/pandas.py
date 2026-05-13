@@ -1,4 +1,10 @@
 # SECURITY-CRITICAL
+"""Accessor de pandas para validar y formatear RUTs en ``Series``.
+
+Registra ``RutAccessor`` como extensión de pandas (``Series.rut``) con los
+métodos ``validar``, ``formatear``, ``es_valido`` y ``normalizar``.
+"""
+
 import logging
 
 try:

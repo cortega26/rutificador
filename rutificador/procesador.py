@@ -1,4 +1,12 @@
 # SECURITY-CRITICAL
+"""Procesamiento por lotes y en flujo de RUTs.
+
+Ofrece ``ProcesadorLotesRut`` para validar/formatear lists de RUTs de forma
+síncrona o en paralelo (``ProcessPoolExecutor`` / ``ThreadPoolExecutor``),
+``validar_flujo_ruts`` / ``formatear_flujo_ruts`` para procesamiento
+perezoso, y ``evaluar_rendimiento`` para tests de carga.
+"""
+
 import logging
 import os
 import random  # nosec B311  # Solo usado para generar datos de prueba, no criptografía
@@ -97,6 +105,17 @@ class ProcesadorLotesRut:
         max_trabajadores: Optional[int] = None,
         motor_paralelo: Literal["thread", "process"] = "process",
     ) -> None:
+        """Inicializa el procesador de lotes.
+
+        Args:
+            validador: Validador personalizado. Por defecto crea uno
+                en modo ``ESTRICTO``.
+            max_trabajadores: Máximo de workers paralelos. Por defecto
+                usa ``os.cpu_count()``.
+            motor_paralelo: Tipo de executor (``"thread"`` para
+                ``ThreadPoolExecutor``, ``"process"`` para
+                ``ProcessPoolExecutor``).
+        """
         self.validador = validador or ValidadorRut()
         self.max_trabajadores: Optional[int] = max_trabajadores
         self.motor_paralelo = motor_paralelo
@@ -127,6 +146,18 @@ class ProcesadorLotesRut:
         paralelo: bool = False,
         chunksize: Optional[int] = None,
     ) -> ResultadoLote:
+        """Valida una secuencia de RUTs.
+
+        Args:
+            ruts: Secuencia de cadenas con RUTs a validar.
+            paralelo: Si ``True``, distribuye la validación entre
+                múltiples workers.
+            chunksize: Tamaño de lote para procesamiento paralelo.
+                Por defecto se calcula automáticamente.
+
+        Returns:
+            ``ResultadoLote`` con RUTs válidos e inválidos.
+        """
         inicio = time.perf_counter()
         resultado = ResultadoLote()
 
@@ -176,6 +207,21 @@ class ProcesadorLotesRut:
         paralelo: bool = False,
         **kwargs_formateador: Any,
     ) -> str:
+        """Valida y formatea una secuencia de RUTs.
+
+        Args:
+            ruts: Secuencia de cadenas con RUTs a validar.
+            separador_miles: Si ``True``, incluye separadores de miles.
+            mayusculas: Si ``True``, el DV se muestra en mayúscula.
+            formato: Formato de salida (``None`` para texto plano,
+                ``"csv"``, ``"json"``, ``"xml"``).
+            paralelo: Si ``True``, procesa en paralelo.
+            **kwargs_formateador: Argumentos adicionales para el
+                formateador.
+
+        Returns:
+            Cadena con los RUTs formateados.
+        """
         if not isinstance(ruts, (list, tuple)):
             raise ValueError(
                 f"ruts debe ser una secuencia, se recibió: {type(ruts).__name__}"
@@ -361,6 +407,19 @@ def flujo(ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:
 
 
 def evaluar_rendimiento(num_ruts: int = 10000, paralelo: bool = True) -> Dict[str, Any]:
+    """Evalúa el rendimiento del procesamiento de RUTs.
+
+    Genera RUTs aleatorios y mide el tiempo de validación y formateo
+    en serie y en paralelo.
+
+    Args:
+        num_ruts: Cantidad de RUTs a generar para la prueba.
+        paralelo: Si ``True``, incluye medición con paralelismo.
+
+    Returns:
+        Diccionario con métricas de rendimiento (tiempos, tasa de éxito,
+        conteo de RUTs).
+    """
     pruebas = []
     for _ in range(num_ruts):
         base = str(random.randint(1_000_000, 99_999_999))  # nosec B311  # Datos de prueba, no criptografía
