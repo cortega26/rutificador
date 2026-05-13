@@ -10,7 +10,9 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 - [QUALITY] Marcador `py.typed` para señalizar PEP 561 (tipado estático para consumidores).
 - [QUALITY] Paso `-W error::DeprecationWarning` en CI para detectar deprecaciones de librerías temprano.
+- [QUALITY] `conftest.py` global con `multiprocessing.set_start_method("spawn")` para evitar race conditions de `fork()` con hilos en Python 3.13+.
 - [DEV] `__init__.py` añadidos en `tests/contrib/` y `tests/contrib/pydantic/`.
+- [DOC] Anotaciones `# nosec` en los 2 hallazgos aceptables de bandit (XML generado internamente, random para benchmarks).
 
 ### Corregido
 
@@ -24,6 +26,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 ### Seguridad
 
 - [SECURITY] Workflow `publish-package.yml`: `workflow_dispatch` restringido a la rama `master`.
+- [SECURITY] `quality.yml`: mypy ahora bloquea el CI si hay errores de tipos (`continue-on-error` eliminado).
 
 ### Mantenimiento
 
@@ -194,6 +197,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.5.6]: https://github.com/cortega26/rutificador/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/cortega26/rutificador/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/cortega26/rutificador/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/cortega26/rutificador/compare/v1.5.2...v1.5.3

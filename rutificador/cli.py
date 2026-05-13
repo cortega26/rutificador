@@ -3,7 +3,7 @@ import csv
 import json
 import sys
 import time
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosec B405  # Solo genera XML de salida, no parsea entrada
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Union
 

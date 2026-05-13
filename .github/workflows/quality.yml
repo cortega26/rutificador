@@ -39,7 +39,6 @@ jobs:
           python -m ruff check .
 
       - name: Tipos (mypy)
-        continue-on-error: true
         run: |
           python -m mypy --strict .
 

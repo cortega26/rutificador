@@ -1,7 +1,7 @@
 # SECURITY-CRITICAL
 import logging
 import os
-import random
+import random  # nosec B311  # Solo usado para generar datos de prueba, no criptografía
 import time
 import sys
 from functools import partial
@@ -363,7 +363,7 @@ def flujo(ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:
 def evaluar_rendimiento(num_ruts: int = 10000, paralelo: bool = True) -> Dict[str, Any]:
     pruebas = []
     for _ in range(num_ruts):
-        base = str(random.randint(1_000_000, 99_999_999))
+        base = str(random.randint(1_000_000, 99_999_999))  # nosec B311  # Datos de prueba, no criptografía
         dv = calcular_digito_verificador(base)
         pruebas.append(f"{base}-{dv}")
 
