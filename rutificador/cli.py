@@ -75,8 +75,7 @@ class _EmisionTexto(_EstrategiaEmision):
             print(item["resultado"])
         else:
             msg = (
-                f"{item['original']} [{item['codigo_error']}]"
-                f" - {item['mensaje_error']}"
+                f"{item['original']} [{item['codigo_error']}] - {item['mensaje_error']}"
             )
             if item["sugerencia"]:
                 msg += f" (¿Quisiste decir {item['sugerencia']}?)"
@@ -165,7 +164,7 @@ _ESTRATEGIAS_FORMATO: Dict[str, type] = {
 
 
 def _emitir_resultados(
-    resultados: Iterator[tuple[bool, Union[str, DetalleError]]],
+    resultados: Iterator[tuple[bool, Union[str, RutProcesado, DetalleError]]],
     formato: str,
     usar_sugerencias: bool = False,
     quiet: bool = False,

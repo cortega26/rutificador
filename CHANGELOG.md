@@ -4,6 +4,33 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.5.5] - 2026-05-13
+
+### Añadido
+
+- [QUALITY] Marcador `py.typed` para señalizar PEP 561 (tipado estático para consumidores).
+- [QUALITY] Paso `-W error::DeprecationWarning` en CI para detectar deprecaciones de librerías temprano.
+- [DEV] `__init__.py` añadidos en `tests/contrib/` y `tests/contrib/pydantic/`.
+
+### Corregido
+
+- [FIX] Deprecación `starlette.status.HTTP_422_UNPROCESSABLE_ENTITY` reemplazada por `HTTP_422_UNPROCESSABLE_CONTENT` en `contrib/fastapi.py`.
+- [FIX] `assert` reemplazados por guardas explícitas en `rut.py` (B101, se pierden con `python -O`).
+- [FIX] `except Exception: pass` reemplazados por `logger.warning` en `sugestor.py` (B110).
+- [FIX] 14 errores de mypy corregidos (tipos de retorno en `procesador.py`, `cli.py`, `test_rutstr.py`; narrowing en `rut.py`).
+- [FIX] Import no usado `importlib` eliminado de `test_rutstr.py`.
+- [FIX] Pre-commit migrado de black+flake8 a ruff (elimina redundancia, black 23→26).
+
+### Seguridad
+
+- [SECURITY] Workflow `publish-package.yml`: `workflow_dispatch` restringido a la rama `master`.
+
+### Mantenimiento
+
+- [DEVOPS] `ruff` actualizado a 0.15.12 y `mypy` a 2.1.0 en `requirements-dev.txt`.
+- [DEVOPS] `pytest-cov` ampliado a `<8.0.0` en `pyproject.toml`.
+- [DEVOPS] Filtro `filterwarnings` para suprimir DeprecationWarning de `multiprocessing.fork` en Python 3.13+.
+
 ## [1.5.4] - 2026-05-09
 
 ### Corregido
@@ -167,6 +194,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.5.5]: https://github.com/cortega26/rutificador/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/cortega26/rutificador/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/cortega26/rutificador/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/cortega26/rutificador/compare/v1.5.1...v1.5.2

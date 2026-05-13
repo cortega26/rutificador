@@ -1,6 +1,8 @@
 pip>=25.2  # GHSA-4xh5-x5gv-qwph: usar versión corregida disponible en ejecutores de CI
 pytest
-pytest-cov
+pytest-cov>=7
+ruff>=0.15
+mypy>=2.0
 black
 coveralls
 tomli

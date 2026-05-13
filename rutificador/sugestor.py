@@ -141,13 +141,13 @@ def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> List[Tuple[str, 
             dv = calcular_digito_verificador(base).lower()
             sugerencias.add(f"{base}-{dv}")
         except Exception:
-            pass
+            logger.warning("Error calculando DV para base '%s'", base)
         for base_t in _generar_transposiciones(base):
             try:
                 dv_t = calcular_digito_verificador(base_t).lower()
                 sugerencias.add(f"{base_t}-{dv_t}")
             except Exception:
-                pass
+                logger.warning("Error calculando DV para transposición '%s'", base_t)
 
     # 2. Estrategia: Manejo de RUTs con guion (asumimos separación tentativa)
     if "-" in cadena:
@@ -170,7 +170,9 @@ def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> List[Tuple[str, 
                 dv_f = calcular_digito_verificador(solo_digitos).lower()
                 sugerencias.add(f"{solo_digitos}-{dv_f}")
             except Exception:
-                pass
+                logger.warning(
+                    "Error calculando DV para solo_digitos '%s'", solo_digitos
+                )
 
     # 4. Filtrado y ordenamiento por distancia de edición (Damerau-Levenshtein)
     def normalizar_para_dist(s: str) -> str:

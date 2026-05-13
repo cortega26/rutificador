@@ -1,7 +1,6 @@
 # SECURITY-CRITICAL
 from __future__ import annotations
 
-import importlib
 import os
 import subprocess
 import sys
@@ -11,13 +10,11 @@ from pathlib import Path
 import pytest
 from hypothesis import given, strategies as st
 
+from pydantic import BaseModel, ValidationError
+
 from rutificador.contrib.pydantic import RutStr
 from rutificador.contrib.pydantic._compat import PYDANTIC_IMPORT_ERROR_MESSAGE
 from rutificador.utils import calcular_digito_verificador
-
-modulo_pydantic = importlib.import_module("pydantic")
-BaseModel = getattr(modulo_pydantic, "BaseModel")
-ValidationError = getattr(modulo_pydantic, "ValidationError")
 
 
 class _Modelo(BaseModel):  # pylint: disable=too-few-public-methods
@@ -27,7 +24,7 @@ class _Modelo(BaseModel):  # pylint: disable=too-few-public-methods
 def _primer_error(excepcion: ValidationError) -> dict:
     errores = excepcion.errors()
     assert errores, "Se esperaba al menos un error"
-    return errores[0]
+    return errores[0]  # type: ignore[return-value]
 
 
 @pytest.mark.parametrize(
@@ -40,7 +37,7 @@ def _primer_error(excepcion: ValidationError) -> dict:
     ],
 )
 def test_rutstr_normaliza_valores_validos(entrada: str, esperado: str) -> None:
-    m = _Modelo(rut=entrada)
+    m = _Modelo(rut=entrada)  # type: ignore[arg-type]
     assert isinstance(m.rut, RutStr)
     assert m.rut == esperado
 
@@ -78,7 +75,7 @@ def test_rutstr_mapea_errores_deterministas(
     entrada: str, tipo: str, msg: str, hint: str
 ) -> None:
     with pytest.raises(ValidationError) as excinfo:
-        _Modelo(rut=entrada)
+        _Modelo(rut=entrada)  # type: ignore[arg-type]
     err = _primer_error(excinfo.value)
     assert err["type"] == tipo
     assert err["msg"] == msg
@@ -96,7 +93,7 @@ def test_rutstr_rechaza_tipos_no_str() -> None:
 
 
 def test_rutstr_serializa_json_normalizado() -> None:
-    m = _Modelo(rut="12.345.678-5")
+    m = _Modelo(rut="12.345.678-5")  # type: ignore[arg-type]
     payload = m.model_dump_json()
     assert '"rut":"12345678-5"' in payload.replace(" ", "")
 
@@ -108,14 +105,14 @@ def test_rutstr_property_based_dv_ok_pasa_y_dv_bad_falla(base: str) -> None:
     if dv_bad == dv_ok:
         dv_bad = "k" if dv_ok != "k" else "1"
 
-    m = _Modelo(rut=f"{base}-{dv_ok}")
+    m = _Modelo(rut=f"{base}-{dv_ok}")  # type: ignore[arg-type]
     assert m.rut == f"{base}-{dv_ok}"
 
-    m2 = _Modelo(rut=base)
+    m2 = _Modelo(rut=base)  # type: ignore[arg-type]
     assert m2.rut == f"{base}-{dv_ok}"
 
     with pytest.raises(ValidationError) as excinfo:
-        _Modelo(rut=f"{base}-{dv_bad}")
+        _Modelo(rut=f"{base}-{dv_bad}")  # type: ignore[arg-type]
     err = _primer_error(excinfo.value)
     assert err["type"] == "DV_DISCORDANTE"
 

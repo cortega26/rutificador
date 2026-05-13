@@ -50,6 +50,75 @@ def test_obtener_informacion_version():
     assert "funcionalidades" in info
 
 
+def test_version_fallback_pyproject(monkeypatch):
+    """Cubre: metadata no disponible -> lee pyproject.toml real del proyecto."""
+    import re
+    from pathlib import Path
+
+    import rutificador.version as mod_version
+    from unittest.mock import Mock
+
+    # Leer versión esperada desde pyproject.toml (fuente de verdad)
+    ruta = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    match = re.search(r'^version\s*=\s*"([^"]+)"', ruta.read_text(), re.MULTILINE)
+    assert match, "No se pudo leer version desde pyproject.toml"
+    esperada = match.group(1)
+
+    monkeypatch.setattr(
+        mod_version.importlib_metadata,
+        "version",
+        Mock(
+            side_effect=mod_version.importlib_metadata.PackageNotFoundError("not found")
+        ),
+    )
+    version = mod_version._obtener_version_dinamica()
+    assert version == esperada
+
+
+def test_version_fallback_completo(monkeypatch):
+    """Cubre: ni metadata ni pyproject.toml disponibles -> '0.0.0-dev'."""
+    import rutificador.version as mod_version
+    from unittest.mock import Mock
+
+    monkeypatch.setattr(
+        mod_version.importlib_metadata,
+        "version",
+        Mock(
+            side_effect=mod_version.importlib_metadata.PackageNotFoundError("not found")
+        ),
+    )
+    monkeypatch.setattr(
+        "pathlib.Path.exists",
+        Mock(return_value=False),
+    )
+    version = mod_version._obtener_version_dinamica()
+    assert version == "0.0.0-dev"
+
+
+def test_version_fallback_oserror_al_leer(monkeypatch):
+    """Cubre: pyproject.toml existe pero falla al leerlo -> '0.0.0-dev'."""
+    import rutificador.version as mod_version
+    from unittest.mock import Mock
+
+    monkeypatch.setattr(
+        mod_version.importlib_metadata,
+        "version",
+        Mock(
+            side_effect=mod_version.importlib_metadata.PackageNotFoundError("not found")
+        ),
+    )
+    monkeypatch.setattr(
+        "pathlib.Path.exists",
+        Mock(return_value=True),
+    )
+    monkeypatch.setattr(
+        "builtins.open",
+        Mock(side_effect=OSError("read error")),
+    )
+    version = mod_version._obtener_version_dinamica()
+    assert version == "0.0.0-dev"
+
+
 def test_rut_cache_management():
     Rut.limpiar_cache()
     stats = Rut.estadisticas_cache()

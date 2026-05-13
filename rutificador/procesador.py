@@ -293,7 +293,7 @@ def validar_flujo_ruts(
     paralelo: bool = False,
     max_trabajadores: Optional[int] = None,
     motor_paralelo: Literal["thread", "process"] = "process",
-) -> Iterator[Tuple[bool, Union[str, DetalleError]]]:
+) -> Iterator[Tuple[bool, Union[RutProcesado, DetalleError]]]:
     """Valida RUTs desde cualquier iterable y produce resultados uno a uno.
 
     Si paralelo es True, distribuye la carga entre múltiples trabajadores
@@ -351,7 +351,7 @@ def formatear_flujo_ruts(
                 ),
             )
         else:
-            yield False, detalle
+            yield False, detalle  # type: ignore[misc]
 
 
 def flujo(ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:

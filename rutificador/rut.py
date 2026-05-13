@@ -214,7 +214,10 @@ class Rut:
         if cadena is None:
             return None, errores, advertencias
 
-        assert cadena_original is not None  # garantizado tras validar tipo
+        # Garantizado por _validar_tipo_entrada: si cadena no es None,
+        # cadena_original tampoco lo es
+        if cadena_original is None:
+            return None, errores, advertencias
 
         vistos: set[str] = set()
 
@@ -367,7 +370,11 @@ class Rut:
             clave_bytes = (
                 clave if isinstance(clave, bytes) else str(clave).encode("utf-8")
             )
-            assert resultado.normalizado is not None  # garantizado por estado valido
+            if resultado.normalizado is None:
+                raise ErrorValidacionRut(
+                    crear_detalle_error("ESTADO_ENMASCARADO").mensaje,
+                    codigo_error="ESTADO_ENMASCARADO",
+                )
             mensaje = resultado.normalizado.encode("utf-8")
             digest = hmac.new(clave_bytes, mensaje, hashlib.sha256).digest()
             token = base64.b32encode(digest).decode("ascii").rstrip("=").lower()

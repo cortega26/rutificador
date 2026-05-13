@@ -47,6 +47,10 @@ jobs:
       run: |
         python -m pytest --cov=rutificador --cov-report=xml --cov-report=lcov --cov-report=html -v tests/ --tb=short
 
+    - name: Detectar deprecaciones (todos los tests)
+      run: |
+        python -m pytest -q -W error::DeprecationWarning --tb=short tests/
+
     - name: Subir cobertura a Coveralls
       if: matrix.python-version != '3.14'
       uses: coverallsapp/github-action@v2

@@ -6,10 +6,8 @@ try:
     from fastapi import Depends, HTTPException, Query
     from starlette import status
 
-    # Usar el nombre moderno si está disponible, fallback al antiguo para compatibilidad
-    HTTP_422 = getattr(
-        status, "HTTP_422_UNPROCESSABLE_CONTENT", status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
+    # Usar el nombre moderno si está disponible
+    HTTP_422 = getattr(status, "HTTP_422_UNPROCESSABLE_CONTENT", 422)
 except ImportError:
     # Este módulo solo debe usarse si fastapi está instalado
     HTTP_422 = 422
