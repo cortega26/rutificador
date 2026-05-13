@@ -8,7 +8,7 @@ coveralls
 tomli
 pydantic>=2,<3
 hypothesis
-requests>=2.32.0 # no requerido directamente; fijado por Snyk para evitar una vulnerabilidad
+requests>=2.34.0 # no requerido directamente; fijado por Snyk para evitar una vulnerabilidad
 zipp>=3.19.1 # no requerido directamente; fijado por Snyk para evitar una vulnerabilidad
 fastapi
 httpx
