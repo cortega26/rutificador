@@ -422,8 +422,7 @@ def evaluar_rendimiento(num_ruts: int = 10000, paralelo: bool = True) -> Dict[st
     """
     pruebas = []
     for _ in range(num_ruts):
-        # nosec B311 — datos de prueba, no criptografía
-        base = str(random.randint(1_000_000, 99_999_999))
+        base = str(random.randint(1_000_000, 99_999_999))  # nosec B311
         dv = calcular_digito_verificador(base)
         pruebas.append(f"{base}-{dv}")
 
