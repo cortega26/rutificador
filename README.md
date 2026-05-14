@@ -11,7 +11,7 @@
 
 # Rutificador
 
-Biblioteca Python para validar, calcular y formatear el Rol Unico Tributario (RUT) chileno. **Sin dependencias externas**, tipado estatico completo, y soporte para procesamiento por lotes, streaming, CLI, e integraciones opcionales con Pydantic v2, FastAPI, pandas y polars.
+Biblioteca Python para validar, calcular y formatear el Rol Único Tributario (RUT) chileno. **Sin dependencias externas**, tipado estático completo, y soporte para procesamiento por lotes, streaming, CLI, e integraciones opcionales con Pydantic v2, FastAPI, pandas y polars.
 
 ```python
 from rutificador import Rut
@@ -25,45 +25,45 @@ print(resultado.estado, resultado.codigo_error)  # invalido DV_DISCORDANTE
 
 ## Tabla de Contenidos
 
-- [Caracteristicas](#caracteristicas)
-- [Instalacion](#instalacion)
-- [Uso basico](#uso-basico)
-  - [Validacion y parseo](#validacion-y-parseo)
+- [Características](#caracteristicas)
+- [Instalación](#instalacion)
+- [Uso básico](#uso-basico)
+  - [Validación y parseo](#validacion-y-parseo)
   - [Formateo](#formateo)
-  - [Digito verificador](#calculo-del-digito-verificador)
+  - [Dígito verificador](#calculo-del-digito-verificador)
   - [Enmascaramiento](#enmascaramiento)
-  - [Sugerencias y autocorreccion](#sugerencias-y-autocorreccion)
-- [Linea de comandos](#linea-de-comandos)
+  - [Sugerencias y autocorrección](#sugerencias-y-autocorreccion)
+- [Línea de comandos](#linea-de-comandos)
 - [Procesamiento por lotes](#procesamiento-por-lotes)
 - [Integraciones](#integraciones)
   - [Pydantic v2](#pydantic-v2)
   - [FastAPI](#fastapi)
   - [pandas](#pandas)
   - [polars](#polars)
-- [Validacion avanzada](#validacion-avanzada)
+- [Validación avanzada](#validacion-avanzada)
 - [Referencia de errores](#referencia-de-errores)
-- [Registro y depuracion](#registro-y-depuracion)
+- [Registro y depuración](#registro-y-depuracion)
 - [API de referencia](#api-de-referencia)
 - [Desarrollo](#desarrollo)
 - [Licencia](#licencia)
 
 ---
 
-## Caracteristicas
+## Características
 
-- **Cero dependencias base** — solo estandar de Python. Instalacion liviana y segura.
-- **Validacion completa** — formato, digito verificador, longitud configurable, modos de rigor.
-- **Formateo flexible** — separador de miles, mayusculas en DV, separador personalizado.
-- **Streaming y lotes** — archivos de millones de lineas sin cargar todo en memoria.
+- **Cero dependencias base** — solo estándar de Python. Instalación liviana y segura.
+- **Validación completa** — formato, dígito verificador, longitud configurable, modos de rigor.
+- **Formateo flexible** — separador de miles, mayúsculas en DV, separador personalizado.
+- **Streaming y lotes** — archivos de millones de líneas sin cargar todo en memoria.
 - **Procesamiento en paralelo** — motor por procesos (CPU-bound) o hilos (I/O-bound).
-- **Parseo seguro** — `Rut.parse()` nunca lanza excepcion, siempre retorna resultado estructurado.
-- **Enmascaramiento y tokenizacion** — protege datos sensibles en logs, exports o pantallas.
-- **Motor de sugerencias** — correccion fuzzy de errores tipograficos comunes.
+- **Parseo seguro** — `Rut.parse()` nunca lanza excepción, siempre retorna resultado estructurado.
+- **Enmascaramiento y tokenización** — protege datos sensibles en logs, exports o pantallas.
+- **Motor de sugerencias** — corrección fuzzy de errores tipográficos comunes.
 - **Integraciones opcionales** — Pydantic v2, FastAPI, pandas, polars.
-- **Tipado estatico** — `py.typed` (PEP 561), cobertura mypy completa.
+- **Tipado estático** — `py.typed` (PEP 561), cobertura mypy completa.
 - **CLI profesional** — salida en text, JSON, JSONL, CSV y XML.
 
-## Instalacion
+## Instalación
 
 ```sh
 pip install rutificador
@@ -79,17 +79,17 @@ pip install rutificador[polars]     # polars namespace
 pip install rutificador[full]       # todo lo anterior
 ```
 
-## Uso basico
+## Uso básico
 
-### Validacion y parseo
+### Validación y parseo
 
 ```python
 from rutificador import Rut
 
-# Creacion directa — valida en el constructor (lanza excepcion si es invalido)
+# Creación directa — valida en el constructor (lanza excepción si es inválido)
 rut = Rut("12.345.678-5")
 
-# Parseo seguro — nunca lanza excepcion, siempre retorna resultado estructurado
+# Parseo seguro — nunca lanza excepción, siempre retorna resultado estructurado
 resultado = Rut.parse("12.345.678-5")
 print(resultado.estado)       # valido
 print(resultado.normalizado)  # 12345678-5
@@ -98,7 +98,7 @@ resultado = Rut.parse("12.345.678-9")
 print(resultado.estado)        # invalido
 print(resultado.codigo_error)  # DV_DISCORDANTE
 
-# Capturar error en validacion directa
+# Capturar error en validación directa
 from rutificador.exceptions import ErrorValidacionRut
 
 try:
@@ -122,7 +122,7 @@ rut_k = Rut("12345670-k")
 print(rut_k.formatear(separador_miles=True, mayusculas=True))  # 12.345.670-K
 ```
 
-### Calculo del digito verificador
+### Cálculo del dígito verificador
 
 ```python
 from rutificador import calcular_digito_verificador
@@ -140,27 +140,27 @@ from rutificador import Rut
 print(Rut.enmascarar("12.345.678-5", mantener=3, caracter="X"))  # XXXXX678-5
 print(Rut.enmascarar("12.345.678-5", mantener=4))                 # ****5678-5
 
-# Tokenizacion
+# Tokenización
 print(Rut.enmascarar("12.345.678-5", modo="token", clave="mi-clave"))  # tok_abc123...
 ```
 
-### Sugerencias y autocorreccion
+### Sugerencias y autocorrección
 
 ```python
 from rutificador import Rut
 
-# Sugerir correcciones para un RUT con error tipografico
+# Sugerir correcciones para un RUT con error tipográfico
 sugerencias = Rut.sugerir("12.345.687-5")
 print(sugerencias)  # ['12345678-5', ...]
 
-# Autocorreccion inteligente
+# Autocorrección inteligente
 mejor_opcion = Rut.mejorar("12a345678-k")
 print(mejor_opcion)  # 12345678-5
 ```
 
 ---
 
-## Linea de comandos
+## Línea de comandos
 
 ```bash
 # Validar desde un archivo
@@ -190,21 +190,21 @@ rutificador info
 
 ### Comandos
 
-| Comando | Descripcion |
+| Comando | Descripción |
 |---------|-------------|
 | `validar` | Valida RUTs desde archivo o stdin |
 | `formatear` | Valida y formatea RUTs con opciones de salida |
 | `enmascarar` | Ofusca/tokeniza RUTs para proteger datos sensibles |
-| `info` | Muestra version, entorno y funcionalidades |
+| `info` | Muestra versión, entorno y funcionalidades |
 
 ### Formatos de salida
 
-| Formato | Descripcion |
+| Formato | Descripción |
 |---------|-------------|
-| `text` | Legible por humanos con resumen de auditoria en stderr |
-| `json` | Array JSON estandar (OOM-Safe via streaming) |
-| `jsonl` | Una linea por registro — ideal para Big Data |
-| `csv` | Hoja de calculo con cabecera |
+| `text` | Legible por humanos con resumen de auditoría en stderr |
+| `json` | Array JSON estándar (OOM-Safe via streaming) |
+| `jsonl` | Una línea por registro — ideal para Big Data |
+| `csv` | Hoja de cálculo con cabecera |
 | `xml` | Estructura incremental para integraciones legacy |
 
 ---
@@ -228,7 +228,7 @@ print(csv)
 # 12345678-5
 # ...
 
-# Paralelismo explicito
+# Paralelismo explícito
 procesador = ProcesadorLotesRut(motor_paralelo="process")
 resultado = procesador.validar_lista_ruts(ruts, paralelo=True)
 ```
@@ -265,7 +265,7 @@ class Usuario(BaseModel):
 u = Usuario(rut="12.345.678-5")
 print(u.rut)  # 12345678-5
 
-# Formato especifico
+# Formato específico
 RutConPuntos = rut_str_annotated(formato="miles-con-guion")
 
 class UsuarioV2(BaseModel):
@@ -293,7 +293,7 @@ def obtener_usuario(rut: Rut = Depends(parametro_rut)):
     return {"rut_normalizado": str(rut), "dv": rut.digito_verificador}
 ```
 
-Los errores de validacion retornan **422 Unprocessable Entity** con codigo estructurado (`DV_DISCORDANTE`, `CARACTERES_INVALIDOS`, etc.).
+Los errores de validación retornan **422 Unprocessable Entity** con código estructurado (`DV_DISCORDANTE`, `CARACTERES_INVALIDOS`, etc.).
 
 ### pandas
 
@@ -333,7 +333,7 @@ print(df.with_columns(pl.col("rut").rut.es_valido()))
 
 ---
 
-## Validacion avanzada
+## Validación avanzada
 
 ```python
 from rutificador import Rut, ValidadorRut
@@ -343,11 +343,11 @@ from rutificador.config import RigorValidacion, ConfiguracionRut
 validador = ValidadorRut(modo=RigorValidacion.FLEXIBLE)
 rut = Rut('12 345 678-5', validador=validador)
 
-# Configuracion avanzada
+# Configuración avanzada
 config = ConfiguracionRut(max_digitos=10)
 validador = ValidadorRut(configuracion=config)
 
-# Normalizacion con rigor flexible
+# Normalización con rigor flexible
 normalizado, errores, advertencias = Rut.normalizar(
     "12 345 678-5", modo=RigorValidacion.FLEXIBLE
 )
@@ -358,7 +358,7 @@ print(normalizado)  # 12345678-5
 
 ## Referencia de errores
 
-Todos los errores tienen codigos estables y severidad explicita:
+Todos los errores tienen códigos estables y severidad explícita:
 
 ```python
 from rutificador import Rut
@@ -370,33 +370,33 @@ for err in res.errores:
 
 ### Errores
 
-| Codigo | Descripcion |
+| Código | Descripción |
 |--------|-------------|
-| `ERROR_TIPO` | Tipo invalido |
-| `RUT_VACIO` | Entrada vacia |
+| `ERROR_TIPO` | Tipo inválido |
+| `RUT_VACIO` | Entrada vacía |
 | `CARACTERES_INVALIDOS` | Caracteres no permitidos |
-| `FORMATO_PUNTOS` | Separadores de miles invalidos |
-| `FORMATO_GUION` | Guion invalido |
-| `LONGITUD_MINIMA` | Longitud minima no alcanzada |
-| `LONGITUD_MAXIMA` | Longitud maxima excedida |
-| `DV_INVALIDO` | Digito verificador invalido |
+| `FORMATO_PUNTOS` | Separadores de miles inválidos |
+| `FORMATO_GUION` | Guión inválido |
+| `LONGITUD_MINIMA` | Longitud mínima no alcanzada |
+| `LONGITUD_MAXIMA` | Longitud máxima excedida |
+| `DV_INVALIDO` | Dígito verificador inválido |
 | `DV_DISCORDANTE` | DV no coincide |
-| `ESTADO_ENMASCARADO` | Enmascarado en estado no valido |
-| `CLAVE_TOKEN_REQUERIDA` | Falta clave de tokenizacion |
+| `ESTADO_ENMASCARADO` | Enmascarado en estado no válido |
+| `CLAVE_TOKEN_REQUERIDA` | Falta clave de tokenización |
 
 ### Advertencias
 
-| Codigo | Descripcion |
+| Código | Descripción |
 |--------|-------------|
 | `NORMALIZACION_ESPACIOS` | Espacios eliminados |
-| `NORMALIZACION_GUION` | Guion normalizado |
+| `NORMALIZACION_GUION` | Guión normalizado |
 | `NORMALIZACION_PUNTOS` | Puntos eliminados |
-| `NORMALIZACION_DV` | DV en minuscula |
+| `NORMALIZACION_DV` | DV en minúscula |
 | `CEROS_IZQUIERDA` | Ceros a la izquierda eliminados |
 
 ---
 
-## Registro y depuracion
+## Registro y depuración
 
 ```python
 import logging
@@ -425,7 +425,7 @@ configurar_registro(level=logging.INFO, handler=handler)
 
 ## API de referencia
 
-### Metadatos de validacion
+### Metadatos de validación
 
 ```python
 from rutificador import ProcesadorLotesRut
@@ -495,14 +495,14 @@ Las contribuciones son bienvenidas. Revisa [`CONTRIBUTING.md`](CONTRIBUTING.md) 
 
 ### Alcance
 
-Rutificador **no** verifica la existencia del RUT en registros oficiales ni realiza enriquecimiento de identidad. Su alcance es la validacion sintactica, normalizacion y formateo segun las reglas locales del RUT chileno.
+Rutificador **no** verifica la existencia del RUT en registros oficiales ni realiza enriquecimiento de identidad. Su alcance es la validación sintáctica, normalización y formateo según las reglas locales del RUT chileno.
 
 ---
 
 ## Licencia
 
-MIT &copy; Carlos Ortega Gonzalez. Ver [LICENSE](LICENSE).
+MIT &copy; Carlos Ortega González. Ver [LICENSE](LICENSE).
 
-## Creditos
+## Créditos
 
-Este proyecto se inspiro en [rut-chile](https://github.com/gevalenz/rut-chile) de [gevalenz](https://github.com/gevalenz).
+Este proyecto se inspiró en [rut-chile](https://github.com/gevalenz/rut-chile) de [gevalenz](https://github.com/gevalenz).

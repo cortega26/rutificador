@@ -1,15 +1,3 @@
-# Plataformas soportadas de financiamiento
-
-github: # Reemplaza con hasta 4 usuarios con GitHub Sponsors, p. ej.: [usuario1, usuario2]
-patreon: # Reemplaza con un usuario de Patreon
-open_collective: # Reemplaza con un usuario de Open Collective
-ko_fi: # Reemplaza con un usuario de Ko-fi
-tidelift: # Reemplaza con una plataforma/paquete de Tidelift, p. ej.: npm/babel
-community_bridge: # Reemplaza con un proyecto de Community Bridge, p. ej.: cloud-foundry
-liberapay: # Reemplaza con un usuario de Liberapay
-issuehunt: # Reemplaza con un usuario de IssueHunt
-lfx_crowdfunding: # Reemplaza con un proyecto de LFX Crowdfunding, p. ej.: cloud-foundry
-polar: # Reemplaza con un usuario de Polar
+github: cortega26
+ko_fi: cortega26
 buy_me_a_coffee: cortega26
-thanks_dev: # Reemplaza con un usuario de thanks.dev
-custom: # Reemplaza con hasta 4 URLs de patrocinio, p. ej.: ['link1', 'link2']
