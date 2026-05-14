@@ -4,6 +4,21 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.5.8] - 2026-05-14
+
+### Mantenimiento
+
+- [DEVOPS] Workflows CI consolidados: `quality.yml` fusionado dentro de `ci.yml` como job independiente; ejecución de tests reducida a 1 pasada (antes eran 2: cobertura + deprecaciones); `security.yml` simplificado de 3 auditorías pip-audit a 1; `pylint.yml` y `repo-hygiene-gate.yml` eliminados.
+- [DEVOPS] Dependencias muertas eliminadas de `requirements-dev.txt`: `black` (reemplazado por `ruff format`), `requests` y `zipp` (pins transitivos de Snyk).
+- [DEVOPS] `dependency-review-action` actualizado a v5; Python de quality/security estandarizado a 3.13.
+- [CLEANUP] Código muerto eliminado de `config.py`: alias `RutConfig` y `__getattr__` deprecado que era inalcanzable (la deprecación ya se maneja en `__init__.py`).
+- [CLEANUP] `pylintrc` eliminado (pylint reemplazado por `ruff check`).
+- [CLEANUP] `coverage.lcov` añadido a `.gitignore`.
+
+### Documentación
+
+- [DOC] README reestructurado: mejor jerarquía visual con separadores, secciones reorganizadas en orden progresivo, tabla de errores dividida en errores/advertencias, tabla de formatos CLI corregida (bug `|0|`).
+
 ## [1.5.7] - 2026-05-13
 
 ### Añadido
@@ -220,6 +235,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+[1.5.8]: https://github.com/cortega26/rutificador/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/cortega26/rutificador/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/cortega26/rutificador/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/cortega26/rutificador/compare/v1.5.4...v1.5.5

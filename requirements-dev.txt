@@ -3,13 +3,10 @@ pytest
 pytest-cov>=7
 ruff>=0.15.12
 mypy>=2.1.0
-black
 coveralls
 tomli
 pydantic>=2,<3
 hypothesis
-requests>=2.34.0 # no requerido directamente; fijado por Snyk para evitar una vulnerabilidad
-zipp>=3.23.1 # no requerido directamente; fijado por Snyk para evitar una vulnerabilidad
 fastapi
 httpx
 pandas

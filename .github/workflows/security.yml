@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    # Ejecutar escaneos de seguridad semanalmente (lunes a las 02:00 UTC)
     - cron: '0 2 * * 1'
 
 jobs:
@@ -14,94 +13,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
       - name: Configurar Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.13'
           cache: 'pip'
-          cache-dependency-path: |
-            requirements-dev.txt
+          cache-dependency-path: requirements-dev.txt
 
-      - name: Actualizar pip e instalar herramientas de seguridad
+      - name: Instalar dependencias
         run: |
           python -m pip install --upgrade "pip>=25.2"
-          pip --version
-          pip install bandit safety pip-audit
-          pip-audit --version
-
-      - name: Instalar dependencias del proyecto
-        run: |
           pip install -r requirements-dev.txt
           pip install -e .
+          pip install bandit safety pip-audit
 
-      - name: Exportar dependencias runtime para auditoria
+      - name: Linter de seguridad (Bandit)
         run: |
-          pip freeze --exclude-editable > requirements-runtime-audit.txt
-          echo "Exportadas $(wc -l < requirements-runtime-audit.txt) dependencias runtime"
-
-      - name: Ejecutar linter de seguridad (Bandit)
-        run: |
-          bandit -r rutificador/ -f json -o bandit-report.json || true
           bandit -r rutificador/ --severity-level medium --confidence-level medium
 
-      - name: Ejecutar Safety (vulnerabilidades conocidas)
+      - name: Auditoria de vulnerabilidades (pip-audit)
         run: |
-          safety check --json --output safety-report.json || true
+          pip-audit --format json --output audit-report.json --desc --progress-spinner off
+
+      - name: Safety check
+        run: |
           safety check
 
-      - name: Ejecutar pip-audit (entorno instalado)
-        run: |
-          pip-audit \
-            --format json \
-            --output audit-report-env.json \
-            --desc \
-            --progress-spinner off
-
-      - name: Ejecutar pip-audit (snapshot runtime desde lock)
-        run: |
-          if [ -s requirements-runtime-audit.txt ]; then
-            pip-audit -r requirements-runtime-audit.txt \
-              --format json \
-              --output audit-report-runtime.json \
-              --desc \
-              --progress-spinner off
-          else
-            echo "No se exportaron dependencias runtime" >&2
-            echo '{"dependencies": []}' > audit-report-runtime.json
-          fi
-
-      - name: Ejecutar pip-audit (dependencias de desarrollo)
-        run: |
-          pip-audit -r requirements-dev.txt \
-            --format json \
-            --output audit-report-dev.json \
-            --desc \
-            --progress-spinner off
-
-      - name: Subir reportes de seguridad
+      - name: Subir reportes
         uses: actions/upload-artifact@v7
         if: always()
         with:
           name: security-reports
           path: |
-            bandit-report.json
-            safety-report.json
-            audit-report-env.json
-            audit-report-runtime.json
-            audit-report-dev.json
+            audit-report.json
 
   dependency-review:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
-    - name: Obtener codigo (checkout)
-      uses: actions/checkout@v6
-      
+    - uses: actions/checkout@v6
+
     - name: Revision de dependencias
-      uses: actions/dependency-review-action@v4
+      uses: actions/dependency-review-action@v5
       with:
         fail-on-severity: moderate

@@ -32,6 +32,7 @@ ENV/
 .coverage
 .coverage.*
 coverage.xml
+coverage.lcov
 htmlcov/
 
 # Tipado / linters
