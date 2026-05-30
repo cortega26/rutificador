@@ -506,3 +506,7 @@ MIT &copy; Carlos Ortega González. Ver [LICENSE](LICENSE).
 ## Créditos
 
 Este proyecto se inspiró en [rut-chile](https://github.com/gevalenz/rut-chile) de [gevalenz](https://github.com/gevalenz).
+
+---
+
+Built and maintained by **Carlos Ortega** — automation, data systems, and web technical hygiene consulting. Portfolio and services: **[tooltician.com](https://tooltician.com/)**.
