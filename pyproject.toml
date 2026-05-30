@@ -4,7 +4,7 @@ version = "1.5.8"
 description = "Herramientas para validar, calcular y formatear el Rol Único Tributario (RUT) en Chile, con procesamiento por lotes y salida en múltiples formatos."
 authors = ["Carlos Ortega González <carlos@tooltician.com>"]
 license = "MIT"
-homepage = "https://pypi.org/project/rutificador/"
+homepage = "https://tooltician.com"
 repository = "https://github.com/cortega26/rutificador"
 keywords = [
     "RUT",
