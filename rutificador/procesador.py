@@ -43,6 +43,11 @@ from .rut import Rut, ValidacionResultado
 
 logger = logging.getLogger(__name__)
 
+# Con chunksize=1 (valor por defecto de Executor.map) cada RUT cruza la
+# barrera de procesos individualmente, haciendo el modo paralelo ~10x más
+# lento que el modo serial. Un valor > 1 amortiza ese costo.
+CHUNKSIZE_FLUJO_POR_DEFECTO = 256
+
 
 @dataclass
 class RutProcesado:
@@ -233,17 +238,6 @@ class ProcesadorLotesRut:
         partes: List[str] = ["RUTs válidos:"]
         fuentes = resultado_validacion.detalles_validos
 
-        if not fuentes:
-            fuentes = [
-                RutProcesado(
-                    valor=cadena,
-                    base=cadena.split("-")[0],
-                    digito=cadena.split("-")[-1],
-                    validador_modo=self.validador.modo.value,
-                )
-                for cadena in resultado_validacion.ruts_validos
-            ]
-
         formateador_detalle = partial(
             _formatear_detalle,
             separador_miles=separador_miles,
@@ -339,11 +333,23 @@ def validar_flujo_ruts(
     paralelo: bool = False,
     max_trabajadores: Optional[int] = None,
     motor_paralelo: Literal["thread", "process"] = "process",
+    chunksize: int = CHUNKSIZE_FLUJO_POR_DEFECTO,
 ) -> Iterator[Tuple[bool, Union[RutProcesado, DetalleError]]]:
     """Valida RUTs desde cualquier iterable y produce resultados uno a uno.
 
     Si paralelo es True, distribuye la carga entre múltiples trabajadores
     manteniendo la naturaleza de generador (no materializa el lote).
+
+    Args:
+        ruts: Iterable de RUTs (puede ser un generador ilimitado).
+        paralelo: Si ``True``, usa un executor multiproceso o multihilo.
+        max_trabajadores: Número máximo de workers. Por defecto usa
+            ``os.cpu_count()``.
+        motor_paralelo: ``"process"`` (por defecto) o ``"thread"``.
+        chunksize: Cantidad de ítems que se envían juntos a cada worker en
+            el modo paralelo. Un valor mayor reduce el overhead de
+            serialización inter-proceso. No usar ``len(ruts)`` aquí: el
+            iterable puede ser un generador sin longitud definida.
     """
     procesador = ProcesadorLotesRut(
         max_trabajadores=max_trabajadores, motor_paralelo=motor_paralelo
@@ -356,8 +362,9 @@ def validar_flujo_ruts(
         cls_ejecutor = procesador.obtener_clase_ejecutor()
 
         with cls_ejecutor(max_workers=procesador.max_trabajadores) as ejecutor:
-            # yield de los resultados conforme los entrega el ejecutor.map (que ya es perezoso)
-            for es_valido, detalle in ejecutor.map(_validar_rut_en_proceso, cargas):
+            for es_valido, detalle in ejecutor.map(
+                _validar_rut_en_proceso, cargas, chunksize=chunksize
+            ):
                 yield es_valido, detalle
     else:
         for rut in ruts:
@@ -372,10 +379,21 @@ def formatear_flujo_ruts(
     paralelo: bool = False,
     max_trabajadores: Optional[int] = None,
     motor_paralelo: Literal["thread", "process"] = "process",
+    chunksize: int = CHUNKSIZE_FLUJO_POR_DEFECTO,
 ) -> Iterator[Tuple[bool, Union[str, DetalleError]]]:
     """Valida y formatea RUTs provenientes de cualquier iterable.
 
     Soporta opcionalmente procesamiento paralelo manteniendo el flujo iterativo.
+
+    Args:
+        ruts: Iterable de RUTs (puede ser un generador ilimitado).
+        separador_miles: Si ``True``, incluye separadores de miles.
+        mayusculas: Si ``True``, el DV se muestra en mayúscula.
+        paralelo: Si ``True``, usa un executor multiproceso o multihilo.
+        max_trabajadores: Número máximo de workers.
+        motor_paralelo: ``"process"`` (por defecto) o ``"thread"``.
+        chunksize: Tamaño de lote para el mapeo paralelo. Ver
+            :func:`validar_flujo_ruts`.
     """
     asegurar_booleano(separador_miles, "separador_miles")
     asegurar_booleano(mayusculas, "mayusculas")
@@ -386,6 +404,7 @@ def formatear_flujo_ruts(
         paralelo=paralelo,
         max_trabajadores=max_trabajadores,
         motor_paralelo=motor_paralelo,
+        chunksize=chunksize,
     ):
         if es_valido:
             # Si el detalle es de una validación exitosa, es un RutProcesado

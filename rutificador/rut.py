@@ -13,6 +13,7 @@ import hmac
 import logging
 import re
 import time
+import warnings
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -73,7 +74,26 @@ class RutBase:
 
 
 class Rut:
-    """Representación de un RUT chileno completo."""
+    """Builder inmutable de un RUT chileno completo.
+
+    ``Rut`` es el **builder**: acepta entrada de usuario en cualquier formato
+    razonable (con o sin puntos, guiones alternativos, espacios internos) y
+    normaliza antes de validar. Siempre produce un objeto válido o lanza una
+    excepción tipada. Acepta además una base numérica sola (sin DV) y calcula
+    el dígito verificador automáticamente.
+
+    Para **clasificar** una cadena sin lanzar excepciones, o para obtener el
+    estado de un RUT parcialmente formado, usa :meth:`Rut.parse` en su lugar.
+
+    Diferencia clave respecto a :meth:`parse`:
+    - ``Rut(s)`` normaliza la entrada (limpia espacios, guiones alternativos,
+      ceros iniciales) y luego valida; es más tolerante en cuanto a formato.
+    - ``Rut.parse(s, modo=ESTRICTO)`` *clasifica* la entrada bajo el modo
+      indicado y devuelve un :class:`ValidacionResultado` con un ``estado``
+      (``"valido"``, ``"posible"``, ``"invalido"``, ``"incompleto"``). En modo
+      ``ESTRICTO`` rechaza espacios internos; en modo ``FLEXIBLE`` los acepta
+      con una advertencia.
+    """
 
     @staticmethod
     def _agregar_advertencia(
@@ -215,6 +235,13 @@ class Rut:
         modo: RigorValidacion = RigorValidacion.ESTRICTO,
     ) -> tuple[Optional[str], list[DetalleError], list[DetalleError]]:
         """Normaliza un RUT sin validar su dígito verificador."""
+        if modo == RigorValidacion.LEGADO:
+            warnings.warn(
+                "RigorValidacion.LEGADO está obsoleto y se eliminará en v2.0. "
+                "Usa RigorValidacion.FLEXIBLE en su lugar.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         cadena_original, cadena, errores, advertencias = Rut._validar_tipo_entrada(
             valor
@@ -267,7 +294,33 @@ class Rut:
         modo: RigorValidacion = RigorValidacion.ESTRICTO,
         configuracion: ConfiguracionRut = CONFIGURACION_POR_DEFECTO,
     ) -> ValidacionResultado:
-        """Parsea un RUT en forma incremental sin lanzar excepciones."""
+        """Clasifica un RUT sin lanzar excepciones (classifier — respeta el modo).
+
+        Este método es el **classifier**: evalúa la entrada bajo el ``modo``
+        de rigor indicado y devuelve un :class:`ValidacionResultado` con un
+        ``estado`` explícito en lugar de lanzar excepciones. Es la alternativa
+        segura al constructor cuando el RUT puede ser inválido o incompleto.
+
+        A diferencia del constructor :meth:`Rut.__init__` (que normaliza
+        silenciosamente la entrada), ``parse`` clasifica la cadena tal como
+        llega bajo las reglas del modo:
+
+        - ``ESTRICTO``: rechaza espacios internos, guiones alternativos no
+          limpios y otros formatos no canónicos (el código de error es
+          ``CARACTERES_INVALIDOS`` o ``NORMALIZACION_*`` según el caso).
+        - ``FLEXIBLE``: acepta y normaliza esas variantes, registrando
+          advertencias de tipo ``NORMALIZACION_*``.
+
+        El ``estado`` devuelto puede ser:
+
+        - ``"valido"`` — DV correcto y base dentro del rango.
+        - ``"posible"`` — Base válida pero DV ausente (p.ej. ``"12345678"``).
+        - ``"invalido"`` — Formato o DV incorrecto.
+        - ``"incompleto"`` — Cadena vacía o sin dígitos.
+
+        Para construir un objeto :class:`Rut` ya validado, usa el constructor
+        directamente (normaliza la entrada y lanza si es inválido).
+        """
 
         inicio = time.perf_counter()
         try:
@@ -415,13 +468,23 @@ class Rut:
     def __init__(
         self, rut: Union[str, int], validador: Optional[ValidadorRut] = None
     ) -> None:
-        """Construye y valida un RUT.
+        """Construye y valida un RUT (builder — normaliza la entrada).
+
+        Este método es el **builder**: normaliza la entrada antes de validar
+        (limpia espacios internos, guiones alternativos, ceros iniciales).
+        Si se proporciona solo la base numérica (sin DV), calcula el dígito
+        verificador automáticamente.
+
+        Para clasificar sin lanzar excepciones, usa :meth:`Rut.parse`, que
+        devuelve un ``estado`` y respeta el ``modo`` de rigor indicado.
 
         Args:
-            rut: RUT como cadena (``"12.345.678-5"``) o entero (``12345678``).
-                Acepta puntos, guiones y espacios como separadores.
-            validador: Validador personalizado. Por defecto usa ``ValidadorRut()``
-                en modo ``ESTRICTO``.
+            rut: RUT como cadena (``"12.345.678-5"`` o ``"12345678-5"``) o
+                entero (``12345678``). Se normalizan espacios, guiones
+                alternativos (``–``, ``—``, ``_``) y separadores de miles.
+                Si se omite el DV, se calcula.
+            validador: Validador personalizado. Por defecto usa
+                ``ValidadorRut()`` en modo ``ESTRICTO``.
 
         Raises:
             ErrorValidacionRut: Si el RUT no pasa la validación de tipo,

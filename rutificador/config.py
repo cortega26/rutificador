@@ -39,11 +39,19 @@ CONFIGURACION_POR_DEFECTO = ConfiguracionRut()
 
 
 class RigorValidacion(Enum):
-    """Enumeración de niveles de rigurosidad de validación."""
+    """Enumeración de niveles de rigurosidad de validación.
+
+    - ``ESTRICTO``: rechaza cualquier variante de formato no canónica
+      (espacios internos, guiones alternativos, etc.).
+    - ``FLEXIBLE``: normaliza esas variantes y emite advertencias
+      ``NORMALIZACION_*``.
+    - ``LEGADO``: **obsoleto** — emite ``DeprecationWarning`` y se
+      comporta como ``FLEXIBLE``. Se eliminará en v2.0.
+    """
 
     ESTRICTO = "estricto"
     FLEXIBLE = "flexible"
-    LEGADO = "legado"
+    LEGADO = "legado"  # Deprecated: usar FLEXIBLE
 
 
 __all__ = [

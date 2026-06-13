@@ -63,9 +63,17 @@ class ValidadorRut:
         Args:
             configuracion: Parámetros de validación (factores, módulo,
                 dígitos mínimo/máximo).
-            modo: Nivel de rigurosidad (``ESTRICTO``, ``FLEXIBLE``
-                o ``LEGADO``).
+            modo: Nivel de rigurosidad (``ESTRICTO`` o ``FLEXIBLE``).
+                ``LEGADO`` está obsoleto y se eliminará en v2.0; usa
+                ``FLEXIBLE`` en su lugar.
         """
+        if modo == RigorValidacion.LEGADO:
+            warnings.warn(
+                "RigorValidacion.LEGADO está obsoleto y se eliminará en v2.0. "
+                "Usa RigorValidacion.FLEXIBLE en su lugar.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         self.configuracion = configuracion
         self.modo = modo
         logger.debug("ValidadorRut inicializado con modo: %s", modo.value)
