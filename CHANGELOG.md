@@ -4,6 +4,32 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.6.0] - 2026-06-12
+
+### Rendimiento
+
+- [PERF] `validar_flujo_ruts` y `formatear_flujo_ruts` en modo `paralelo=True` ahora usan `chunksize=256` por defecto en `Executor.map`, eliminando un overhead de ~10× respecto al modo serial que se producía con el valor por defecto `chunksize=1`. El parámetro `chunksize` queda expuesto como kwarg opcional en ambas funciones para ajuste manual.
+- [PERF] Constante pública `CHUNKSIZE_FLUJO_POR_DEFECTO = 256` añadida a `procesador.py`.
+
+### Deprecaciones
+
+- [DEPRECATED] `RigorValidacion.LEGADO` ahora emite `DeprecationWarning` al usarse en `ValidadorRut`, `Rut.parse` y `Rut.normalizar`. El valor se eliminará en v2.0; usar `RigorValidacion.FLEXIBLE` en su lugar.
+
+### Calidad
+
+- [REFACTOR] Rama muerta eliminada de `formatear_lista_ruts`: el bloque `if not fuentes` reconstruía `RutProcesado` desde `ruts_validos`, pero ambas listas siempre se llenan en paralelo por `validar_lista_ruts`, por lo que el bloque era inalcanzable.
+
+### Documentación
+
+- [DOC] Contrato builder/classifier documentado en `Rut`, `Rut.__init__` y `Rut.parse`: el constructor normaliza la entrada y lanza excepciones tipadas; `parse()` clasifica bajo el `modo` indicado y devuelve un `ValidacionResultado`. Actualizado también en `CLAUDE.md`.
+- [DOC] `RigorValidacion` con docstring de clase que define la semántica de cada modo (`ESTRICTO`, `FLEXIBLE`, `LEGADO` obsoleto).
+
+### Tests
+
+- [TEST] `tests/test_procesador_flujo.py`: tests de regresión para la corrección de `chunksize`; incluye un caso con generador puro (sin `__len__`) que garantiza que no se llame `len()` sobre el iterable de flujo.
+- [TEST] `tests/test_consistencia_parse.py`: tests de caracterización que fijan el contrato constructor↔`parse()`; incluye tests de deprecación de `LEGADO` y el test de contrato builder/classifier.
+- [TEST] `tests/test_procesador_paralelo.py`: cobertura de las ramas paralelas de `ProcesadorLotesRut.validar_lista_ruts`.
+
 ## [1.5.8] - 2026-05-14
 
 ### Mantenimiento
