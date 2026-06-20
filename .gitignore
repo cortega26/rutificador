@@ -63,6 +63,13 @@ codex_env_diagnosis_*.txt
 temp/
 tmp/
 
+# Herramientas y skills locales de agentes
+.agents/
+.claude/
+.continue/
+.codegraph/
+skills-lock.json
+
 # Entorno local pyenv
 .python-version
 
