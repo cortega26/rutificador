@@ -489,6 +489,9 @@ mypy rutificador/                     # Tipado estatico
 ruff check .                          # Lint
 ruff format . --check                 # Formato
 bandit -r rutificador/                # Seguridad
+deptry rutificador                    # Coherencia de dependencias
+pre-commit validate-config            # Configuracion de hooks
+cyclonedx-py environment -o sbom.json # SBOM de desarrollo/CI
 ```
 
 Las contribuciones son bienvenidas. Revisa [`CONTRIBUTING.md`](CONTRIBUTING.md) para las directrices completas.

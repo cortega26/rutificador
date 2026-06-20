@@ -4,6 +4,18 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.6.1] - 2026-06-20
+
+### Mantenimiento
+
+- [DEVOPS] Añadidos `deptry`, `pytest-benchmark`, `cyclonedx-bom`, `pre-commit` y `httpx2` como dependencias exclusivas de desarrollo, sin modificar las dependencias de instalación del núcleo; `httpx2` elimina la advertencia obsoleta de `TestClient` en Starlette reciente.
+- [DEVOPS] CI valida la coherencia de dependencias y la configuración de pre-commit; el flujo de seguridad genera y conserva un SBOM CycloneDX reproducible.
+- [DEVOPS] Migrada la configuración obsoleta `poetry.dev-dependencies` a `poetry.group.dev.dependencies` y eliminado `tomli`, que no era utilizado, para conservar un núcleo sin dependencias también en Python 3.10.
+
+### Tests
+
+- [TEST] Benchmark funcional de `Rut.parse()` para verificar la integración de `pytest-benchmark` y habilitar futuras líneas base de rendimiento.
+
 ## [1.6.0] - 2026-06-12
 
 ### Rendimiento

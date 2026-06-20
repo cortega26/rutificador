@@ -87,3 +87,11 @@ jobs:
     - name: Tipos (mypy)
       run: |
         python -m mypy rutificador/ --ignore-missing-imports
+
+    - name: Coherencia de dependencias (deptry)
+      run: |
+        deptry rutificador
+
+    - name: Validar configuracion de pre-commit
+      run: |
+        pre-commit validate-config

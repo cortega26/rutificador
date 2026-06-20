@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rutificador"
-version = "1.6.0"
+version = "1.6.1"
 description = "Herramientas para validar, calcular y formatear el Rol Único Tributario (RUT) en Chile, con procesamiento por lotes y salida en múltiples formatos."
 authors = ["Carlos Ortega González <carlos@tooltician.com>"]
 license = "MIT"
@@ -32,7 +32,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-tomli = { version = "^2.0", python = "<3.11" }
 pydantic = { version = "^2.0", optional = true }
 fastapi = { version = ">=0.110.0,<2.0.0", optional = true }
 httpx = { version = ">=0.27.0,<1.0.0", optional = true }
@@ -46,9 +45,14 @@ pandas = ["pandas"]
 polars = ["polars"]
 full = ["pydantic", "fastapi", "httpx", "pandas", "polars"]
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = ">=9.0.3,<10.0.0"
 pytest-cov = ">=5.0.0,<8.0.0"
+pytest-benchmark = "5.2.3"
+deptry = "0.25.1"
+cyclonedx-bom = "7.3.0"
+pre-commit = "4.6.0"
+httpx2 = "2.4.0"
 
 [tool.poetry.scripts]
 rutificador = "rutificador.cli:main"
@@ -59,6 +63,16 @@ testpaths = ["tests"]
 # sin instalarlo. Esto asegura que ejecutar `pytest` desde la raiz del proyecto
 # funcione como se documenta en el README.
 addopts = ""
+
+[tool.deptry]
+known_first_party = ["rutificador"]
+
+[tool.deptry.per_rule_ignores]
+# Compatibilidad inalcanzable en Python >=3.10 y dependencias de extras
+# que se importan directamente por las integraciones correspondientes.
+DEP001 = ["importlib_metadata"]
+DEP002 = ["httpx"]
+DEP003 = ["pydantic_core", "starlette"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
