@@ -307,7 +307,7 @@ class TestRutBase:
 class TestRut:
     """Suite de pruebas para la clase Rut."""
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def rut_valido(self):
         """Fixture para crear una instancia de Rut válida."""
         return Rut("12345678-5")

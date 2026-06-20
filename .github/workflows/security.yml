@@ -41,6 +41,13 @@ jobs:
         run: |
           safety check
 
+      - name: Generar SBOM CycloneDX
+        run: |
+          cyclonedx-py environment "$(which python)" \
+            --output-reproducible \
+            --output-format JSON \
+            --output-file sbom.json
+
       - name: Subir reportes
         uses: actions/upload-artifact@v7
         if: always()
@@ -48,6 +55,7 @@ jobs:
           name: security-reports
           path: |
             audit-report.json
+            sbom.json
 
   dependency-review:
     runs-on: ubuntu-latest
