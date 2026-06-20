@@ -23,6 +23,7 @@ commands run inside the repo-root `.venv` (or after
 | 004 | Remove unreachable fallback in `formatear_lista_ruts` | P3 | S | — | DONE |
 | 005 | Design: coherent `RigorValidacion` modes (incl. LEGADO/F4) | P3 | M | 002 | DONE — LEGADO deprecado (DeprecationWarning → v2.0); FLEXIBLE definido |
 | 006 | Spike: unify on a single RUT parse core | P3 | L | 002 | REJECTED — contrato builder/classifier ya documentado (003); fuzz encontró 0 divergencia de DV; riesgo > beneficio en v1.x. Ver 006-SPIKE-NOTES.md |
+| 007 | Evaluate second-phase quality and performance tooling | P3 | L | — | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) |
 REJECTED (one-line rationale).
@@ -36,6 +37,10 @@ REJECTED (one-line rationale).
 3. **005** and **006** are design/spike plans — they produce decision documents,
    not behavior changes. Run them when ready to decide the architectural
    direction; both reuse 002's test helpers.
+4. **007** is a future, opt-in second phase. Execute its four pilots in order
+   (`mutmut`, `import-linter`, `pyperf`, then `uv`) and keep each in a separate
+   PR; a pilot may legitimately end as `REJECTED` when its evidence does not
+   justify permanent maintenance.
 
 ## Dependency notes
 
@@ -54,6 +59,10 @@ REJECTED (one-line rationale).
 - **F4 (LEGADO) is handled inside 005**, not as a standalone fix — deciding
   whether to deprecate or define LEGADO is exactly 005's design question, so a
   premature deprecation elsewhere would pre-empt it.
+- **007 has no dependency on unfinished plans**: it assumes the current
+  v1.6.1 quality baseline at `e2d9a59`. Its internal order matters because
+  architecture and performance tools should be evaluated before changing the
+  dependency workflow with `uv`.
 
 ## Findings considered and rejected
 
