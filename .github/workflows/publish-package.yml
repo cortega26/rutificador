@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Obtener codigo (checkout)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Configurar Python
         uses: actions/setup-python@v6
