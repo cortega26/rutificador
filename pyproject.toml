@@ -52,7 +52,7 @@ pytest-benchmark = "5.2.3"
 deptry = "0.25.1"
 cyclonedx-bom = "7.3.0"
 pre-commit = "4.6.0"
-httpx2 = "2.4.0"
+httpx2 = "2.5.0"
 
 [tool.poetry.scripts]
 rutificador = "rutificador.cli:main"
