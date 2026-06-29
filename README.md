@@ -2,7 +2,7 @@
 
 *Parte del [ecosistema Tooltician](https://tooltician.com) — validación y formato de RUT chileno, sin dependencias externas.*
 
-[![Tooltician](https://tooltician.com/badge.svg)](https://tooltician.com)
+[![Parte de Tooltician](https://tooltician.com/badge.es.svg)](https://tooltician.com)
 
 [![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
 [![Python](https://img.shields.io/badge/Python-3.10--3.14-blue)](https://www.python.org/)
