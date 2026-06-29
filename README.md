@@ -1,5 +1,9 @@
 <div align="center">
 
+*Parte del [ecosistema Tooltician](https://tooltician.com) — validación y formato de RUT chileno, sin dependencias externas.*
+
+[![Parte de Tooltician](https://img.shields.io/badge/Parte%20de-Tooltician-6C47FF.svg?style=flat-square&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTIgM2g2YTQgNCAwIDAgMSA0IDR2MTRhMiAyIDAgMCAwLTItMkg0YTIgMiAwIDAgMS0yLTJWNVoiLz48cGF0aCBkPSJNMjIgM2gtNmE0IDQgMCAwIDAtNCA0djE0YTIgMiAwIDAgMSAyLTJoNGEyIDIgMCAwIDAgMi0yVjVhMiAyIDAgMCAwLTItMloiLz48L3N2Zz4=)](https://tooltician.com)
+
 [![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
 [![Python](https://img.shields.io/badge/Python-3.10--3.14-blue)](https://www.python.org/)
 [![Downloads](https://img.shields.io/pypi/dm/rutificador)](https://pypi.org/project/rutificador/)
@@ -513,3 +517,5 @@ Este proyecto se inspiró en [rut-chile](https://github.com/gevalenz/rut-chile) 
 ---
 
 Built and maintained by **Carlos Ortega** — automation, data systems, and web technical hygiene consulting. Portfolio and services: **[tooltician.com](https://tooltician.com/)**.
+
+*Parte del [ecosistema Tooltician](https://tooltician.com) — validación y formato de RUT chileno, sin dependencias externas.*
