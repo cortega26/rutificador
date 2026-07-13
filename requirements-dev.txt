@@ -2,8 +2,8 @@ pip>=26.1.2  # Correcciones de seguridad vigentes para instalación y actualizac
 pytest>=9.0.3,<10
 pytest-cov>=7
 pytest-benchmark==5.2.3
-ruff>=0.15.12
-mypy>=2.1.0
+ruff>=0.15.21
+mypy>=2.3.0
 coveralls
 deptry==0.25.1
 cyclonedx-bom==7.3.0
