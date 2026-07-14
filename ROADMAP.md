@@ -25,16 +25,16 @@ Referencia: `plans/007-segunda-fase-calidad-rendimiento.md`
 - [x] **Sitio de documentación con MkDocs Material** — desplegado en GitHub Pages vía `.github/workflows/docs.yml`.
 - [x] **Gate de regresión de rendimiento en CI** — implementado en `.github/workflows/benchmark-regression.yml` (no bloqueante, umbral 20%).
 - [x] **Python 3.14 first-class** — en matriz CI con `continue-on-error`; pendiente remover el flag cuando 3.14 sea estable.
-- [ ] **Strict mypy progresivo** — pendiente. Ver `plans/009-mypy-strict-core.md`.
+- [x] **Strict mypy progresivo** — habilitado en `errores.py`, `version.py`, `config.py`, `utils.py`, `validador.py`. Ver `plans/009-mypy-strict-core.md`.
 
 ---
 
 ## v1.9 (Q4 2026) — Pulido de API, CLI e infraestructura
 
-- [ ] **mypy --strict progresivo por módulo**: habilitar reglas estrictas incrementalmente empezando por `utils.py`, `errores.py`, `config.py`, `validador.py`. Referencia: `plans/009-mypy-strict-core.md`.
-- [ ] **Paridad CLI: comando `enmascarar --token`**: exponer tokenización HMAC-SHA256 desde la CLI, con soporte para `--clave` (y variable de entorno `RUTIFICADOR_TOKEN_KEY`). Referencia: `plans/010-cli-tokenize-parity.md`.
-- [ ] **Spec formal de reglas de validación RUT**: documento de especificación con test vectors canónicos exportables (JSON/YAML), prerrequisito para ports cross-platform. Referencia: `plans/011-spec-formal-reglas-rut.md`.
-- [ ] **Infraestructura de i18n para mensajes de error**: envolver `CATALOGO_ERRORES` en función locale-aware (`idioma="es"|"en"`), sin romper API. Referencia: `plans/012-i18n-errores.md`.
+- [x] **mypy --strict progresivo por módulo**: habilitar reglas estrictas incrementalmente empezando por `utils.py`, `errores.py`, `config.py`, `validador.py`. Referencia: `plans/009-mypy-strict-core.md`.
+- [x] **Paridad CLI: comando `enmascarar --token`**: exponer tokenización HMAC-SHA256 desde la CLI, con soporte para `--clave` (y variable de entorno `RUTIFICADOR_TOKEN_KEY`). Referencia: `plans/010-cli-tokenize-parity.md`.
+- [x] **Spec formal de reglas de validación RUT**: documento de especificación con test vectors canónicos exportables (JSON/YAML), prerrequisito para ports cross-platform. Referencia: `plans/011-spec-formal-reglas-rut.md`.
+- [x] **Infraestructura de i18n para mensajes de error**: envolver `CATALOGO_ERRORES` en función locale-aware (`idioma="es"|"en"`), sin romper API. Referencia: `plans/012-i18n-errores.md`.
 
 ---
 
@@ -113,4 +113,4 @@ Rutificador sigue [SemVer](https://semver.org/lang/es/):
 
 ---
 
-*Última actualización: 2026-07-14 · v1.6.1*
+*Última actualización: 2026-07-14 · v1.9.0*

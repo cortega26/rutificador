@@ -4,6 +4,47 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [1.9.0] - 2026-07-14
+
+### Añadido
+
+- [FEAT] CLI: subcomando `enmascarar` ahora soporta tokenización HMAC-SHA256 con los flags `--token` y `--clave` (y variable de entorno `RUTIFICADOR_TOKEN_KEY`).
+- [DOC] Especificación formal de reglas de validación RUT con test vectors canónicos en JSON (`docs/especificacion-reglas-rut.md`, `tests/vectors/`).
+- [I18N] Infraestructura de internacionalización en `crear_detalle_error(idioma="es"|"en")`. Catálogo en español e inglés con fallback automático.
+
+### Calidad
+
+- [TYPES] `mypy --strict` habilitado en 5 módulos del núcleo: `errores.py`, `version.py`, `config.py`, `utils.py`, `validador.py`. CI verifica estricto en esos módulos.
+
+### Documentación
+
+- [DOC] MkDocs desplegado en GitHub Pages: `tooltician.com/rutificador/`.
+- [DOC] `workflow_dispatch` agregado al workflow de documentación para despliegues manuales.
+
+## [1.8.0] - 2026-06-20
+
+### Añadido
+
+- [DEVOPS] Workflow de regresión de rendimiento en CI: benchmarks comparados contra rama base con umbral de 20% (no bloqueante).
+- [DEVOPS] Workflow de despliegue de documentación MkDocs a GitHub Pages.
+
+### Calidad
+
+- [DEVOPS] Python 3.14 en matriz CI con `continue-on-error`.
+
+### Documentación
+
+- [DOC] Sitio de documentación con MkDocs Material: API reference desde docstrings, buscador, ejemplos interactivos.
+
+## [1.7.0] - 2026-06-20
+
+### Calidad
+
+- [DEVOPS] `import-linter` adoptado: 3 contratos de arquitectura (`nucleo-no-depende-de-contrib`, `nucleo-no-depende-de-cli`, `contrib-no-depende-entre-si`) en `pyproject.toml`.
+- [DEVOPS] `mutmut` (mutation testing) evaluado y rechazado: incompatible con Python 3.12.
+- [DEVOPS] `pyperf` evaluado y rechazado: `pytest-benchmark` ofrece mejor integración.
+- [DEVOPS] `uv` evaluado y rechazado: incompatible con Poetry lockfile.
+
 ## [1.6.1] - 2026-06-20
 
 ### Mantenimiento
