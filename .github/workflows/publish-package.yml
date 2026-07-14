@@ -2,12 +2,10 @@ name: Publicar paquete de Python en PyPI
 
 on:
   push:
-    branches: [master]
-    paths:
-      - "pyproject.toml"
-      - "rutificador/**"
-  tags:
-    - "v*"
+    branches:
+      - master
+    tags:
+      - "v*"
   release:
     types: [published]
   workflow_dispatch:
