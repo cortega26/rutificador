@@ -11,17 +11,10 @@ según el feedback de la comunidad.
 Objetivo: elevar los gates de calidad sin modificar la API pública ni las
 dependencias runtime.
 
-- [ ] **Mutation testing con `mutmut`** sobre el núcleo matemático (`utils.py`,
-  `validador.py`, funciones críticas de `rut.py`). Criterio: adoptar solo si
-  descubre huecos de prueba reales en <20 min de CI.
-- [ ] **Límites arquitectónicos con `import-linter`**: contratos formales para
-  `rutificador` → `tests`, `core` → `contrib`, `core` → `cli`.
-- [ ] **Benchmarks rigurosos con `pyperf`**: scripts deterministas en
-  `tests/benchmarks/` para `calcular_digito_verificador`, `Rut.parse()`,
-  lotes seriales y streaming. Criterio: adoptar si la variabilidad permite
-  detectar regresiones ≥10%.
-- [ ] **Spike de migración a `uv`**: evaluar si reduce tiempos de CI o mejora
-  reproducibilidad sin duplicar fuentes de dependencias.
+- [x] **Mutation testing con `mutmut`** (REJECTED — incompatible Python 3.12, plan 007)
+- [x] **Límites arquitectónicos con `import-linter`** (ADOPTED — 3 contratos en `pyproject.toml`)
+- [x] **Benchmarks rigurosos con `pyperf`** (REJECTED — pytest-benchmark superior, plan 007)
+- [x] **Spike de migración a `uv`** (REJECTED — Poetry lockfile incompatible, plan 007)
 
 Referencia: `plans/007-segunda-fase-calidad-rendimiento.md`
 
@@ -29,16 +22,19 @@ Referencia: `plans/007-segunda-fase-calidad-rendimiento.md`
 
 ## v1.8 (Q3–Q4 2026) — Expansión del ecosistema
 
-- [ ] **Sitio de documentación con MkDocs Material**: API reference generada
-  desde docstrings Google-style, buscador, ejemplos interactivos, changelog
-  integrado. Publicado en GitHub Pages.
-- [ ] **Gate de regresión de rendimiento en CI**: comparación automática de
-  benchmarks contra la rama base antes del merge. Inicia como job no
-  bloqueante.
-- [ ] **Python 3.14 first-class**: eliminar `continue-on-error` en la matriz
-  de CI cuando 3.14 alcance estabilidad suficiente.
-- [ ] **Strict mypy progresivo**: habilitar reglas estrictas incrementalmente
-  en módulos del núcleo.
+- [x] **Sitio de documentación con MkDocs Material** — desplegado en GitHub Pages vía `.github/workflows/docs.yml`.
+- [x] **Gate de regresión de rendimiento en CI** — implementado en `.github/workflows/benchmark-regression.yml` (no bloqueante, umbral 20%).
+- [x] **Python 3.14 first-class** — en matriz CI con `continue-on-error`; pendiente remover el flag cuando 3.14 sea estable.
+- [ ] **Strict mypy progresivo** — pendiente. Ver `plans/009-mypy-strict-core.md`.
+
+---
+
+## v1.9 (Q4 2026) — Pulido de API, CLI e infraestructura
+
+- [ ] **mypy --strict progresivo por módulo**: habilitar reglas estrictas incrementalmente empezando por `utils.py`, `errores.py`, `config.py`, `validador.py`. Referencia: `plans/009-mypy-strict-core.md`.
+- [ ] **Paridad CLI: comando `enmascarar --token`**: exponer tokenización HMAC-SHA256 desde la CLI, con soporte para `--clave` (y variable de entorno `RUTIFICADOR_TOKEN_KEY`). Referencia: `plans/010-cli-tokenize-parity.md`.
+- [ ] **Spec formal de reglas de validación RUT**: documento de especificación con test vectors canónicos exportables (JSON/YAML), prerrequisito para ports cross-platform. Referencia: `plans/011-spec-formal-reglas-rut.md`.
+- [ ] **Infraestructura de i18n para mensajes de error**: envolver `CATALOGO_ERRORES` en función locale-aware (`idioma="es"|"en"`), sin romper API. Referencia: `plans/012-i18n-errores.md`.
 
 ---
 
