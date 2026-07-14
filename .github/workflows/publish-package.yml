@@ -2,33 +2,90 @@ name: Publicar paquete de Python en PyPI
 
 on:
   push:
-    tags:
-      - "v*" # Publicar solo en tags de version
+    branches: [master]
+    paths:
+      - "pyproject.toml"
+      - "rutificador/**"
+  tags:
+    - "v*"
   release:
     types: [published]
   workflow_dispatch:
-    inputs: {}
-    branches: [master]
+    inputs:
+      version:
+        description: "Version a publicar (dejar vacio para detectar de pyproject.toml)"
+        required: false
+        default: ""
 
 jobs:
-  pypi-publish:
-    name: Subir publicacion a PyPI
+  detect-version:
+    name: Detectar cambio de version
     runs-on: ubuntu-latest
-    # Agregar un environment especifico para mayor seguridad
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Detectar si la version cambio
+        id: check
+        run: |
+          # Extraer version actual de pyproject.toml
+          VERSION=$(grep -Po '(?<=^version = ")[^"]+' pyproject.toml)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          # Si es un tag manual, siempre publicar
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Tag detectado: ${{ github.ref }}. Publicando version ${VERSION}."
+            exit 0
+          fi
+
+          # Si es workflow_dispatch con version explicita, siempre publicar
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Workflow manual. Publicando version ${VERSION}."
+            exit 0
+          fi
+
+          # Si es release publicado, siempre publicar
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Release publicada. Publicando version ${VERSION}."
+            exit 0
+          fi
+
+          # En push a master: verificar si pyproject.toml cambio vs commit anterior
+          git diff HEAD~1 -- pyproject.toml | grep -q '^\+version' && CHANGED=true || CHANGED=false
+
+          if [[ "$CHANGED" == "true" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Version cambiada a ${VERSION}. Publicando."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Sin cambio de version. Omitiendo publicacion."
+          fi
+
+  publish:
+    name: Subir publicacion a PyPI
+    needs: detect-version
+    if: needs.detect-version.outputs.changed == 'true'
+    runs-on: ubuntu-latest
     environment:
       name: release
       url: https://pypi.org/p/rutificador
     permissions:
-      id-token: write # IMPORTANTE: este permiso es obligatorio para trusted publishing
-      contents: write # Requerido para gh release upload (adjuntar SBOM)
-      attestations: write # Requerido para actions/attest-build-provenance
-
-    # Ejecutar solo en tags o releases para evitar publicaciones accidentales
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+      id-token: write
+      contents: write
+      attestations: write
 
     steps:
-      - name: Obtener codigo (checkout)
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configurar Python
         uses: actions/setup-python@v6
@@ -39,6 +96,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install build twine
+
+      - name: Verificar que la version no existe en PyPI
+        id: pypi-check
+        continue-on-error: true
+        run: |
+          VERSION="${{ needs.detect-version.outputs.version }}"
+          pip install rutificador=="${VERSION}" --dry-run 2>&1 && {
+            echo "ERROR: Version ${VERSION} ya existe en PyPI. Abortando."
+            exit 1
+          } || echo "Version ${VERSION} no existe en PyPI. Continuando."
 
       - name: Construir paquete
         run: python -m build
@@ -60,15 +127,40 @@ jobs:
       - name: Publicar en PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          # Usar trusted publishing: no se requieren tokens de API
-          # El repositorio debe configurarse en PyPI con GitHub como trusted publisher
           repository-url: https://upload.pypi.org/legacy/
           verbose: true
           print-hash: true
 
-      - name: Adjuntar SBOM al release
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Crear tag y GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${GITHUB_REF#refs/tags/} sbom.json
+          VERSION="${{ needs.detect-version.outputs.version }}"
+          TAG="v${VERSION}"
+
+          # Crear tag si no existe
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            git tag "$TAG"
+            git push origin "$TAG"
+            echo "Tag ${TAG} creado."
+          else
+            echo "Tag ${TAG} ya existe."
+          fi
+
+          # Crear GitHub Release
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" dist/* \
+              --title "v${VERSION}" \
+              --notes "Release automatico de rutificador v${VERSION}. Ver [CHANGELOG.md](https://github.com/cortega26/rutificador/blob/master/CHANGELOG.md) para detalles."
+            echo "Release ${TAG} creado."
+          else
+            echo "Release ${TAG} ya existe."
+          fi
+
+      - name: Adjuntar SBOM al release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ needs.detect-version.outputs.version }}"
+          gh release upload "$TAG" sbom.json --clobber
