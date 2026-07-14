@@ -4,6 +4,33 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [2.0.0] - 2026-07-14
+
+### Breaking Changes
+
+- [BREAKING] Eliminado `RigorValidacion.LEGADO`. Solo existen `ESTRICTO` y `FLEXIBLE`.
+- [BREAKING] Eliminado protocolo `Validador`. Usar `ValidadorRut`.
+- [BREAKING] Eliminados alias obsoletos en `exceptions.py`: `RutInvalidoError`, `RutError`, `RutValidationError`, `RutFormatError`, `RutDigitError`, `RutLengthError`, `RutProcessingError`. Usar sus equivalentes en español.
+- [BREAKING] Eliminados exports obsoletos en `__init__.py`: `RutConfig`, `RutValidator`, `RutInvalidoError`. Usar `ConfiguracionRut`, `ValidadorRut`, `ErrorValidacionRut`.
+- [BREAKING] Eliminados shims `__getattr__` en `__init__.py`, `exceptions.py` y `validador.py`. Los imports de símbolos obsoletos ahora lanzan `AttributeError`.
+
+### Añadido
+
+- [FEAT] Script de migración automática `scripts/migrate.py` con modos `--check` y `--fix` basado en AST.
+- [FEAT] Módulo `rutificador.calidad_datos` con detección de duplicados, auditoría de formatos y perfilamiento estadístico.
+- [FEAT] `mypy --strict` habilitado en los 10 módulos del núcleo.
+
+### Seguridad
+
+- [SEC] Workflow de publicación ahora genera attestación de procedencia SLSA v1.0 y adjunta SBOM CycloneDX a los releases.
+
+### Documentación
+
+- [DOC] Guía de migración v1.x → v2.0 en `GUIA_MIGRACION_v2.md`.
+- [DOC] Sección de verificación de integridad en `SECURITY.md`.
+- [DOC] Test vectors canónicos unificados en `tests/vectors/conformance.json` con JSON Schema.
+- [DOC] Script de conformidad standalone `scripts/conformance.py`.
+
 ## [1.9.0] - 2026-07-14
 
 ### Añadido

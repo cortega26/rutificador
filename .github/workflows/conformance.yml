@@ -1,0 +1,53 @@
+name: Publicar vectores de conformidad
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "tests/vectors/**"
+      - "docs/especificacion-reglas-rut.md"
+  workflow_dispatch:
+
+jobs:
+  publish-vectors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonschema
+
+      - name: Validar vectores contra schema
+        run: |
+          python -c "
+          import json
+          from jsonschema import validate
+          with open('tests/vectors/schema.json') as f:
+              schema = json.load(f)
+          with open('tests/vectors/conformance.json') as f:
+              data = json.load(f)
+          validate(instance=data, schema=schema)
+          print(f'{len(data[\"casos_dv\"])} casos DV, {len(data[\"casos_validacion\"])} casos validacion — OK')
+          "
+
+      - name: Instalar rutificador
+        run: pip install -e .
+
+      - name: Verificar conformidad de implementacion Python
+        run: python scripts/conformance.py
+
+      - name: Exportar vectores
+        run: python scripts/export_vectors.py --all
+
+      - name: Subir vectores como artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: rutificador-conformance-vectors
+          path: dist/vectors/

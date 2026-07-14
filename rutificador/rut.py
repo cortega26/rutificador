@@ -13,7 +13,6 @@ import hmac
 import logging
 import re
 import time
-import warnings
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -234,14 +233,7 @@ class Rut:
         *,
         modo: RigorValidacion = RigorValidacion.ESTRICTO,
     ) -> tuple[Optional[str], list[DetalleError], list[DetalleError]]:
-        """Normaliza un RUT sin validar su dígito verificador."""
-        if modo == RigorValidacion.LEGADO:
-            warnings.warn(
-                "RigorValidacion.LEGADO está obsoleto y se eliminará en v2.0. "
-                "Usa RigorValidacion.FLEXIBLE en su lugar.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+        """Normaliza un RUT sin validar su digito verificador."""
 
         cadena_original, cadena, errores, advertencias = Rut._validar_tipo_entrada(
             valor

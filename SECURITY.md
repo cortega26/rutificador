@@ -26,3 +26,24 @@ Esta política aplica a todas las versiones estables de **rutificador** (>=1.0.0
 - Confirmaremos la recepción de tu reporte en un plazo máximo de 48 horas.
 - Mantendremos la confidencialidad del reporte hasta que se publique la corrección.
 - Daremos crédito a quien reporte la vulnerabilidad (si así lo desea) en el changelog del release.
+
+## Verificación de Integridad
+
+Cada release de rutificador incluye una attestación de procedencia SLSA v1.0
+generada por GitHub Actions. Los consumidores pueden verificar que el paquete
+fue construido desde el commit oficial del repositorio:
+
+```bash
+# Descargar el wheel desde PyPI o GitHub Releases
+pip download rutificador --no-deps -d dist/
+
+# Verificar la attestación de procedencia
+gh attestation verify dist/rutificador-*.whl --repo cortega26/rutificador
+
+# Verificar manualmente con el bundle de attestación del release
+gh attestation verify dist/rutificador-*.whl \
+  --bundle rutificador-attestation.json \
+  --repo cortega26/rutificador
+```
+
+El SBOM CycloneDX está disponible como asset en cada [GitHub Release](https://github.com/cortega26/rutificador/releases). Contiene la lista completa de dependencias de build y runtime para auditorías de seguridad.

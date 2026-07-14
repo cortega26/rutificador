@@ -1,7 +1,11 @@
-"""Verifica que la implementación actual cumple la especificación formal.
+"""Verifica que la implementacion actual cumple la especificacion formal.
 
-Los test vectors en tests/vectors/ son la fuente canónica de verdad.
-Este módulo los valida contra la implementación de rutificador.
+Los test vectors en tests/vectors/conformance.json son la fuente canonica
+de verdad. Este modulo los valida contra la implementacion de rutificador.
+
+Los archivos legacy (test_vectors_dv.json, test_vectors_validacion.json)
+se mantienen como referencia historica; conformance.json es la fuente
+unificada y versionada.
 """
 
 import json
@@ -15,15 +19,19 @@ from rutificador.utils import calcular_digito_verificador
 VECTORS_DIR = Path(__file__).parent / "vectors"
 
 
-def _cargar_vectors(nombre: str):
-    with open(VECTORS_DIR / nombre, encoding="utf-8") as f:
+@pytest.fixture(scope="module")
+def vectores_conformidad():
+    with open(VECTORS_DIR / "conformance.json", encoding="utf-8") as f:
         return json.load(f)
 
 
 class TestVectoresDigitoVerificador:
     @pytest.mark.parametrize(
         "caso",
-        _cargar_vectors("test_vectors_dv.json")["casos"],
+        json.loads(
+            (VECTORS_DIR / "conformance.json")
+            .read_text(encoding="utf-8")
+        )["casos_dv"],
         ids=lambda c: f"base={c['base']}",
     )
     def test_dv(self, caso):
@@ -33,7 +41,10 @@ class TestVectoresDigitoVerificador:
 class TestVectoresValidacion:
     @pytest.mark.parametrize(
         "caso",
-        _cargar_vectors("test_vectors_validacion.json")["casos"],
+        json.loads(
+            (VECTORS_DIR / "conformance.json")
+            .read_text(encoding="utf-8")
+        )["casos_validacion"],
         ids=lambda c: f"{c['entrada'][:20]} [{c['modo']}]",
     )
     def test_validacion(self, caso):

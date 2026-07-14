@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tooltician.com/rutificador/vectors/schema.json",
+  "title": "RUT Conformance Test Vectors Schema",
+  "description": "Schema para vectores de prueba de conformidad del validador de RUT chileno",
+  "type": "object",
+  "required": [
+    "version",
+    "spec_version",
+    "descripcion",
+    "algoritmo",
+    "configuracion",
+    "casos_dv",
+    "casos_validacion"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Version semantica de los vectores de prueba"
+    },
+    "spec_version": {
+      "type": "string",
+      "description": "Version de la especificacion formal que estos vectores validan"
+    },
+    "descripcion": { "type": "string" },
+    "algoritmo": {
+      "type": "object",
+      "required": ["nombre", "formula"],
+      "properties": {
+        "nombre": { "type": "string" },
+        "formula": { "type": "string" }
+      }
+    },
+    "configuracion": {
+      "type": "object",
+      "required": [
+        "factores_verificacion",
+        "modulo",
+        "max_digitos",
+        "min_digitos"
+      ],
+      "properties": {
+        "factores_verificacion": {
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "modulo": { "type": "integer" },
+        "max_digitos": { "type": "integer" },
+        "min_digitos": { "type": "integer" }
+      }
+    },
+    "casos_dv": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["base", "dv_esperado"],
+        "properties": {
+          "base": { "type": "string", "pattern": "^[0-9]+$" },
+          "dv_esperado": { "type": "string", "pattern": "^[0-9kK]$" },
+          "notas": { "type": "string" }
+        }
+      }
+    },
+    "casos_validacion": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entrada", "modo", "estado_esperado"],
+        "properties": {
+          "entrada": { "type": "string" },
+          "modo": {
+            "type": "string",
+            "enum": ["estricto", "flexible"]
+          },
+          "estado_esperado": {
+            "type": "string",
+            "enum": ["valido", "invalido", "posible", "incompleto"]
+          },
+          "normalizado": { "type": "string" },
+          "codigo_error": { "type": "string" },
+          "notas": { "type": "string" }
+        }
+      }
+    }
+  }
+}

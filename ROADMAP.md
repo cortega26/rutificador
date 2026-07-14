@@ -38,49 +38,18 @@ Referencia: `plans/007-segunda-fase-calidad-rendimiento.md`
 
 ---
 
-## v2.0 (2027) — Limpieza mayor y breaking changes
+## v2.0 (Q3 2026) — Limpieza mayor y breaking changes
 
-v2.0 es la versión de ruptura de compatibilidad binaria planificada. **Todas
-las APIs deprecadas desde v1.5.0 se eliminarán.** Se publicará una guía de
-migración completa y un script automatizado de actualización.
+v2.0 es la versión de ruptura de compatibilidad binaria. **Todas las APIs
+deprecadas desde v1.4.4 han sido eliminadas.** La guía de migración completa
+está en `GUIA_MIGRACION_v2.md` y el script automatizado en `scripts/migrate.py`.
 
-### Lo que se elimina
-
-| Símbolo obsoleto | Reemplazo | Introducido | Archivo |
-|---|---|---|---|
-| `RigorValidacion.LEGADO` | `RigorValidacion.FLEXIBLE` | v1.6.0 | `config.py:54` |
-| `RutInvalidoError` | `ErrorValidacionRut` | v1.5.0 | `exceptions.py:109` |
-| `RutError` | `ErrorRut` | v1.5.0 | `exceptions.py:110` |
-| `RutValidationError` | `ErrorValidacionRut` | v1.5.0 | `exceptions.py:111` |
-| `RutFormatError` | `ErrorFormatoRut` | v1.5.0 | `exceptions.py:112` |
-| `RutDigitError` | `ErrorDigitoRut` | v1.5.0 | `exceptions.py:113` |
-| `RutLengthError` | `ErrorLongitudRut` | v1.5.0 | `exceptions.py:114` |
-| `RutProcessingError` | `ErrorProcesamientoRut` | v1.5.0 | `exceptions.py:115` |
-| `RutConfig` | `ConfiguracionRut` | v1.5.0 | `__init__.py:65` |
-| `RutValidator` | `ValidadorRut` | v1.5.0 | `__init__.py:66`, `validador.py:152` |
-| `Validador` (Protocol) | `ValidadorRut` | v1.5.0 | `validador.py:35-50` |
-| `ConsultaRut` | `consulta_rut` | v1.4.4 | `fastapi.py:71` |
-| `ParametroRut` | `parametro_rut` | v1.4.4 | `fastapi.py:76` |
-
-### Lo que cambia
-
-- **`RigorValidacion`**: solo dos modos — `ESTRICTO` y `FLEXIBLE`.
-- **`__init__.py`**: sin `__getattr__` ni `_DEPRECATED_EXPORTS`. API pública
-  explícita y plana.
-- **`exceptions.py`**: sin aliases a nivel de módulo ni `__getattr__`.
-- **`validador.py`**: sin protocolo `Validador` ni `__getattr__`.
-- **Mínimo Python**: se evaluará subir a 3.11 según la adopción en el
-  ecosistema Chileno al momento del release.
-
-### Estrategia de migración
-
-1. **Detección temprana**: desde v1.5.0, todos los símbolos obsoletos emiten
-   `DeprecationWarning`. Los usuarios pueden activar
-   `python -W error::DeprecationWarning` para detectar usos en sus tests.
-2. **Script de migración**: se publicará `rutificador-migrate` como herramienta
-   CLI que parcha imports automáticamente.
-3. **Ventana de transición**: 6 meses entre la publicación de la guía de
-   migración y el release de v2.0.
+- [x] **Eliminación de 12 símbolos obsoletos** — `RutConfig`, `RutValidator`, `Validador` (Protocol), 7 aliases de excepciones, `ConsultaRut`, `ParametroRut`.
+- [x] **Eliminación de `RigorValidacion.LEGADO`** — solo `ESTRICTO` y `FLEXIBLE`.
+- [x] **Script de migración automática** — `scripts/migrate.py` con modos `--check` y `--fix`.
+- [x] **Guía de migración** — `GUIA_MIGRACION_v2.md`.
+- [x] **`mypy --strict` en todo el núcleo** — 10 de 10 módulos.
+- [x] **Módulo de calidad de datos** — `rutificador.calidad_datos` (plan 016).
 
 ---
 
@@ -113,4 +82,4 @@ Rutificador sigue [SemVer](https://semver.org/lang/es/):
 
 ---
 
-*Última actualización: 2026-07-14 · v1.9.0*
+*Última actualización: 2026-07-14 · v2.0.0*

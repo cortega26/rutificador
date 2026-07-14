@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "spec_version": "1.0",
+  "descripcion": "Test vectors canonicos para conformidad de implementaciones de RUT chileno",
+  "algoritmo": {
+    "nombre": "modulo 11 con factores ciclicos",
+    "formula": "dv = 11 - (suma % 11); si dv == 11 -> 0; si dv == 10 -> K"
+  },
+  "configuracion": {
+    "factores_verificacion": [2, 3, 4, 5, 6, 7],
+    "modulo": 11,
+    "max_digitos": 9,
+    "min_digitos": 1
+  },
+  "casos_dv": [
+    {"base": "12345678", "dv_esperado": "5"},
+    {"base": "98765432", "dv_esperado": "5"},
+    {"base": "1", "dv_esperado": "9"},
+    {"base": "0", "dv_esperado": "0"},
+    {"base": "12345670", "dv_esperado": "k"},
+    {"base": "99999999", "dv_esperado": "9"},
+    {"base": "11111111", "dv_esperado": "1"},
+    {"base": "100000000", "dv_esperado": "7"},
+    {"base": "123456789", "dv_esperado": "2"},
+    {"base": "50000000", "dv_esperado": "7"},
+    {"base": "76543210", "dv_esperado": "3"},
+    {"base": "22222222", "dv_esperado": "2"}
+  ],
+  "casos_validacion": [
+    {"entrada": "12.345.678-5", "modo": "estricto", "estado_esperado": "valido", "normalizado": "12345678-5"},
+    {"entrada": "12345678-5", "modo": "estricto", "estado_esperado": "valido", "normalizado": "12345678-5"},
+    {"entrada": "12.345.678-9", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "DV_DISCORDANTE"},
+    {"entrada": "12 345 678-5", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "CARACTERES_INVALIDOS"},
+    {"entrada": "12 345 678-5", "modo": "flexible", "estado_esperado": "valido", "normalizado": "12345678-5"},
+    {"entrada": "1-9", "modo": "flexible", "estado_esperado": "valido", "normalizado": "1-9"},
+    {"entrada": "12345678", "modo": "estricto", "estado_esperado": "posible"},
+    {"entrada": "12345670-k", "modo": "estricto", "estado_esperado": "valido", "normalizado": "12345670-k"},
+    {"entrada": "12345670-K", "modo": "estricto", "estado_esperado": "valido", "normalizado": "12345670-k"},
+    {"entrada": "", "modo": "estricto", "estado_esperado": "incompleto", "codigo_error": "RUT_VACIO"},
+    {"entrada": "abc", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "CARACTERES_INVALIDOS"},
+    {"entrada": "12.34.567-8", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "FORMATO_PUNTOS"},
+    {"entrada": "000012345678-5", "modo": "flexible", "estado_esperado": "valido", "normalizado": "12345678-5"},
+    {"entrada": "0-0", "modo": "estricto", "estado_esperado": "valido", "normalizado": "0-0"},
+    {"entrada": "12-3-4", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "FORMATO_GUION"}
+  ]
+}

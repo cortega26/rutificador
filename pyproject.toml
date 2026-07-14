@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rutificador"
-version = "1.9.0"
+version = "2.0.0"
 description = "Herramientas para validar, calcular y formatear el Rol Único Tributario (RUT) en Chile, con procesamiento por lotes y salida en múltiples formatos."
 authors = ["Carlos Ortega González <carlos@tooltician.com>"]
 license = "MIT"
@@ -91,6 +91,7 @@ id = "nucleo-no-depende-de-contrib"
 name = "El núcleo no puede depender de integraciones opcionales"
 type = "forbidden"
 source_modules = [
+    "rutificador.calidad_datos",
     "rutificador.config",
     "rutificador.errores",
     "rutificador.exceptions",
@@ -116,6 +117,7 @@ id = "nucleo-no-depende-de-cli"
 name = "El núcleo no puede depender de la CLI"
 type = "forbidden"
 source_modules = [
+    "rutificador.calidad_datos",
     "rutificador.config",
     "rutificador.errores",
     "rutificador.exceptions",

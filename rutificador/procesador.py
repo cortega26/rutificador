@@ -125,7 +125,7 @@ class ProcesadorLotesRut:
         self.max_trabajadores: Optional[int] = max_trabajadores
         self.motor_paralelo = motor_paralelo
 
-    def obtener_clase_ejecutor(self):
+    def obtener_clase_ejecutor(self) -> type[ThreadPoolExecutor | ProcessPoolExecutor]:
         if self.motor_paralelo == "process" and sys.platform == "win32":
             logger.warning(
                 "Procesamiento en paralelo con procesos no está soportado en Windows; "
@@ -183,10 +183,12 @@ class ProcesadorLotesRut:
 
         for es_valido, valor in resultados:
             if es_valido:
-                detalle = valor  # RutProcesado
+                assert isinstance(valor, RutProcesado)
+                detalle = valor
                 resultado.ruts_validos.append(detalle.valor)
                 resultado.detalles_validos.append(detalle)
             else:
+                assert isinstance(valor, DetalleError)
                 resultado.ruts_invalidos.append(valor)
 
         resultado.total_procesados = len(ruts)

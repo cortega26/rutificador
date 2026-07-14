@@ -2,7 +2,6 @@
 
 import logging
 import re
-import warnings
 from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
@@ -104,38 +103,6 @@ class ErrorProcesamientoRut(ErrorRut):
     """Se lanza durante operaciones de procesamiento por lotes."""
 
 
-# Alias para compatibilidad retroactiva
-# Mantenidos a nivel de módulo para importaciones internas silenciosas
-RutInvalidoError = ErrorValidacionRut
-RutError = ErrorRut
-RutValidationError = ErrorValidacionRut
-RutFormatError = ErrorFormatoRut
-RutDigitError = ErrorDigitoRut
-RutLengthError = ErrorLongitudRut
-RutProcessingError = ErrorProcesamientoRut
-
-_DEPRECATED_ALIASES: dict[str, str] = {
-    "RutInvalidoError": "ErrorValidacionRut",
-    "RutError": "ErrorRut",
-    "RutValidationError": "ErrorValidacionRut",
-    "RutFormatError": "ErrorFormatoRut",
-    "RutDigitError": "ErrorDigitoRut",
-    "RutLengthError": "ErrorLongitudRut",
-    "RutProcessingError": "ErrorProcesamientoRut",
-}
-
-
-def __getattr__(name: str) -> Any:
-    if name in _DEPRECATED_ALIASES:
-        warnings.warn(
-            f"{name} está obsoleto, usa {_DEPRECATED_ALIASES[name]} en su lugar",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return globals()[name]
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
-
 __all__ = [
     "ErrorRut",
     "ErrorValidacionRut",
@@ -143,12 +110,4 @@ __all__ = [
     "ErrorDigitoRut",
     "ErrorLongitudRut",
     "ErrorProcesamientoRut",
-    "RutInvalidoError",
-    # Alias legados
-    "RutError",
-    "RutValidationError",
-    "RutFormatError",
-    "RutDigitError",
-    "RutLengthError",
-    "RutProcessingError",
 ]

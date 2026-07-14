@@ -1,11 +1,10 @@
 """Rutificador: utilidades para validar y formatear RUTs chilenos."""
 
-import warnings
 from typing import List
 
 from .version import __version__, obtener_informacion_version
 from .config import ConfiguracionRut, RigorValidacion
-from .validador import Validador, ValidadorRut
+from .validador import ValidadorRut
 from .rut import Rut, RutBase, ValidacionResultado, obtener_rut
 from .procesador import (
     DetalleError,
@@ -41,6 +40,14 @@ from .exceptions import (
     ErrorLongitudRut,
     ErrorProcesamientoRut,
 )
+from .calidad_datos import (
+    InformeDuplicados,
+    AuditoriaFormato,
+    PerfilRut,
+    detectar_duplicados,
+    auditar_consistencia_formato,
+    perfilar_ruts,
+)
 
 
 def _registrar_contribs() -> None:
@@ -61,24 +68,6 @@ def _registrar_contribs() -> None:
 
 _registrar_contribs()
 
-_DEPRECATED_EXPORTS: dict[str, str] = {
-    "RutConfig": "ConfiguracionRut",
-    "RutValidator": "ValidadorRut",
-    "RutInvalidoError": "ErrorValidacionRut",
-}
-
-
-def __getattr__(name: str):
-    if name in _DEPRECATED_EXPORTS:
-        warnings.warn(
-            f"{name} está obsoleto, usa {_DEPRECATED_EXPORTS[name]} en su lugar",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return globals()[_DEPRECATED_EXPORTS[name]]
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
-
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
@@ -87,7 +76,6 @@ __all__: List[str] = [
     "RutBase",
     "ValidacionResultado",
     "obtener_rut",
-    "Validador",
     "ValidadorRut",
     "DetalleError",
     "RutProcesado",
@@ -118,5 +106,11 @@ __all__: List[str] = [
     "ErrorProcesamientoRut",
     "ConfiguracionRut",
     "RigorValidacion",
+    "InformeDuplicados",
+    "AuditoriaFormato",
+    "PerfilRut",
+    "detectar_duplicados",
+    "auditar_consistencia_formato",
+    "perfilar_ruts",
     "__version__",
 ]

@@ -124,7 +124,7 @@ class _EmisionJSONL(_EstrategiaEmision):
 class _EmisionCSV(_EstrategiaEmision):
     def __init__(self) -> None:
         super().__init__()
-        self._escritor: Optional[csv.DictWriter] = None
+        self._escritor: Optional[csv.DictWriter[Any]] = None
 
     def iniciar(self) -> None:
         pass
@@ -425,7 +425,8 @@ def _crear_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = _crear_parser()
     args = parser.parse_args(argv)
-    return args.func(args)
+    result = args.func(args)
+    return int(result)
 
 
 if __name__ == "__main__":

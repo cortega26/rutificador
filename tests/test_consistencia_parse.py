@@ -1,13 +1,9 @@
-"""Tests de caracterización: comportamiento actual del constructor vs Rut.parse (plan 002).
-Incluye tests de deprecación de RigorValidacion.LEGADO (plan 005).
+"""Tests de caracterizacion: comportamiento actual del constructor vs Rut.parse (plan 002).
 
-Estos tests fijan el comportamiento OBSERVADO en commit 278425b. No representan
-un ideal; documentan la realidad actual para detectar cambios deliberados y
-servir de red de seguridad antes de modificar las rutas de validación.
-"""
+Estos tests fijan el comportamiento OBSERVADO en commit 278425b."""
+
 
 import logging
-import warnings
 
 import pytest
 
@@ -80,33 +76,3 @@ def test_contrato_builder_vs_clasificador() -> None:
         w.codigo == "NORMALIZACION_ESPACIOS" for w in resultado_flexible.advertencias
     )
 
-
-# ---------------------------------------------------------------------------
-# Tests de deprecación de RigorValidacion.LEGADO (plan 005)
-# ---------------------------------------------------------------------------
-
-_MSG_LEGADO = "RigorValidacion.LEGADO está obsoleto y se eliminará en v2.0."
-
-
-def test_legado_deprecado_en_validador_rut() -> None:
-    with pytest.warns(DeprecationWarning, match=_MSG_LEGADO):
-        ValidadorRut(modo=RigorValidacion.LEGADO)
-
-
-def test_legado_deprecado_en_parse() -> None:
-    with pytest.warns(DeprecationWarning, match=_MSG_LEGADO):
-        Rut.parse("12345678-5", modo=RigorValidacion.LEGADO)
-
-
-def test_legado_deprecado_en_normalizar() -> None:
-    with pytest.warns(DeprecationWarning, match=_MSG_LEGADO):
-        Rut.normalizar("12345678-5", modo=RigorValidacion.LEGADO)
-
-
-def test_legado_solo_emite_una_advertencia_por_llamada() -> None:
-    """parse() llama a normalizar() internamente; la advertencia debe aparecer una vez."""
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        Rut.parse("12345678-5", modo=RigorValidacion.LEGADO)
-    legado_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
-    assert len(legado_warnings) == 1

@@ -1,15 +1,13 @@
 # SECURITY-CRITICAL
-"""Validación de formato y dígito verificador de RUTs.
+"""Validacion de formato y digito verificador de RUTs.
 
-Proporciona ``ValidadorRut`` con tres modos de rigor (``ESTRICTO``,
-``FLEXIBLE``, ``LEGADO``) y el protocolo ``Validador`` para implementar
-validadores personalizados.
+Proporciona ``ValidadorRut`` con dos modos de rigor (``ESTRICTO``,
+``FLEXIBLE``) para validar RUTs chilenos.
 """
 
 import logging
 import re
-import warnings
-from typing import Any, Optional, Protocol, runtime_checkable, Match
+from typing import Optional, Match
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut, RigorValidacion
 from .exceptions import (
@@ -32,24 +30,6 @@ logger = logging.getLogger(__name__)
 RUT_REGEX = re.compile(r"^((?:\d{1,3}(?:\.\d{3})*)|\d+)(-([0-9kK]))?$")
 
 
-@runtime_checkable
-class Validador(Protocol):  # pylint: disable=too-few-public-methods
-    """Protocolo para validadores de RUT.
-
-    .. deprecated::
-        Use :class:`ValidadorRut` en su lugar. ``Validador`` se eliminará en v2.0.
-    """
-
-    def validar(self, cadena_rut: str) -> bool:  # pragma: no cover - protocolo
-        """Valida una cadena de RUT."""
-        warnings.warn(
-            "Validador está obsoleto, usa ValidadorRut en su lugar",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        raise NotImplementedError
-
-
 class ValidadorRut:
     """Validador de RUT con niveles de rigurosidad configurables."""
 
@@ -64,16 +44,7 @@ class ValidadorRut:
             configuracion: Parámetros de validación (factores, módulo,
                 dígitos mínimo/máximo).
             modo: Nivel de rigurosidad (``ESTRICTO`` o ``FLEXIBLE``).
-                ``LEGADO`` está obsoleto y se eliminará en v2.0; usa
-                ``FLEXIBLE`` en su lugar.
         """
-        if modo == RigorValidacion.LEGADO:
-            warnings.warn(
-                "RigorValidacion.LEGADO está obsoleto y se eliminará en v2.0. "
-                "Usa RigorValidacion.FLEXIBLE en su lugar.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
         self.configuracion = configuracion
         self.modo = modo
         logger.debug("ValidadorRut inicializado con modo: %s", modo.value)
@@ -145,27 +116,7 @@ class ValidadorRut:
         )
 
 
-# Alias para compatibilidad retroactiva
-RutValidator = ValidadorRut
-
-_DEPRECATED_ALIASES: dict[str, str] = {
-    "RutValidator": "ValidadorRut",
-}
-
-
-def __getattr__(name: str) -> Any:
-    if name in _DEPRECATED_ALIASES:
-        warnings.warn(
-            f"{name} está obsoleto, usa {_DEPRECATED_ALIASES[name]} en su lugar",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return globals()[name]
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
 
 __all__ = [
-    "Validador",
     "ValidadorRut",
-    "RutValidator",
 ]
