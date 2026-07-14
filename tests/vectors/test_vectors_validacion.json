@@ -1,0 +1,27 @@
+{
+  "descripcion": "Test vectors canónicos para validación completa de RUT",
+  "casos": [
+    {"entrada": "12.345.678-5", "modo": "estricto", "estado_esperado": "valido", "normalizado": "12345678-5"},
+    {"entrada": "12345678-5", "modo": "estricto", "estado_esperado": "valido", "normalizado": "12345678-5"},
+    {"entrada": "12.345.678-9", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "DV_DISCORDANTE"},
+    {"entrada": "12 345 678-5", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "CARACTERES_INVALIDOS"},
+    {"entrada": "12 345 678-5", "modo": "flexible", "estado_esperado": "valido", "normalizado": "12345678-5"},
+    {"entrada": "1-9", "modo": "flexible", "estado_esperado": "valido", "normalizado": "1-9"},
+    {"entrada": "12345678", "modo": "estricto", "estado_esperado": "posible"},
+    {"entrada": "12345670-k", "modo": "estricto", "estado_esperado": "valido", "normalizado": "12345670-k"},
+    {"entrada": "12345670-K", "modo": "estricto", "estado_esperado": "valido", "normalizado": "12345670-k"},
+    {"entrada": "", "modo": "estricto", "estado_esperado": "incompleto", "codigo_error": "RUT_VACIO"},
+    {"entrada": "abc", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "CARACTERES_INVALIDOS"},
+    {"entrada": "12.34.567-8", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "FORMATO_PUNTOS"},
+    {"entrada": "000012345678-5", "modo": "flexible", "estado_esperado": "valido", "normalizado": "12345678-5"},
+    {"entrada": "0-0", "modo": "estricto", "estado_esperado": "valido", "normalizado": "0-0"},
+    {"entrada": "12-3-4", "modo": "estricto", "estado_esperado": "invalido", "codigo_error": "FORMATO_GUION"}
+  ],
+  "notas": [
+    "En modo ESTRICTO, los espacios internos producen CARACTERES_INVALIDOS.",
+    "En modo FLEXIBLE, los espacios se normalizan con advertencia NORMALIZACION_ESPACIOS.",
+    "Una base sin DV (ej. '12345678') tiene estado 'posible', no 'valido'.",
+    "Los puntos deben estar en grupos de 3 dígitos exactos; '12.34.567-8' es inválido.",
+    "El DV 'K' mayúscula se normaliza a 'k' minúscula."
+  ]
+}

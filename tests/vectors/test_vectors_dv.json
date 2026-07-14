@@ -1,0 +1,32 @@
+{
+  "descripcion": "Test vectors canónicos para cálculo de dígito verificador RUT chileno",
+  "algoritmo": "módulo 11, factores (2,3,4,5,6,7) cíclicos de derecha a izquierda",
+  "formula": "dv = 11 - (suma % 11); si dv == 11 → 0; si dv == 10 → K",
+  "configuracion": {
+    "factores_verificacion": [2, 3, 4, 5, 6, 7],
+    "modulo": 11,
+    "max_digitos": 9,
+    "min_digitos": 1
+  },
+  "casos": [
+    {"base": "12345678", "dv_esperado": "5"},
+    {"base": "98765432", "dv_esperado": "5"},
+    {"base": "1", "dv_esperado": "9"},
+    {"base": "0", "dv_esperado": "0"},
+    {"base": "12345670", "dv_esperado": "k"},
+    {"base": "99999999", "dv_esperado": "9"},
+    {"base": "11111111", "dv_esperado": "1"},
+    {"base": "100000000", "dv_esperado": "7"},
+    {"base": "123456789", "dv_esperado": "2"},
+    {"base": "50000000", "dv_esperado": "7"},
+    {"base": "76543210", "dv_esperado": "3"},
+    {"base": "22222222", "dv_esperado": "2"}
+  ],
+  "notas": [
+    "El caso '12345670' produce DV='k' (10 → K).",
+    "La base '0' es válida (representa RUT 0-0).",
+    "Los factores se aplican de derecha a izquierda: el dígito más a la derecha se multiplica por 2, el siguiente por 3, etc.",
+    "El caso '100000000' prueba 9 dígitos (límite máximo).",
+    "El caso '1' prueba la base mínima de 1 dígito."
+  ]
+}
