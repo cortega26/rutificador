@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Dict, Literal, Optional, TypedDict
 
 Severidad = Literal["error", "advertencia"]
+Idioma = Literal["es", "en"]
 
 
 class EntradaCatalogo(TypedDict):
@@ -18,7 +19,7 @@ class EntradaCatalogo(TypedDict):
     recuperable: bool
 
 
-CATALOGO_ERRORES: Dict[str, EntradaCatalogo] = {
+_CATALOGO_ES: Dict[str, EntradaCatalogo] = {
     "ERROR_TIPO": {
         "mensaje": "El RUT debe ser cadena o entero",
         "hint": "Convierta el valor a str o int",
@@ -117,6 +118,34 @@ CATALOGO_ERRORES: Dict[str, EntradaCatalogo] = {
     },
 }
 
+_CATALOGO_EN: Dict[str, EntradaCatalogo] = {
+    "ERROR_TIPO": {
+        "mensaje": "RUT must be a string or integer",
+        "hint": "Convert the value to str or int",
+        "severidad": "error",
+        "recuperable": False,
+    },
+    "RUT_VACIO": {
+        "mensaje": "RUT cannot be empty",
+        "hint": "Enter at least one digit",
+        "severidad": "error",
+        "recuperable": True,
+    },
+    "DV_DISCORDANTE": {
+        "mensaje": "Check digit does not match",
+        "hint": "Correct the check digit",
+        "severidad": "error",
+        "recuperable": False,
+    },
+}
+
+_LOCALE_CATALOGS: Dict[Idioma, Dict[str, EntradaCatalogo]] = {
+    "es": _CATALOGO_ES,
+    "en": _CATALOGO_EN,
+}
+
+CATALOGO_ERRORES = _CATALOGO_ES
+
 
 @dataclass(frozen=True)
 class DetalleError:
@@ -159,10 +188,28 @@ def crear_detalle_error(
     recuperable: Optional[bool] = None,
     rut: Optional[str] = None,
     duracion: float = 0.0,
+    idioma: Idioma = "es",
 ) -> DetalleError:
-    """Crea un DetalleError a partir del catálogo o con overrides."""
+    """Crea un DetalleError a partir del catálogo o con overrides.
 
-    entrada = CATALOGO_ERRORES.get(codigo)
+    Args:
+        codigo: Código de error del catálogo.
+        mensaje: Override del mensaje.
+        hint: Override del hint.
+        severidad: Override de la severidad.
+        recuperable: Override de recuperabilidad.
+        rut: RUT asociado al error.
+        duracion: Tiempo de procesamiento.
+        idioma: Idioma para los mensajes (``"es"`` o ``"en"``).
+            Si la entrada no existe en el idioma solicitado, se usa
+            el catálogo en español como fallback.
+    """
+
+    catalogo = _LOCALE_CATALOGS.get(idioma, _CATALOGO_ES)
+    entrada = catalogo.get(codigo)
+    if entrada is None and idioma != "es":
+        entrada = _CATALOGO_ES.get(codigo)
+
     mensaje_final = mensaje or (entrada["mensaje"] if entrada else "Error desconocido")
     hint_final = hint or (
         entrada["hint"] if entrada else "Consulte el catálogo de errores"
@@ -187,6 +234,7 @@ def crear_detalle_error(
 __all__ = [
     "DetalleError",
     "Severidad",
+    "Idioma",
     "CATALOGO_ERRORES",
     "crear_detalle_error",
 ]
