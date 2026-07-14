@@ -86,6 +86,7 @@ jobs:
 
     - name: Tipos (mypy)
       run: |
+        python -m mypy --strict rutificador/errores.py rutificador/version.py rutificador/config.py rutificador/utils.py rutificador/validador.py
         python -m mypy rutificador/ --ignore-missing-imports
 
     - name: Coherencia de dependencias (deptry)

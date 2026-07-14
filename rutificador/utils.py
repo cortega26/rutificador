@@ -76,7 +76,7 @@ def asegurar_cadena_no_vacia(valor: Any, nombre: str) -> str:
         raise ErrorValidacionRut(
             f"{nombre} no puede estar vacío", codigo_error="CADENA_VACIA"
         )
-    return valor
+    return valor  # type: ignore[no-any-return]  # str tras isinstance + strip
 
 
 def asegurar_booleano(valor: Any, nombre: str) -> bool:

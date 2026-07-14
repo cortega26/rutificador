@@ -9,7 +9,7 @@ validadores personalizados.
 import logging
 import re
 import warnings
-from typing import Optional, Protocol, runtime_checkable, Match
+from typing import Any, Optional, Protocol, runtime_checkable, Match
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut, RigorValidacion
 from .exceptions import (
@@ -153,7 +153,7 @@ _DEPRECATED_ALIASES: dict[str, str] = {
 }
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     if name in _DEPRECATED_ALIASES:
         warnings.warn(
             f"{name} está obsoleto, usa {_DEPRECATED_ALIASES[name]} en su lugar",
