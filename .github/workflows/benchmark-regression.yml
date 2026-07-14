@@ -1,0 +1,75 @@
+name: Regresion de rendimiento
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'rutificador/**'
+      - 'tests/benchmarks/**'
+      - 'scripts/compare_benchmarks.py'
+
+jobs:
+  benchmark-compare:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e .
+
+      - name: Ejecutar benchmarks en HEAD
+        run: |
+          python -m pytest tests/benchmarks/ tests/test_benchmark.py \
+            --benchmark-only \
+            --benchmark-json=bench-head.json \
+            --benchmark-min-rounds=3 \
+            --benchmark-max-time=0.5 \
+            -q
+
+      - name: Checkout base y ejecutar benchmarks
+        run: |
+          git stash
+          git checkout ${{ github.event.pull_request.base.sha }}
+          python -m pip install -e .
+          python -m pytest tests/benchmarks/ tests/test_benchmark.py \
+            --benchmark-only \
+            --benchmark-json=bench-base.json \
+            --benchmark-min-rounds=3 \
+            --benchmark-max-time=0.5 \
+            -q
+          git checkout -
+          git stash pop || true
+
+      - name: Comparar benchmarks
+        id: compare
+        run: |
+          python scripts/compare_benchmarks.py bench-base.json bench-head.json --threshold 20
+        continue-on-error: true
+
+      - name: Extraer tabla de comparacion
+        if: always()
+        run: |
+          python scripts/compare_benchmarks.py bench-base.json bench-head.json --threshold 20 > benchmark-report.md
+
+      - name: Subir reporte como artefacto
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-comparison
+          path: |
+            bench-base.json
+            bench-head.json
+            benchmark-report.md

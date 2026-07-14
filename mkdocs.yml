@@ -1,0 +1,87 @@
+site_name: Rutificador
+site_description: Biblioteca Python para validar, calcular y formatear el Rol Único Tributario (RUT) chileno
+site_author: Carlos Ortega González
+repo_url: https://github.com/cortega26/rutificador
+repo_name: cortega26/rutificador
+edit_uri: edit/master/docs/
+copyright: MIT &copy; Carlos Ortega González
+
+theme:
+  name: material
+  language: es
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a modo claro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search:
+      lang: es
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [rutificador]
+          options:
+            show_source: true
+            show_root_heading: true
+            heading_level: 2
+            docstring_style: google
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
+            line_length: 80
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Inicio: index.md
+  - Guía de Uso:
+      - Instalación: guia/instalacion.md
+      - Uso Básico: guia/uso-basico.md
+      - Procesamiento por Lotes: guia/lotes.md
+      - CLI: guia/cli.md
+      - Integraciones: guia/integraciones.md
+  - API de Referencia:
+      - Rut: api/rut.md
+      - Validador: api/validador.md
+      - Procesador: api/procesador.md
+      - Formatter: api/formatter.md
+      - Sugestor: api/sugestor.md
+      - Configuración: api/config.md
+      - Errores: api/errores.md
+      - Excepciones: api/exceptions.md
+  - Changelog: changelog.md
+  - Roadmap: roadmap.md

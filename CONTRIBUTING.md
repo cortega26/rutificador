@@ -49,7 +49,17 @@ ruff format . --check
 
 # Seguridad
 bandit -r rutificador/
+
+# Límites arquitectónicos
+lint-imports
+
+# Documentación
+mkdocs build --strict
+
+# Benchmarks de rendimiento
+pytest tests/benchmarks/ tests/test_benchmark.py --benchmark-only
 ```
+
 
 ## Estilo de Código
 

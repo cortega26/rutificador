@@ -53,6 +53,10 @@ deptry = "0.25.1"
 cyclonedx-bom = "7.3.0"
 pre-commit = "4.6.0"
 httpx2 = "2.4.0"
+import-linter = ">=2.13"
+mkdocs = ">=1.6.1"
+mkdocs-material = ">=9.5"
+mkdocstrings = { version = ">=1.0", extras = ["python"] }
 
 [tool.poetry.scripts]
 rutificador = "rutificador.cli:main"
@@ -63,6 +67,7 @@ testpaths = ["tests"]
 # sin instalarlo. Esto asegura que ejecutar `pytest` desde la raiz del proyecto
 # funcione como se documenta en el README.
 addopts = ""
+norecursedirs = ["mutants", ".venv", ".benchmarks", ".hypothesis", "dist"]
 
 [tool.deptry]
 known_first_party = ["rutificador"]
@@ -77,3 +82,66 @@ DEP003 = ["pydantic_core", "starlette"]
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.importlinter]
+root_packages = ["rutificador"]
+
+[[tool.importlinter.contracts]]
+id = "nucleo-no-depende-de-contrib"
+name = "El núcleo no puede depender de integraciones opcionales"
+type = "forbidden"
+source_modules = [
+    "rutificador.config",
+    "rutificador.errores",
+    "rutificador.exceptions",
+    "rutificador.utils",
+    "rutificador.validador",
+    "rutificador.rut",
+    "rutificador.formatter",
+    "rutificador.procesador",
+    "rutificador.sugestor",
+    "rutificador.version",
+]
+forbidden_modules = [
+    "rutificador.contrib",
+    "rutificador.contrib.pandas",
+    "rutificador.contrib.polars",
+    "rutificador.contrib.fastapi",
+    "rutificador.contrib.pydantic",
+    "rutificador.contrib._formato_comun",
+]
+
+[[tool.importlinter.contracts]]
+id = "nucleo-no-depende-de-cli"
+name = "El núcleo no puede depender de la CLI"
+type = "forbidden"
+source_modules = [
+    "rutificador.config",
+    "rutificador.errores",
+    "rutificador.exceptions",
+    "rutificador.utils",
+    "rutificador.validador",
+    "rutificador.rut",
+    "rutificador.formatter",
+    "rutificador.procesador",
+    "rutificador.sugestor",
+    "rutificador.version",
+]
+forbidden_modules = [
+    "rutificador.cli",
+]
+
+[[tool.importlinter.contracts]]
+id = "contrib-no-depende-entre-si"
+name = "Los módulos contrib no dependen entre sí"
+type = "independence"
+modules = [
+    "rutificador.contrib.pandas",
+    "rutificador.contrib.polars",
+    "rutificador.contrib.fastapi",
+    "rutificador.contrib.pydantic",
+]
+ignore_imports = [
+    "rutificador.contrib.pandas -> rutificador.contrib._formato_comun",
+    "rutificador.contrib.polars -> rutificador.contrib._formato_comun",
+]

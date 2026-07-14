@@ -75,3 +75,5 @@ skills-lock.json
 
 # Respaldo de merges
 *.orig
+site/
+uv.lock

@@ -23,7 +23,7 @@ commands run inside the repo-root `.venv` (or after
 | 004 | Remove unreachable fallback in `formatear_lista_ruts` | P3 | S | — | DONE |
 | 005 | Design: coherent `RigorValidacion` modes (incl. LEGADO/F4) | P3 | M | 002 | DONE — LEGADO deprecado (DeprecationWarning → v2.0); FLEXIBLE definido |
 | 006 | Spike: unify on a single RUT parse core | P3 | L | 002 | REJECTED — contrato builder/classifier ya documentado (003); fuzz encontró 0 divergencia de DV; riesgo > beneficio en v1.x. Ver 006-SPIKE-NOTES.md |
-| 007 | Evaluate second-phase quality and performance tooling | P3 | L | — | TODO |
+| 007 | Evaluate second-phase quality and performance tooling | P3 | L | — | DONE (2026-07-14) — mutmut REJECTED (incompatible Python 3.12), import-linter ADOPTED (3/3 KEPT), pyperf REJECTED (pytest-benchmark superior), uv REJECTED (Poetry lockfile incompatible) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) |
 REJECTED (one-line rationale).

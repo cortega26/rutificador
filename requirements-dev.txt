@@ -14,5 +14,9 @@ hypothesis
 fastapi
 httpx
 httpx2==2.4.0
+import-linter
+mkdocs>=1.6.1
+mkdocs-material>=9.5
+mkdocstrings[python]>=1.0
 pandas
 polars
