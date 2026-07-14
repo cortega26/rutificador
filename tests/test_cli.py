@@ -1,7 +1,7 @@
 """Pruebas para la interfaz de línea de comandos."""
 
 import json
-
+import os
 import subprocess
 import sys
 import tracemalloc
@@ -135,3 +135,58 @@ def test_cli_paralelo():
     resultado = ejecutar_cli("validar", "--paralelo", entrada=entrada)
     assert resultado.returncode == 0
     assert "12345678-5" in resultado.stdout
+
+
+def test_enmascarar_token_basico():
+    entrada = "12.345.678-5\n"
+    resultado = ejecutar_cli(
+        "enmascarar", "--token", "--clave", "test-key", entrada=entrada
+    )
+    assert resultado.returncode == 0
+    assert resultado.stdout.startswith("tok_")
+
+
+def test_enmascarar_token_sin_clave():
+    entrada = "12.345.678-5\n"
+    resultado = ejecutar_cli("enmascarar", "--token", entrada=entrada)
+    assert resultado.returncode == 1
+    assert "Error" in resultado.stderr
+
+
+def test_enmascarar_token_con_variable_entorno():
+    entrada = "12.345.678-5\n"
+    env = os.environ.copy()
+    env["RUTIFICADOR_TOKEN_KEY"] = "mi-clave-env"
+    comando = [sys.executable, "-m", "rutificador.cli", "enmascarar", "--token"]
+    resultado = subprocess.run(
+        comando,
+        input=entrada,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=15,
+        env=env,
+    )
+    assert resultado.returncode == 0
+    assert resultado.stdout.startswith("tok_")
+
+
+def test_enmascarar_token_determinista():
+    entrada = "12.345.678-5\n"
+    res1 = ejecutar_cli("enmascarar", "--token", "--clave", "same-key", entrada=entrada)
+    res2 = ejecutar_cli("enmascarar", "--token", "--clave", "same-key", entrada=entrada)
+    assert res1.stdout == res2.stdout
+
+
+def test_enmascarar_token_rut_invalido():
+    entrada = "invalido\n"
+    resultado = ejecutar_cli("enmascarar", "--token", "--clave", "k", entrada=entrada)
+    assert resultado.returncode == 1
+    assert "[ERROR]" in resultado.stderr
+
+
+def test_enmascarar_sin_token_sigue_funcionando():
+    entrada = "12345678-5\n"
+    resultado = ejecutar_cli("enmascarar", entrada=entrada)
+    assert resultado.returncode == 0
+    assert "****5678-5" in resultado.stdout

@@ -8,11 +8,12 @@ CSV, XML), procesamiento en paralelo y corrección automática de errores.
 import argparse
 import csv
 import json
+import os
 import sys
 import time
 import xml.etree.ElementTree as ET  # nosec B405  # Solo genera XML de salida, no parsea entrada
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Literal, Optional, Union
 
 from .procesador import (
     DetalleError,
@@ -280,6 +281,19 @@ def _comando_formatear(args: argparse.Namespace) -> int:
 
 def _comando_enmascarar(args: argparse.Namespace) -> int:
     codigo_salida = 0
+    modo: Literal["mascarada", "token"] = "token" if args.token else "mascarada"
+    clave: Optional[str] = None
+
+    if modo == "token":
+        clave = args.clave or os.environ.get("RUTIFICADOR_TOKEN_KEY")
+        if not clave:
+            print(
+                "Error: --token requiere --clave o la variable de entorno "
+                "RUTIFICADOR_TOKEN_KEY",
+                file=sys.stderr,
+            )
+            return 1
+
     ruts = _leer_ruts(args.archivo)
     for rut_str in ruts:
         try:
@@ -287,6 +301,8 @@ def _comando_enmascarar(args: argparse.Namespace) -> int:
                 rut_str,
                 mantener=args.mantener,
                 caracter=args.caracter,
+                modo=modo,
+                clave=clave,
                 separador_miles=args.separador_miles,
                 mayusculas=args.mayusculas,
             )
@@ -381,6 +397,19 @@ def _crear_parser() -> argparse.ArgumentParser:
         "--mayusculas",
         action="store_true",
         help="Muestra el DV en mayúscula",
+    )
+    parser_enmascarar.add_argument(
+        "--token",
+        action="store_true",
+        help="Tokeniza los RUTs con HMAC-SHA256 en vez de enmascarar",
+    )
+    parser_enmascarar.add_argument(
+        "--clave",
+        default=None,
+        help=(
+            "Clave para tokenización. Si no se proporciona, se usa la variable "
+            "de entorno RUTIFICADOR_TOKEN_KEY"
+        ),
     )
     parser_enmascarar.set_defaults(func=_comando_enmascarar)
 
