@@ -33,10 +33,10 @@ the repo-root `.venv` (or after
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | 008 | Actualizar ROADMAP — cerrar v1.7/v1.8, definir v1.9 | P1 | S | — | DONE |
-| 009 | Rollout progresivo de `mypy --strict` en módulos del núcleo | P2 | M | — | TODO |
-| 010 | Paridad CLI — exponer tokenización en `enmascarar` | P2 | S | — | TODO |
-| 011 | Spec formal de reglas de validación RUT con test vectors | P2 | M | — | TODO |
-| 012 | Infraestructura de i18n para mensajes de error | P2 | S–M | — | TODO |
+| 009 | Rollout progresivo de `mypy --strict` en módulos del núcleo | P2 | M | — | DONE |
+| 010 | Paridad CLI — exponer tokenización en `enmascarar` | P2 | S | — | DONE |
+| 011 | Spec formal de reglas de validación RUT con test vectors | P2 | M | — | DONE |
+| 012 | Infraestructura de i18n para mensajes de error | P2 | S–M | — | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) |
 REJECTED (one-line rationale).
