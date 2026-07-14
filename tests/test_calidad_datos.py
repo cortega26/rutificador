@@ -16,22 +16,16 @@ class TestDetectarDuplicados:
         assert r.duplicados == []
 
     def test_duplicado_exacto(self):
-        r = detectar_duplicados(
-            ["12.345.678-5", "12.345.678-5", "12345670-k"]
-        )
+        r = detectar_duplicados(["12.345.678-5", "12.345.678-5", "12345670-k"])
         assert r.total_unicos == 2
         assert r.total_duplicados == 2
 
     def test_duplicado_normalizado(self):
-        r = detectar_duplicados(
-            ["12.345.678-5", "12345678-5", "12345670-k"]
-        )
+        r = detectar_duplicados(["12.345.678-5", "12345678-5", "12345670-k"])
         assert r.total_unicos == 2
 
     def test_sensible_a_formato_no_detecta_dup_normalizado(self):
-        r = detectar_duplicados(
-            ["12.345.678-5", "12345678-5"], sensible_a_formato=True
-        )
+        r = detectar_duplicados(["12.345.678-5", "12345678-5"], sensible_a_formato=True)
         assert r.total_unicos == 2
 
     def test_lista_vacia(self):
@@ -75,9 +69,7 @@ class TestAuditarConsistenciaFormato:
         assert a.con_espacios == 1
 
     def test_formatos_distintos_tracking(self):
-        a = auditar_consistencia_formato(
-            ["12.345.678-5", "12345678-k", "12345670-K"]
-        )
+        a = auditar_consistencia_formato(["12.345.678-5", "12345678-k", "12345670-K"])
         assert len(a.formatos_distintos) >= 2
 
 

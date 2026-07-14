@@ -4,8 +4,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 SCRIPTS_DIR = Path(__file__).parent.parent / "scripts"
 
 
@@ -55,7 +53,7 @@ class TestMigrateScan:
 
         result = run_migrate("--check", str(tmp_path))
         lines = result.stdout.strip().split("\n")
-        assert len([l for l in lines if "FOUND" in l]) == 3
+        assert len([line for line in lines if "FOUND" in line]) == 3
 
     def test_ignora_dirs_excluidos(self, tmp_path):
         (tmp_path / ".venv").mkdir()

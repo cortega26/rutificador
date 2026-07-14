@@ -28,10 +28,9 @@ def vectores_conformidad():
 class TestVectoresDigitoVerificador:
     @pytest.mark.parametrize(
         "caso",
-        json.loads(
-            (VECTORS_DIR / "conformance.json")
-            .read_text(encoding="utf-8")
-        )["casos_dv"],
+        json.loads((VECTORS_DIR / "conformance.json").read_text(encoding="utf-8"))[
+            "casos_dv"
+        ],
         ids=lambda c: f"base={c['base']}",
     )
     def test_dv(self, caso):
@@ -41,10 +40,9 @@ class TestVectoresDigitoVerificador:
 class TestVectoresValidacion:
     @pytest.mark.parametrize(
         "caso",
-        json.loads(
-            (VECTORS_DIR / "conformance.json")
-            .read_text(encoding="utf-8")
-        )["casos_validacion"],
+        json.loads((VECTORS_DIR / "conformance.json").read_text(encoding="utf-8"))[
+            "casos_validacion"
+        ],
         ids=lambda c: f"{c['entrada'][:20]} [{c['modo']}]",
     )
     def test_validacion(self, caso):

@@ -116,7 +116,6 @@ class ValidadorRut:
         )
 
 
-
 __all__ = [
     "ValidadorRut",
 ]

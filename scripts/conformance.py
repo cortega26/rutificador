@@ -14,7 +14,6 @@ Exit code 0 = todos los casos pasan. Exit code 1 = hay fallos.
 import json
 import sys
 from pathlib import Path
-from typing import Any
 
 
 # --- Seccion de adaptacion para implementaciones externas ---
@@ -112,7 +111,7 @@ def run_conformance(vectors_path: Path) -> int:
             for d in detalles:
                 print(f"         -> {d}")
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"Resultado: {total - failures}/{total} pasaron")
     if failures:
         print(f"  {failures} FALLOS")
@@ -120,7 +119,12 @@ def run_conformance(vectors_path: Path) -> int:
 
 
 def main():
-    default = Path(__file__).resolve().parent.parent / "tests" / "vectors" / "conformance.json"
+    default = (
+        Path(__file__).resolve().parent.parent
+        / "tests"
+        / "vectors"
+        / "conformance.json"
+    )
     vectors_path = default
     if len(sys.argv) > 2 and sys.argv[1] == "--vectors":
         vectors_path = Path(sys.argv[2])

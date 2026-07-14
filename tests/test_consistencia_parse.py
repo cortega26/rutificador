@@ -2,14 +2,12 @@
 
 Estos tests fijan el comportamiento OBSERVADO en commit 278425b."""
 
-
 import logging
 
 import pytest
 
 from rutificador.config import RigorValidacion
 from rutificador.rut import Rut
-from rutificador.validador import ValidadorRut
 
 logging.disable(logging.CRITICAL)
 
@@ -75,4 +73,3 @@ def test_contrato_builder_vs_clasificador() -> None:
     assert any(
         w.codigo == "NORMALIZACION_ESPACIOS" for w in resultado_flexible.advertencias
     )
-

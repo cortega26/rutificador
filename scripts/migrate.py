@@ -41,10 +41,24 @@ REPLACEMENTS: dict[str, str] = {
     "ParametroRut": "parametro_rut",
 }
 
-EXCLUDE_DIRS = {".git", ".venv", "__pycache__", ".mypy_cache", ".ruff_cache",
-                ".pytest_cache", "node_modules", "dist", "site", "mutants",
-                ".benchmarks", ".hypothesis", ".grimp_cache", ".import_linter_cache",
-                ".codegraph", ".coverage"}
+EXCLUDE_DIRS = {
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".pytest_cache",
+    "node_modules",
+    "dist",
+    "site",
+    "mutants",
+    ".benchmarks",
+    ".hypothesis",
+    ".grimp_cache",
+    ".import_linter_cache",
+    ".codegraph",
+    ".coverage",
+}
 
 
 class ImportRewriter(ast.NodeTransformer):
@@ -60,11 +74,13 @@ class ImportRewriter(ast.NodeTransformer):
         for alias in node.names:
             if alias.name in REPLACEMENTS:
                 new_name = REPLACEMENTS[alias.name]
-                self.changes.append((
-                    node.lineno or 0,
-                    alias.name,
-                    new_name,
-                ))
+                self.changes.append(
+                    (
+                        node.lineno or 0,
+                        alias.name,
+                        new_name,
+                    )
+                )
                 new_names.append(ast.alias(name=new_name, asname=alias.asname))
             else:
                 new_names.append(alias)
@@ -74,11 +90,13 @@ class ImportRewriter(ast.NodeTransformer):
     def visit_Name(self, node: ast.Name) -> ast.AST:
         """Renombra usos de simbolos obsoletos en el cuerpo del codigo."""
         if node.id in REPLACEMENTS:
-            self.changes.append((
-                node.lineno or 0,
-                node.id,
-                REPLACEMENTS[node.id],
-            ))
+            self.changes.append(
+                (
+                    node.lineno or 0,
+                    node.id,
+                    REPLACEMENTS[node.id],
+                )
+            )
             return ast.Name(id=REPLACEMENTS[node.id], ctx=node.ctx)
         return node
 
@@ -96,12 +114,14 @@ def scan_file(path: Path) -> list[dict]:
 
     results = []
     for lineno, old, new in rewriter.changes:
-        results.append({
-            "file": str(path),
-            "line": lineno,
-            "old": old,
-            "new": new,
-        })
+        results.append(
+            {
+                "file": str(path),
+                "line": lineno,
+                "old": old,
+                "new": new,
+            }
+        )
     return results
 
 
@@ -142,20 +162,16 @@ def main():
         description="Migra imports de rutificador v1.x a v2.0"
     )
     parser.add_argument(
-        "path", nargs="?", default=".",
-        help="Directorio o archivo a procesar"
+        "path", nargs="?", default=".", help="Directorio o archivo a procesar"
     )
     parser.add_argument(
-        "--check", action="store_true",
-        help="Solo escanea, no modifica archivos"
+        "--check", action="store_true", help="Solo escanea, no modifica archivos"
     )
+    parser.add_argument("--fix", action="store_true", help="Aplica los reemplazos")
     parser.add_argument(
-        "--fix", action="store_true",
-        help="Aplica los reemplazos"
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true",
-        help="Muestra cambios sin escribir (requiere --fix)"
+        "--dry-run",
+        action="store_true",
+        help="Muestra cambios sin escribir (requiere --fix)",
     )
     args = parser.parse_args()
 

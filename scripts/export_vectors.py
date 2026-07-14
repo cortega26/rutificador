@@ -17,9 +17,7 @@ VECTORS_DIR = Path(__file__).resolve().parent.parent / "tests" / "vectors"
 
 def export_json(vectors, output_dir):
     path = output_dir / "conformance.json"
-    path.write_text(
-        json.dumps(vectors, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    path.write_text(json.dumps(vectors, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"  JSON -> {path}")
 
 
