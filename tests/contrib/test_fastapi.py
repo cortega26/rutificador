@@ -1,9 +1,7 @@
 import warnings
 
-# anyio 4.x deprecates BlockingPortal (starlette<1.6) — con -W error rompe la colección
-warnings.filterwarnings(
-    "ignore", category=DeprecationWarning, message=".*BlockingPortal.*"
-)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient

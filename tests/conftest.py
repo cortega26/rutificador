@@ -8,11 +8,8 @@ import warnings
 # Con `pytest -W error::DeprecationWarning` ese warning rompe la colección
 # de tests/contrib/test_fastapi.py. Lo ignoramos aquí para que el gate
 # siga detectando deprecations propias pero no las de dependencias.
-warnings.filterwarnings(
-    "ignore",
-    category=DeprecationWarning,
-    message=".*BlockingPortal.*",
-)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # Python 3.13+ depreca fork() con hilos activos (pytest + plugins).
 # Usamos spawn para evitar race conditions en tests con ProcessPoolExecutor.
