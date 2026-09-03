@@ -7,14 +7,13 @@ posiblemente errónea.
 """
 
 import logging
-from typing import Dict, List, Optional, Set, Tuple
 
-from .utils import calcular_digito_verificador, _limpiar_entrada
+from .utils import _limpiar_entrada, calcular_digito_verificador
 
 logger = logging.getLogger(__name__)
 
 # Mapa de sustituciones comunes por errores de digitación o lectura OCR
-_SUSTITUCIONES_OCR: Dict[str, str] = {
+_SUSTITUCIONES_OCR: dict[str, str] = {
     "o": "0",
     "O": "0",
     "i": "1",
@@ -36,7 +35,7 @@ def distancia_levenshtein(s1: str, s2: str) -> int:
     Detecta inserción, eliminación, sustitución y transposición de dos caracteres
     adyacentes (error común de digitación).
     """
-    d: Dict[Tuple[int, int], int] = {}
+    d: dict[tuple[int, int], int] = {}
     long1 = len(s1)
     long2 = len(s2)
     for i in range(-1, long1 + 1):
@@ -59,7 +58,7 @@ def distancia_levenshtein(s1: str, s2: str) -> int:
     return d[(long1 - 1, long2 - 1)]
 
 
-def sugerir_ruts(valor: str, limite: int = 5) -> List[str]:
+def sugerir_ruts(valor: str, limite: int = 5) -> list[str]:
     """Genera sugerencias de RUTs válidos basados en una entrada posiblemente errónea.
 
     Utiliza heurísticas de OCR y distancia de edición para encontrar el RUT
@@ -76,7 +75,7 @@ def sugerir_ruts(valor: str, limite: int = 5) -> List[str]:
     return [rut for rut, dist in candidatos_con_dist]
 
 
-def mejorar_con_confianza(valor: str, distancia_max: int = 1) -> Optional[str]:
+def mejorar_con_confianza(valor: str, distancia_max: int = 1) -> str | None:
     """Toma una decisión de corrección automática solo si es inequívoca.
 
     Para ser 'segura', una sugerencia debe:
@@ -115,10 +114,10 @@ def mejorar_con_confianza(valor: str, distancia_max: int = 1) -> Optional[str]:
     return mejor_rut
 
 
-def _generar_transposiciones(base: str) -> List[str]:
+def _generar_transposiciones(base: str) -> list[str]:
     """Genera todas las variantes de base con un par de dígitos transpuestos."""
     digitos = list(base)
-    resultados: List[str] = []
+    resultados: list[str] = []
     for i in range(len(digitos) - 1):
         copia = digitos[:]
         copia[i], copia[i + 1] = copia[i + 1], copia[i]
@@ -126,9 +125,9 @@ def _generar_transposiciones(base: str) -> List[str]:
     return resultados
 
 
-def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> List[Tuple[str, int]]:
+def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> list[tuple[str, int]]:
     """Lógica interna que devuelve tuplas (rut, distancia) ordenadas."""
-    sugerencias: Set[str] = set()
+    sugerencias: set[str] = set()
 
     # 1. Limpieza básica y aplicación de heurísticas OCR
     def aplicar_ocr(s: str) -> str:
@@ -147,13 +146,13 @@ def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> List[Tuple[str, 
         try:
             dv = calcular_digito_verificador(base).lower()
             sugerencias.add(f"{base}-{dv}")
-        except Exception:
+        except Exception:  # noqa: BLE001
             logger.warning("Error calculando DV para base '%s'", base)
         for base_t in _generar_transposiciones(base):
             try:
                 dv_t = calcular_digito_verificador(base_t).lower()
                 sugerencias.add(f"{base_t}-{dv_t}")
-            except Exception:
+            except Exception:  # noqa: BLE001
                 logger.warning("Error calculando DV para transposición '%s'", base_t)
 
     # 2. Estrategia: Manejo de RUTs con guion (asumimos separación tentativa)
@@ -176,7 +175,7 @@ def _sugerir_ruts_con_distancia(valor: str, limite: int = 5) -> List[Tuple[str, 
             try:
                 dv_f = calcular_digito_verificador(solo_digitos).lower()
                 sugerencias.add(f"{solo_digitos}-{dv_f}")
-            except Exception:
+            except Exception:  # noqa: BLE001
                 logger.warning(
                     "Error calculando DV para solo_digitos '%s'", solo_digitos
                 )

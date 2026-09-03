@@ -1,4 +1,4 @@
-from rutificador import Rut, ValidadorRut, RigorValidacion
+from rutificador import RigorValidacion, Rut, ValidadorRut
 
 
 def test_full_width_digits_normalization():

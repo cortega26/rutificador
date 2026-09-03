@@ -5,8 +5,6 @@ por lotes y streaming. Cada benchmark usa datos deterministas y mide solo la
 operación objetivo.
 """
 
-from typing import List
-
 from rutificador import (
     Rut,
     calcular_digito_verificador,
@@ -20,12 +18,12 @@ RUT_VALIDO = "12.345.678-5"
 RUT_INVALIDO = "12.345.678-9"
 RUT_FORMATO_ALTERNATIVO = "12 345 678-5"
 
-_LOTE: List[str] = []
-_BASES: List[str] = []
+_LOTE: list[str] = []
+_BASES: list[str] = []
 
 
-def _generar_lote(tamano: int = 1000) -> List[str]:
-    global _LOTE  # noqa: PLW0603
+def _generar_lote(tamano: int = 1000) -> list[str]:
+    global _LOTE
     if len(_LOTE) >= tamano:
         return _LOTE[:tamano]
     _LOTE = []

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Literal, Optional, TypedDict
+from typing import Literal, TypedDict
 
 Severidad = Literal["error", "advertencia"]
 Idioma = Literal["es", "en"]
@@ -19,7 +19,7 @@ class EntradaCatalogo(TypedDict):
     recuperable: bool
 
 
-_CATALOGO_ES: Dict[str, EntradaCatalogo] = {
+_CATALOGO_ES: dict[str, EntradaCatalogo] = {
     "ERROR_TIPO": {
         "mensaje": "El RUT debe ser cadena o entero",
         "hint": "Convierta el valor a str o int",
@@ -118,7 +118,7 @@ _CATALOGO_ES: Dict[str, EntradaCatalogo] = {
     },
 }
 
-_CATALOGO_EN: Dict[str, EntradaCatalogo] = {
+_CATALOGO_EN: dict[str, EntradaCatalogo] = {
     "ERROR_TIPO": {
         "mensaje": "RUT must be a string or integer",
         "hint": "Convert the value to str or int",
@@ -139,7 +139,7 @@ _CATALOGO_EN: Dict[str, EntradaCatalogo] = {
     },
 }
 
-_LOCALE_CATALOGS: Dict[Idioma, Dict[str, EntradaCatalogo]] = {
+_LOCALE_CATALOGS: dict[Idioma, dict[str, EntradaCatalogo]] = {
     "es": _CATALOGO_ES,
     "en": _CATALOGO_EN,
 }
@@ -156,7 +156,7 @@ class DetalleError:
     hint: str
     severidad: Severidad
     recuperable: bool
-    rut: Optional[str] = None
+    rut: str | None = None
     duracion: float = 0.0
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - comparación simple
@@ -182,11 +182,11 @@ class DetalleError:
 def crear_detalle_error(
     codigo: str,
     *,
-    mensaje: Optional[str] = None,
-    hint: Optional[str] = None,
-    severidad: Optional[Severidad] = None,
-    recuperable: Optional[bool] = None,
-    rut: Optional[str] = None,
+    mensaje: str | None = None,
+    hint: str | None = None,
+    severidad: Severidad | None = None,
+    recuperable: bool | None = None,
+    rut: str | None = None,
     duracion: float = 0.0,
     idioma: Idioma = "es",
 ) -> DetalleError:
@@ -232,9 +232,9 @@ def crear_detalle_error(
 
 
 __all__ = [
-    "DetalleError",
-    "Severidad",
-    "Idioma",
     "CATALOGO_ERRORES",
+    "DetalleError",
+    "Idioma",
+    "Severidad",
     "crear_detalle_error",
 ]

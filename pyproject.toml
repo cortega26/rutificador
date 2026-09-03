@@ -67,6 +67,10 @@ testpaths = ["tests"]
 # sin instalarlo. Esto asegura que ejecutar `pytest` desde la raiz del proyecto
 # funcione como se documenta en el README.
 addopts = ""
+filterwarnings = [
+    "ignore::DeprecationWarning:starlette.*",
+    "ignore::DeprecationWarning:anyio.*",
+]
 norecursedirs = ["mutants", ".venv", ".benchmarks", ".hypothesis", "dist"]
 
 [tool.deptry]

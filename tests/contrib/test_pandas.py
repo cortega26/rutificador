@@ -5,7 +5,7 @@ import pytest
 
 pandas = pytest.importorskip("pandas")
 
-import rutificador.contrib.pandas as _rut_pandas  # noqa: E402, F401 - registro del accessor
+import rutificador.contrib.pandas as _rut_pandas  # noqa: F401 - registro del accessor
 
 
 def test_es_valido_series():

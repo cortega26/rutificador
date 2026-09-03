@@ -13,22 +13,23 @@ import hmac
 import logging
 import re
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import Any, Iterator, Literal, Optional, TypedDict, Union
+from typing import Literal, TypedDict
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut, RigorValidacion
 from .errores import DetalleError, crear_detalle_error
 from .exceptions import ErrorValidacionRut
-from .validador import ValidadorRut
+from .sugestor import mejorar_con_confianza, sugerir_ruts
 from .utils import (
     RE_BASE_CON_PUNTOS,
-    calcular_digito_verificador,
-    asegurar_booleano,
     _limpiar_entrada,
+    asegurar_booleano,
+    calcular_digito_verificador,
 )
-from .sugestor import sugerir_ruts, mejorar_con_confianza
+from .validador import ValidadorRut
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +41,9 @@ class ValidacionResultado:
     """Resultado estructurado de una validación incremental."""
 
     original: str
-    normalizado: Optional[str]
-    base: Optional[str]
-    dv: Optional[str]
+    normalizado: str | None
+    base: str | None
+    dv: str | None
     estado: EstadoValidacion
     errores: list[DetalleError]
     advertencias: list[DetalleError]
@@ -105,8 +106,8 @@ class Rut:
 
     @staticmethod
     def _validar_tipo_entrada(
-        valor: Union[str, int],
-    ) -> tuple[Optional[str], Optional[str], list[DetalleError], list[DetalleError]]:
+        valor: str | int,
+    ) -> tuple[str | None, str | None, list[DetalleError], list[DetalleError]]:
         errores: list[DetalleError] = []
         advertencias: list[DetalleError] = []
         if not isinstance(valor, (str, int)):
@@ -163,7 +164,7 @@ class Rut:
     def _separar_base_dv(
         cadena: str,
         errores: list[DetalleError],
-    ) -> tuple[Optional[str], Optional[str], bool]:
+    ) -> tuple[str | None, str | None, bool]:
         if "-" not in cadena:
             return cadena, None, False
         base_raw, dv_raw = cadena.split("-", 1)
@@ -179,7 +180,7 @@ class Rut:
         base_raw: str,
         advertencias: list[DetalleError],
         vistos: set[str],
-    ) -> Optional[str]:
+    ) -> str | None:
         if "." not in base_raw:
             return base_raw
         if not RE_BASE_CON_PUNTOS.fullmatch(base_raw):
@@ -202,10 +203,10 @@ class Rut:
 
     @staticmethod
     def _normalizar_dv(
-        dv_raw: Optional[str],
+        dv_raw: str | None,
         advertencias: list[DetalleError],
         vistos: set[str],
-    ) -> tuple[Optional[str], bool]:
+    ) -> tuple[str | None, bool]:
         if dv_raw is None:
             return None, True
         if len(dv_raw) != 1 or not re.fullmatch(r"[0-9kK]", dv_raw):
@@ -218,7 +219,7 @@ class Rut:
     @staticmethod
     def _reconstruir_normalizado(
         base_normalizada: str,
-        dv_normalizado: Optional[str],
+        dv_normalizado: str | None,
         dv_faltante: bool,
     ) -> str:
         if dv_normalizado is None and dv_faltante:
@@ -229,10 +230,10 @@ class Rut:
 
     @staticmethod
     def normalizar(
-        valor: Union[str, int],
+        valor: str | int,
         *,
         modo: RigorValidacion = RigorValidacion.ESTRICTO,
-    ) -> tuple[Optional[str], list[DetalleError], list[DetalleError]]:
+    ) -> tuple[str | None, list[DetalleError], list[DetalleError]]:
         """Normaliza un RUT sin validar su digito verificador."""
 
         cadena_original, cadena, errores, advertencias = Rut._validar_tipo_entrada(
@@ -281,7 +282,7 @@ class Rut:
 
     @staticmethod
     def parse(
-        valor: Union[str, int],
+        valor: str | int,
         *,
         modo: RigorValidacion = RigorValidacion.ESTRICTO,
         configuracion: ConfiguracionRut = CONFIGURACION_POR_DEFECTO,
@@ -317,12 +318,12 @@ class Rut:
         inicio = time.perf_counter()
         try:
             original = str(valor)
-        except Exception:  # pragma: no cover - caso extremo
+        except Exception:  # noqa: BLE001  # pragma: no cover - caso extremo
             original = "<valor-no-representable>"
 
         normalizado, errores, advertencias = Rut.normalizar(valor, modo=modo)
-        base: Optional[str] = None
-        dv: Optional[str] = None
+        base: str | None = None
+        dv: str | None = None
         estado: EstadoValidacion = "invalido" if errores else "incompleto"
 
         if errores and all(error.codigo == "RUT_VACIO" for error in errores):
@@ -380,12 +381,12 @@ class Rut:
 
     @staticmethod
     def enmascarar(
-        valor: Union[str, int],
+        valor: str | int,
         *,
         mantener: int = 4,
         caracter: str = "*",
         modo: Literal["mascarada", "token"] = "mascarada",
-        clave: Optional[Union[str, bytes]] = None,
+        clave: str | bytes | None = None,
         separador_miles: bool = False,
         mayusculas: bool = False,
         separador_personalizado: str = ".",
@@ -457,9 +458,7 @@ class Rut:
     # Alias para compatibilidad
     mask = enmascarar
 
-    def __init__(
-        self, rut: Union[str, int], validador: Optional[ValidadorRut] = None
-    ) -> None:
+    def __init__(self, rut: str | int, validador: ValidadorRut | None = None) -> None:
         """Construye y valida un RUT (builder — normaliza la entrada).
 
         Este método es el **builder**: normaliza la entrada antes de validar
@@ -518,7 +517,7 @@ class Rut:
     def __repr__(self) -> str:  # pragma: no cover - trivial
         return "Rut(base='********', dv='*')"
 
-    def __eq__(self, other: Any) -> bool:  # pragma: no cover - trivial
+    def __eq__(self, other: object) -> bool:  # pragma: no cover - trivial
         if not isinstance(other, Rut):
             return NotImplemented
         return str(self) == str(other)
@@ -605,7 +604,7 @@ class Rut:
         return sugerir_ruts(valor)
 
     @staticmethod
-    def mejorar(valor: str) -> Optional[str]:
+    def mejorar(valor: str) -> str | None:
         """Intenta mejorar/corregir un RUT de forma segura.
 
         Solo una sugerencia inequívoca (distancia 1 y sin ambigüedad) será devuelta.
@@ -630,17 +629,17 @@ class Rut:
 
 
 @lru_cache(maxsize=1000)
-def obtener_rut(rut: Union[str, int], validador: Optional[ValidadorRut] = None) -> Rut:
+def obtener_rut(rut: str | int, validador: ValidadorRut | None = None) -> Rut:
     """Obtiene una instancia de :class:`Rut` usando caché LRU."""
     return Rut(rut, validador)
 
 
 __all__ = [
+    "EstadisticasCache",
     "Rut",
     "RutBase",
     "ValidacionResultado",
     "obtener_rut",
-    "EstadisticasCache",
 ]
 
 
@@ -648,4 +647,4 @@ class EstadisticasCache(TypedDict):
     """Estructura del reporte de caché de :func:`obtener_rut`."""
 
     tamanio_cache: int
-    tamanio_max_cache: Optional[int]
+    tamanio_max_cache: int | None

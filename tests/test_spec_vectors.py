@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from rutificador import Rut, RigorValidacion
+from rutificador import RigorValidacion, Rut
 from rutificador.utils import calcular_digito_verificador
 
 VECTORS_DIR = Path(__file__).parent / "vectors"

@@ -6,8 +6,9 @@ import html
 import json
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from io import StringIO
-from typing import Any, ClassVar, Dict, List, Optional, Sequence, Type
+from typing import Any, ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +119,7 @@ class FormateadorJSON(FormateadorRut):
 class FabricaFormateadorRut:
     """Fábrica para crear formateadores de RUT con soporte de configuración."""
 
-    _formatters: ClassVar[Dict[str, Type[FormateadorRut]]] = {
+    _formatters: ClassVar[dict[str, type[FormateadorRut]]] = {
         "csv": FormateadorCSV,
         "xml": FormateadorXML,
         "json": FormateadorJSON,
@@ -126,7 +127,7 @@ class FabricaFormateadorRut:
 
     @classmethod
     def registrar_formateador(
-        cls, nombre: str, clase_formateador: Type[FormateadorRut]
+        cls, nombre: str, clase_formateador: type[FormateadorRut]
     ) -> None:
         """Registra una clase formateadora personalizada."""
         if not issubclass(clase_formateador, FormateadorRut):
@@ -135,9 +136,7 @@ class FabricaFormateadorRut:
         logger.info("Formateador personalizado registrado: %s", nombre)
 
     @classmethod
-    def obtener_formateador(
-        cls, formato: str, **kwargs: Any
-    ) -> Optional[FormateadorRut]:
+    def obtener_formateador(cls, formato: str, **kwargs: Any) -> FormateadorRut | None:
         """Obtiene una instancia de formateador por nombre."""
         if not isinstance(formato, str):
             return None
@@ -148,6 +147,6 @@ class FabricaFormateadorRut:
         return None
 
     @classmethod
-    def obtener_formatos_disponibles(cls) -> List[str]:
+    def obtener_formatos_disponibles(cls) -> list[str]:
         """Devuelve la lista de nombres de formateadores soportados."""
         return list(cls._formatters.keys())

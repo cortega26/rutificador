@@ -30,4 +30,4 @@ def __dir__() -> list[str]:  # pragma: no cover - trivial
     return sorted([*globals().keys(), "RutStr"])
 
 
-__all__ = ["RutStr", "PYDANTIC_IMPORT_ERROR_MESSAGE"]
+__all__ = ["PYDANTIC_IMPORT_ERROR_MESSAGE", "RutStr"]

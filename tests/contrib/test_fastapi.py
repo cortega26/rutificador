@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
+
 from rutificador.contrib.fastapi import ParametroRut
 from rutificador.rut import Rut
 
@@ -7,7 +8,7 @@ app = FastAPI()
 
 
 @app.get("/validar")
-def validar_rut(rut: Rut = Depends(ParametroRut)):
+def validar_rut(rut: Rut = Depends(ParametroRut)):  # noqa: B008
     return {
         "valido": True,
         "formateado": rut.formatear(separador_miles=True),

@@ -14,7 +14,7 @@ except ImportError as exc:  # pragma: no cover
         "Pandas no está instalado. Instálalo con 'pip install rutificador[pandas]'"
     ) from exc
 
-from ..rut import Rut, RigorValidacion
+from ..rut import RigorValidacion, Rut
 from ._formato_comun import aplicar_formato
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class RutAccessor:
                 # Rut.parse devuelve ValidacionResultado
                 res = Rut.parse(x, modo=modo)
                 return res
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         return self._obj.apply(_val)
@@ -49,7 +49,7 @@ class RutAccessor:
             try:
                 res = Rut.parse(x, modo=modo)
                 return aplicar_formato(res, formato)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         return self._obj.apply(_fmt)

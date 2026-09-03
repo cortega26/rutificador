@@ -11,6 +11,7 @@ def run_migrate(*args, cwd=None):
     result = subprocess.run(
         [sys.executable, str(SCRIPTS_DIR / "migrate.py")] + list(args),
         capture_output=True,
+        check=False,
         text=True,
         cwd=cwd,
     )

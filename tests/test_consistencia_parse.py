@@ -16,7 +16,7 @@ def _ctor_valido(s: str) -> bool:
     try:
         Rut(s)
         return True
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 

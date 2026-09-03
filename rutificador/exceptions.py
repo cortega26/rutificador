@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class ErrorRut(Exception):
     """Excepción base para todos los errores relacionados con RUT."""
 
     def __init__(
-        self, mensaje: str, codigo_error: Optional[str] = None, **kwargs: Any
+        self, mensaje: str, codigo_error: str | None = None, **kwargs: Any
     ) -> None:
         mensaje_sanitizado = _sanitizar_mensaje(mensaje)
         super().__init__(mensaje_sanitizado)
@@ -104,10 +104,10 @@ class ErrorProcesamientoRut(ErrorRut):
 
 
 __all__ = [
-    "ErrorRut",
-    "ErrorValidacionRut",
-    "ErrorFormatoRut",
     "ErrorDigitoRut",
+    "ErrorFormatoRut",
     "ErrorLongitudRut",
     "ErrorProcesamientoRut",
+    "ErrorRut",
+    "ErrorValidacionRut",
 ]
