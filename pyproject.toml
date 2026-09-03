@@ -48,10 +48,10 @@ full = ["pydantic", "fastapi", "httpx", "pandas", "polars"]
 [tool.poetry.group.dev.dependencies]
 pytest = ">=9.0.3,<10.0.0"
 pytest-cov = ">=5.0.0,<8.0.0"
-pytest-benchmark = "5.2.3"
+pytest-benchmark = "5.3.0"
 deptry = "0.25.1"
 cyclonedx-bom = "7.3.0"
-pre-commit = "4.6.0"
+pre-commit = "4.6.2"
 httpx2 = "2.6.0"
 import-linter = ">=2.13"
 mkdocs = ">=1.6.1"
@@ -67,6 +67,10 @@ testpaths = ["tests"]
 # sin instalarlo. Esto asegura que ejecutar `pytest` desde la raiz del proyecto
 # funcione como se documenta en el README.
 addopts = ""
+filterwarnings = [
+    "ignore::DeprecationWarning:starlette.*",
+    "ignore::DeprecationWarning:anyio.*",
+]
 norecursedirs = ["mutants", ".venv", ".benchmarks", ".hypothesis", "dist"]
 
 [tool.deptry]

@@ -1,53 +1,51 @@
 """Rutificador: utilidades para validar y formatear RUTs chilenos."""
 
-from typing import List
-
-from .version import __version__, obtener_informacion_version
+from .calidad_datos import (
+    AuditoriaFormato,
+    InformeDuplicados,
+    PerfilRut,
+    auditar_consistencia_formato,
+    detectar_duplicados,
+    perfilar_ruts,
+)
 from .config import ConfiguracionRut, RigorValidacion
-from .validador import ValidadorRut
-from .rut import Rut, RutBase, ValidacionResultado, obtener_rut
-from .procesador import (
-    DetalleError,
-    RutProcesado,
-    ProcesadorLotesRut,
-    ResultadoLote,
-    formatear_lista_ruts,
-    validar_lista_ruts,
-    validar_flujo_ruts,
-    formatear_flujo_ruts,
-    evaluar_rendimiento,
-    flujo,
+from .exceptions import (
+    ErrorDigitoRut,
+    ErrorFormatoRut,
+    ErrorLongitudRut,
+    ErrorProcesamientoRut,
+    ErrorRut,
+    ErrorValidacionRut,
 )
 from .formatter import (
     FabricaFormateadorRut,
     FormateadorCSV,
-    FormateadorXML,
     FormateadorJSON,
+    FormateadorXML,
 )
+from .procesador import (
+    DetalleError,
+    ProcesadorLotesRut,
+    ResultadoLote,
+    RutProcesado,
+    evaluar_rendimiento,
+    flujo,
+    formatear_flujo_ruts,
+    formatear_lista_ruts,
+    validar_flujo_ruts,
+    validar_lista_ruts,
+)
+from .rut import Rut, RutBase, ValidacionResultado, obtener_rut
 from .utils import (
-    monitor_de_rendimiento,
-    calcular_digito_verificador,
-    normalizar_base_rut,
-    configurar_registro,
-    asegurar_cadena_no_vacia,
     asegurar_booleano,
+    asegurar_cadena_no_vacia,
+    calcular_digito_verificador,
+    configurar_registro,
+    monitor_de_rendimiento,
+    normalizar_base_rut,
 )
-from .exceptions import (
-    ErrorRut,
-    ErrorValidacionRut,
-    ErrorFormatoRut,
-    ErrorDigitoRut,
-    ErrorLongitudRut,
-    ErrorProcesamientoRut,
-)
-from .calidad_datos import (
-    InformeDuplicados,
-    AuditoriaFormato,
-    PerfilRut,
-    detectar_duplicados,
-    auditar_consistencia_formato,
-    perfilar_ruts,
-)
+from .validador import ValidadorRut
+from .version import __version__, obtener_informacion_version
 
 
 def _registrar_contribs() -> None:
@@ -71,46 +69,46 @@ _registrar_contribs()
 __author__ = "Carlos Ortega González"
 __license__ = "MIT"
 
-__all__: List[str] = [
-    "Rut",
-    "RutBase",
-    "ValidacionResultado",
-    "obtener_rut",
-    "ValidadorRut",
+__all__: list[str] = [
+    "AuditoriaFormato",
+    "ConfiguracionRut",
     "DetalleError",
-    "RutProcesado",
-    "ProcesadorLotesRut",
-    "ResultadoLote",
-    "FabricaFormateadorRut",
-    "FormateadorCSV",
-    "FormateadorXML",
-    "FormateadorJSON",
-    "monitor_de_rendimiento",
-    "calcular_digito_verificador",
-    "normalizar_base_rut",
-    "formatear_lista_ruts",
-    "formatear_flujo_ruts",
-    "validar_lista_ruts",
-    "validar_flujo_ruts",
-    "configurar_registro",
-    "evaluar_rendimiento",
-    "flujo",
-    "asegurar_cadena_no_vacia",
-    "asegurar_booleano",
-    "obtener_informacion_version",
-    "ErrorRut",
-    "ErrorValidacionRut",
-    "ErrorFormatoRut",
     "ErrorDigitoRut",
+    "ErrorFormatoRut",
     "ErrorLongitudRut",
     "ErrorProcesamientoRut",
-    "ConfiguracionRut",
-    "RigorValidacion",
+    "ErrorRut",
+    "ErrorValidacionRut",
+    "FabricaFormateadorRut",
+    "FormateadorCSV",
+    "FormateadorJSON",
+    "FormateadorXML",
     "InformeDuplicados",
-    "AuditoriaFormato",
     "PerfilRut",
-    "detectar_duplicados",
-    "auditar_consistencia_formato",
-    "perfilar_ruts",
+    "ProcesadorLotesRut",
+    "ResultadoLote",
+    "RigorValidacion",
+    "Rut",
+    "RutBase",
+    "RutProcesado",
+    "ValidacionResultado",
+    "ValidadorRut",
     "__version__",
+    "asegurar_booleano",
+    "asegurar_cadena_no_vacia",
+    "auditar_consistencia_formato",
+    "calcular_digito_verificador",
+    "configurar_registro",
+    "detectar_duplicados",
+    "evaluar_rendimiento",
+    "flujo",
+    "formatear_flujo_ruts",
+    "formatear_lista_ruts",
+    "monitor_de_rendimiento",
+    "normalizar_base_rut",
+    "obtener_informacion_version",
+    "obtener_rut",
+    "perfilar_ruts",
+    "validar_flujo_ruts",
+    "validar_lista_ruts",
 ]

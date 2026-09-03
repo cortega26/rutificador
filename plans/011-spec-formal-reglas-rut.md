@@ -39,7 +39,9 @@ asociados.
 def calcular_digito_verificador(base_numerica, configuracion=CONFIGURACION_POR_DEFECTO):
     factores = cycle(configuracion.factores_verificacion)  # (2,3,4,5,6,7)
     suma_parcial = sum(int(d) * f for d, f in zip(reversed(base_numerica), factores))
-    digito_verificador = (configuracion.modulo - suma_parcial % configuracion.modulo) % configuracion.modulo
+    digito_verificador = (
+        configuracion.modulo - suma_parcial % configuracion.modulo
+    ) % configuracion.modulo
     return str(digito_verificador) if digito_verificador < 10 else "k"
 ```
 

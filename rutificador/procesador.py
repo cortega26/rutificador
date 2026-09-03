@@ -10,36 +10,29 @@ perezoso, y ``evaluar_rendimiento`` para tests de carga.
 import logging
 import os
 import random  # nosec B311  # Solo usado para generar datos de prueba, no criptografía
-import time
 import sys
-from functools import partial
+import time
+from collections.abc import Iterable, Iterator, Sequence
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass, field
+from functools import partial
 from typing import (
     Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
     Literal,
-    Optional,
-    Sequence,
-    Tuple,
     TypedDict,
-    Union,
 )
 
 from .config import ConfiguracionRut, RigorValidacion
 from .errores import DetalleError, crear_detalle_error
 from .exceptions import ErrorRut
 from .formatter import FabricaFormateadorRut
+from .rut import Rut, ValidacionResultado
 from .utils import (
-    monitor_de_rendimiento,
     asegurar_booleano,
     calcular_digito_verificador,
+    monitor_de_rendimiento,
 )
 from .validador import ValidadorRut
-from .rut import Rut, ValidacionResultado
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +74,9 @@ class RutProcesado:
 class ResultadoLote:
     """Contenedor de resultados para operaciones por lotes."""
 
-    detalles_validos: List[RutProcesado] = field(default_factory=list)
-    ruts_validos: List[str] = field(default_factory=list)
-    ruts_invalidos: List[DetalleError] = field(default_factory=list)
+    detalles_validos: list[RutProcesado] = field(default_factory=list)
+    ruts_validos: list[str] = field(default_factory=list)
+    ruts_invalidos: list[DetalleError] = field(default_factory=list)
     tiempo_procesamiento: float = 0.0
     total_procesados: int = 0
 
@@ -97,8 +90,8 @@ class ResultadoLote:
 class ResumenValidacion(TypedDict):
     """Resumen tipado del resultado de ``validar_lista_ruts``."""
 
-    validos: List[str]
-    invalidos: List[DetalleError]
+    validos: list[str]
+    invalidos: list[DetalleError]
 
 
 class ProcesadorLotesRut:
@@ -106,8 +99,8 @@ class ProcesadorLotesRut:
 
     def __init__(
         self,
-        validador: Optional[ValidadorRut] = None,
-        max_trabajadores: Optional[int] = None,
+        validador: ValidadorRut | None = None,
+        max_trabajadores: int | None = None,
         motor_paralelo: Literal["thread", "process"] = "process",
     ) -> None:
         """Inicializa el procesador de lotes.
@@ -122,7 +115,7 @@ class ProcesadorLotesRut:
                 ``ProcessPoolExecutor``).
         """
         self.validador = validador or ValidadorRut()
-        self.max_trabajadores: Optional[int] = max_trabajadores
+        self.max_trabajadores: int | None = max_trabajadores
         self.motor_paralelo = motor_paralelo
 
     def obtener_clase_ejecutor(self) -> type[ThreadPoolExecutor | ProcessPoolExecutor]:
@@ -149,7 +142,7 @@ class ProcesadorLotesRut:
         self,
         ruts: Sequence[str],
         paralelo: bool = False,
-        chunksize: Optional[int] = None,
+        chunksize: int | None = None,
     ) -> ResultadoLote:
         """Valida una secuencia de RUTs.
 
@@ -195,7 +188,7 @@ class ProcesadorLotesRut:
         resultado.tiempo_procesamiento = time.perf_counter() - inicio
         return resultado
 
-    def flujo(self, ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:
+    def flujo(self, ruts: Iterable[str | int]) -> Iterator[ValidacionResultado]:
         """Procesa RUTs en flujo continuo (streaming) sin materializar el lote completo."""
         for rut in ruts:
             yield Rut.parse(
@@ -210,7 +203,7 @@ class ProcesadorLotesRut:
         ruts: Sequence[str],
         separador_miles: bool = False,
         mayusculas: bool = False,
-        formato: Optional[str] = None,
+        formato: str | None = None,
         paralelo: bool = False,
         **kwargs_formateador: Any,
     ) -> str:
@@ -230,14 +223,14 @@ class ProcesadorLotesRut:
             Cadena con los RUTs formateados.
         """
         if not isinstance(ruts, (list, tuple)):
-            raise ValueError(
+            raise TypeError(
                 f"ruts debe ser una secuencia, se recibió: {type(ruts).__name__}"
             )
         asegurar_booleano(separador_miles, "separador_miles")
         asegurar_booleano(mayusculas, "mayusculas")
 
         resultado_validacion = self.validar_lista_ruts(ruts, paralelo=paralelo)
-        partes: List[str] = ["RUTs válidos:"]
+        partes: list[str] = ["RUTs válidos:"]
         fuentes = resultado_validacion.detalles_validos
 
         formateador_detalle = partial(
@@ -293,7 +286,7 @@ class ProcesadorLotesRut:
 def validar_lista_ruts(
     ruts: Sequence[str],
     paralelo: bool = False,
-    max_trabajadores: Optional[int] = None,
+    max_trabajadores: int | None = None,
     motor_paralelo: Literal["thread", "process"] = "process",
 ) -> ResumenValidacion:
     """Valida una secuencia de RUTs utilizando ``ProcesadorLotesRut``."""
@@ -309,9 +302,9 @@ def formatear_lista_ruts(
     ruts: Sequence[str],
     separador_miles: bool = False,
     mayusculas: bool = False,
-    formato: Optional[str] = None,
+    formato: str | None = None,
     paralelo: bool = False,
-    max_trabajadores: Optional[int] = None,
+    max_trabajadores: int | None = None,
     motor_paralelo: Literal["thread", "process"] = "process",
     **kwargs_formateador: Any,
 ) -> str:
@@ -331,12 +324,12 @@ def formatear_lista_ruts(
 
 
 def validar_flujo_ruts(
-    ruts: Iterable[Union[str, int]],
+    ruts: Iterable[str | int],
     paralelo: bool = False,
-    max_trabajadores: Optional[int] = None,
+    max_trabajadores: int | None = None,
     motor_paralelo: Literal["thread", "process"] = "process",
     chunksize: int = CHUNKSIZE_FLUJO_POR_DEFECTO,
-) -> Iterator[Tuple[bool, Union[RutProcesado, DetalleError]]]:
+) -> Iterator[tuple[bool, RutProcesado | DetalleError]]:
     """Valida RUTs desde cualquier iterable y produce resultados uno a uno.
 
     Si paralelo es True, distribuye la carga entre múltiples trabajadores
@@ -375,14 +368,14 @@ def validar_flujo_ruts(
 
 
 def formatear_flujo_ruts(
-    ruts: Iterable[Union[str, int]],
+    ruts: Iterable[str | int],
     separador_miles: bool = False,
     mayusculas: bool = False,
     paralelo: bool = False,
-    max_trabajadores: Optional[int] = None,
+    max_trabajadores: int | None = None,
     motor_paralelo: Literal["thread", "process"] = "process",
     chunksize: int = CHUNKSIZE_FLUJO_POR_DEFECTO,
-) -> Iterator[Tuple[bool, Union[str, DetalleError]]]:
+) -> Iterator[tuple[bool, str | DetalleError]]:
     """Valida y formatea RUTs provenientes de cualquier iterable.
 
     Soporta opcionalmente procesamiento paralelo manteniendo el flujo iterativo.
@@ -421,13 +414,13 @@ def formatear_flujo_ruts(
             yield False, detalle  # type: ignore[misc]
 
 
-def flujo(ruts: Iterable[Union[str, int]]) -> Iterator[ValidacionResultado]:
+def flujo(ruts: Iterable[str | int]) -> Iterator[ValidacionResultado]:
     """Procesa RUTs en flujo continuo sin materializar el lote completo."""
     procesador = ProcesadorLotesRut()
     yield from procesador.flujo(ruts)
 
 
-def evaluar_rendimiento(num_ruts: int = 10000, paralelo: bool = True) -> Dict[str, Any]:
+def evaluar_rendimiento(num_ruts: int = 10000, paralelo: bool = True) -> dict[str, Any]:
     """Evalúa el rendimiento del procesamiento de RUTs.
 
     Genera RUTs aleatorios y mide el tiempo de validación y formateo
@@ -470,7 +463,7 @@ def evaluar_rendimiento(num_ruts: int = 10000, paralelo: bool = True) -> Dict[st
 
 def _validar_rut_local(
     cadena: str, validador: ValidadorRut
-) -> Tuple[bool, Union[RutProcesado, DetalleError]]:
+) -> tuple[bool, RutProcesado | DetalleError]:
     inicio = time.perf_counter()
     try:
         rut_obj = Rut(cadena, validador=validador)
@@ -496,8 +489,8 @@ def _validar_rut_local(
 
 
 def _validar_rut_en_proceso(
-    payload: Tuple[str, ConfiguracionRut, RigorValidacion],
-) -> Tuple[bool, Union[RutProcesado, DetalleError]]:
+    payload: tuple[str, ConfiguracionRut, RigorValidacion],
+) -> tuple[bool, RutProcesado | DetalleError]:
     cadena, configuracion, modo = payload
     validador = ValidadorRut(configuracion=configuracion, modo=modo)
     return _validar_rut_local(cadena, validador)
@@ -515,13 +508,13 @@ def _formatear_detalle(
 
 __all__ = [
     "DetalleError",
-    "RutProcesado",
-    "ResultadoLote",
     "ProcesadorLotesRut",
-    "validar_lista_ruts",
-    "formatear_lista_ruts",
-    "validar_flujo_ruts",
-    "formatear_flujo_ruts",
+    "ResultadoLote",
+    "RutProcesado",
     "evaluar_rendimiento",
     "flujo",
+    "formatear_flujo_ruts",
+    "formatear_lista_ruts",
+    "validar_flujo_ruts",
+    "validar_lista_ruts",
 ]

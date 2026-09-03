@@ -230,7 +230,9 @@ class TestCrearDetalleErrorI18n:
         # 'FORMATO_PUNTOS' no está en el catálogo en inglés
         detalle = crear_detalle_error("FORMATO_PUNTOS", idioma="en")
         # Debe caer en el mensaje en español
-        assert "Separadores" in detalle.mensaje or "separadores" in detalle.mensaje.lower()
+        assert (
+            "Separadores" in detalle.mensaje or "separadores" in detalle.mensaje.lower()
+        )
 
     def test_override_mensaje_ignora_catalogo(self):
         detalle = crear_detalle_error(
@@ -239,7 +241,10 @@ class TestCrearDetalleErrorI18n:
         assert detalle.mensaje == "Mensaje personalizado"
 
     def test_catalogo_es_accesible_retrocompatibilidad(self):
-        assert CATALOGO_ERRORES["ERROR_TIPO"]["mensaje"] == "El RUT debe ser cadena o entero"
+        assert (
+            CATALOGO_ERRORES["ERROR_TIPO"]["mensaje"]
+            == "El RUT debe ser cadena o entero"
+        )
 ```
 
 **Verify**: `python -m pytest tests/test_errores.py -v` → todos los tests pasan.

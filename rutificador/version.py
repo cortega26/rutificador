@@ -7,7 +7,7 @@ estructura tipada ``InformacionVersion`` con metadatos del proyecto.
 
 import re
 from pathlib import Path
-from typing import List, TypedDict
+from typing import TypedDict
 
 try:
     from importlib import metadata as importlib_metadata
@@ -51,7 +51,7 @@ class InformacionVersion(TypedDict):
     autor: str
     licencia: str
     descripcion: str
-    funcionalidades: List[str]
+    funcionalidades: list[str]
 
 
 def obtener_informacion_version() -> InformacionVersion:
@@ -74,4 +74,4 @@ def obtener_informacion_version() -> InformacionVersion:
     }
 
 
-__all__ = ["__version__", "obtener_informacion_version", "InformacionVersion"]
+__all__ = ["InformacionVersion", "__version__", "obtener_informacion_version"]

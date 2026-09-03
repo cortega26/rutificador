@@ -6,13 +6,12 @@ import subprocess
 import sys
 import tracemalloc
 from pathlib import Path
-from typing import Optional
 
 from rutificador import cli
 
 
 def ejecutar_cli(
-    *args: str, entrada: Optional[str] = None
+    *args: str, entrada: str | None = None
 ) -> subprocess.CompletedProcess[str]:
     comando = [sys.executable, "-m", "rutificador.cli", *args]
     return subprocess.run(

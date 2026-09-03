@@ -5,9 +5,10 @@ import logging
 import re
 import time
 import unicodedata
+from collections.abc import Callable
 from functools import lru_cache, wraps
 from itertools import cycle
-from typing import Any, Callable, Optional, ParamSpec, TypeVar
+from typing import Any, ParamSpec, TypeVar
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut
 from .exceptions import ErrorValidacionRut
@@ -29,7 +30,7 @@ RE_BASE_DIGITOS = re.compile(r"^\d+$")
 def configurar_registro(
     level: int = logging.WARNING,
     formato: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handler: Optional[logging.Handler] = None,
+    handler: logging.Handler | None = None,
 ) -> None:
     """Configura un logger dedicado para la librería sin sobrescribir el global."""
     logger_principal = logging.getLogger("rutificador")
@@ -40,7 +41,7 @@ def configurar_registro(
 
     if handler is not None:
         handler.setFormatter(formatter)
-        setattr(handler, "_rutificador", True)
+        handler._rutificador = True
         logger_principal.handlers = [
             existente
             for existente in logger_principal.handlers
@@ -54,7 +55,7 @@ def configurar_registro(
         )
         if existente is None:
             existente = logging.StreamHandler()
-            setattr(existente, "_rutificador", True)
+            existente._rutificador = True
             logger_principal.addHandler(existente)
         existente.setFormatter(formatter)
 
@@ -204,10 +205,10 @@ def _limpiar_entrada(valor: str) -> tuple[str, bool]:
 
 
 __all__ = [
-    "monitor_de_rendimiento",
-    "calcular_digito_verificador",
-    "normalizar_base_rut",
-    "configurar_registro",
-    "asegurar_cadena_no_vacia",
     "asegurar_booleano",
+    "asegurar_cadena_no_vacia",
+    "calcular_digito_verificador",
+    "configurar_registro",
+    "monitor_de_rendimiento",
+    "normalizar_base_rut",
 ]

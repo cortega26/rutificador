@@ -1,6 +1,6 @@
 """Tests para la infraestructura de i18n de errores."""
 
-from rutificador.errores import crear_detalle_error, CATALOGO_ERRORES
+from rutificador.errores import CATALOGO_ERRORES, crear_detalle_error
 
 
 class TestCrearDetalleErrorI18n:

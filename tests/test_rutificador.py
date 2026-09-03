@@ -2,22 +2,21 @@
 
 import json
 import sys
-from typing import List
 
 import pytest
 
 import rutificador.procesador as proc
 from rutificador import (
     ErrorValidacionRut,
-    Rut,
-    RutBase,
-    ValidadorRut,
-    ProcesadorLotesRut,
-    RutProcesado,
     FabricaFormateadorRut,
     FormateadorCSV,
-    FormateadorXML,
     FormateadorJSON,
+    FormateadorXML,
+    ProcesadorLotesRut,
+    Rut,
+    RutBase,
+    RutProcesado,
+    ValidadorRut,
     calcular_digito_verificador,
     formatear_lista_ruts,
 )
@@ -83,13 +82,17 @@ datos_test_formato = [
     ("csv", "RUTs válidos:\nrut\n12345678-5\n98765432-5\n1-9\n\n"),
     (
         "xml",
-        "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n"
-        "    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n",
+        (
+            "RUTs válidos:\n<root>\n    <rut>12345678-5</rut>\n"
+            "    <rut>98765432-5</rut>\n    <rut>1-9</rut>\n</root>\n\n"
+        ),
     ),
     (
         "json",
-        'RUTs válidos:\n[\n  {\n    "rut": "12345678-5"\n  },\n  '
-        '{\n    "rut": "98765432-5"\n  },\n  {\n    "rut": "1-9"\n  }\n]\n\n',
+        (
+            'RUTs válidos:\n[\n  {\n    "rut": "12345678-5"\n  },\n  '
+            '{\n    "rut": "98765432-5"\n  },\n  {\n    "rut": "1-9"\n  }\n]\n\n'
+        ),
     ),
 ]
 
@@ -482,7 +485,7 @@ class TestProcesadorLotesRut:
                 return False
 
             def map(self, funcion, iterable, **_kwargs):
-                return list(funcion(item) for item in iterable)
+                return [funcion(item) for item in iterable]
 
         monkeypatch.setattr("rutificador.procesador.sys.platform", "linux")
         monkeypatch.setattr(
@@ -509,7 +512,7 @@ class TestProcesadorLotesRut:
                 return False
 
             def map(self, funcion, iterable, **_kwargs):
-                return list(funcion(item) for item in iterable)
+                return [funcion(item) for item in iterable]
 
         monkeypatch.setattr("rutificador.procesador.sys.platform", "win32")
         monkeypatch.setattr(
@@ -526,7 +529,7 @@ class TestProcesadorLotesRut:
         seq = processor.formatear_lista_ruts(ruts, paralelo=False)
         par = processor.formatear_lista_ruts(ruts, paralelo=True)
 
-        def extraer_validos(texto: str) -> List[str]:
+        def extraer_validos(texto: str) -> list[str]:
             lineas = texto.splitlines()
             inicio = lineas.index("RUTs válidos:") + 1
             fin = inicio

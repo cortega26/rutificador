@@ -1,8 +1,8 @@
 """Tests para el modulo de calidad de datos."""
 
 from rutificador.calidad_datos import (
-    detectar_duplicados,
     auditar_consistencia_formato,
+    detectar_duplicados,
     perfilar_ruts,
 )
 

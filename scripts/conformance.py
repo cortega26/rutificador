@@ -15,7 +15,6 @@ import json
 import sys
 from pathlib import Path
 
-
 # --- Seccion de adaptacion para implementaciones externas ---
 # Para usar con otra implementacion, reemplaza estas funciones.
 
@@ -29,7 +28,7 @@ def dv_implementation(base: str, config: dict) -> str:
 
 def validation_implementation(entrada: str, modo: str, config: dict) -> dict:
     """Valida una entrada y retorna {estado, normalizado, codigos_error}."""
-    from rutificador import Rut, RigorValidacion
+    from rutificador import RigorValidacion, Rut
 
     modo_enum = (
         RigorValidacion.ESTRICTO if modo == "estricto" else RigorValidacion.FLEXIBLE

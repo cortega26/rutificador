@@ -8,9 +8,9 @@ Verifican que el modo paralelo de validar_flujo_ruts y formatear_flujo_ruts:
 """
 
 from rutificador.procesador import (
-    validar_flujo_ruts,
-    formatear_flujo_ruts,
     CHUNKSIZE_FLUJO_POR_DEFECTO,
+    formatear_flujo_ruts,
+    validar_flujo_ruts,
 )
 from rutificador.utils import calcular_digito_verificador
 

@@ -3,24 +3,32 @@ import logging
 import pytest
 
 from rutificador import (
-    normalizar_base_rut,
-    obtener_informacion_version,
-    monitor_de_rendimiento,
-    formatear_lista_ruts as formatear_lista_ruts_global,
-    formatear_flujo_ruts as formatear_flujo_ruts_global,
-    validar_lista_ruts as validar_lista_ruts_global,
-    validar_flujo_ruts as validar_flujo_ruts_global,
-    configurar_registro,
-    evaluar_rendimiento,
-    Rut,
-    RutProcesado,
-    calcular_digito_verificador,
     DetalleError,
     ProcesadorLotesRut,
+    Rut,
+    RutProcesado,
     __version__,
+    calcular_digito_verificador,
+    configurar_registro,
+    evaluar_rendimiento,
+    monitor_de_rendimiento,
+    normalizar_base_rut,
+    obtener_informacion_version,
 )
-from rutificador.formatter import FormateadorCSV
+from rutificador import (
+    formatear_flujo_ruts as formatear_flujo_ruts_global,
+)
+from rutificador import (
+    formatear_lista_ruts as formatear_lista_ruts_global,
+)
+from rutificador import (
+    validar_flujo_ruts as validar_flujo_ruts_global,
+)
+from rutificador import (
+    validar_lista_ruts as validar_lista_ruts_global,
+)
 from rutificador.exceptions import ErrorValidacionRut
+from rutificador.formatter import FormateadorCSV
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +62,9 @@ def test_version_fallback_pyproject(monkeypatch):
     """Cubre: metadata no disponible -> lee pyproject.toml real del proyecto."""
     import re
     from pathlib import Path
+    from unittest.mock import Mock
 
     import rutificador.version as mod_version
-    from unittest.mock import Mock
 
     # Leer versión esperada desde pyproject.toml (fuente de verdad)
     ruta = Path(__file__).resolve().parents[1] / "pyproject.toml"
@@ -77,8 +85,9 @@ def test_version_fallback_pyproject(monkeypatch):
 
 def test_version_fallback_completo(monkeypatch):
     """Cubre: ni metadata ni pyproject.toml disponibles -> '0.0.0-dev'."""
-    import rutificador.version as mod_version
     from unittest.mock import Mock
+
+    import rutificador.version as mod_version
 
     monkeypatch.setattr(
         mod_version.importlib_metadata,
@@ -97,8 +106,9 @@ def test_version_fallback_completo(monkeypatch):
 
 def test_version_fallback_oserror_al_leer(monkeypatch):
     """Cubre: pyproject.toml existe pero falla al leerlo -> '0.0.0-dev'."""
-    import rutificador.version as mod_version
     from unittest.mock import Mock
+
+    import rutificador.version as mod_version
 
     monkeypatch.setattr(
         mod_version.importlib_metadata,

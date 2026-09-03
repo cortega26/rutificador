@@ -1,9 +1,9 @@
+import rutificador.sugestor
 from rutificador.sugestor import (
-    sugerir_ruts,
     distancia_levenshtein,
     mejorar_con_confianza,
+    sugerir_ruts,
 )
-import rutificador.sugestor
 
 
 def test_distancia_levenshtein():

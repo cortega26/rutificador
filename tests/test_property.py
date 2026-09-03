@@ -1,8 +1,9 @@
 """Tests basados en propiedades (Hypothesis) para rutificador."""
 
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
 
-from rutificador import Rut, FormateadorCSV
+from rutificador import FormateadorCSV, Rut
 from rutificador.utils import calcular_digito_verificador
 
 
@@ -47,7 +48,7 @@ def test_enmascarar_preserva_dv(base_int, mantener):
     rut_str = f"{base_int}-{dv}"
     try:
         mascara = Rut.enmascarar(rut_str, mantener=mantener, caracter="*")
-    except Exception:
+    except Exception:  # noqa: BLE001
         return  # mantener puede ser muy grande o pequeño, skip
     assert mascara.endswith(dv)
 
@@ -63,7 +64,7 @@ def test_csv_formateador_nunca_inyecta_formulas(ruts):
     """FormateadorCSV nunca produce salida con =, +, -, @ como primer carácter del valor."""
     try:
         resultado = FormateadorCSV().formatear(ruts)
-    except Exception:
+    except Exception:  # noqa: BLE001
         return
     lineas = resultado.strip().split("\n")
     for linea in lineas[1:]:  # Saltar cabecera

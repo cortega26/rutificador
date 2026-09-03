@@ -171,9 +171,11 @@ def test_comando_enmascarar_token_basico():
     """Tokenización produce prefijo tok_ con salida determinista."""
     ...
 
+
 def test_comando_enmascarar_token_sin_clave():
     """Token sin --clave ni variable de entorno debe fallar con código 1."""
     ...
+
 
 def test_comando_enmascarar_token_con_variable_entorno():
     """Token lee RUTIFICADOR_TOKEN_KEY del entorno correctamente."""
