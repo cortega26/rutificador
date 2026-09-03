@@ -70,6 +70,7 @@ addopts = ""
 filterwarnings = [
     "ignore::DeprecationWarning:starlette.*",
     "ignore::DeprecationWarning:anyio.*",
+    "ignore::DeprecationWarning:pydantic.*",
 ]
 norecursedirs = ["mutants", ".venv", ".benchmarks", ".hypothesis", "dist"]
 
