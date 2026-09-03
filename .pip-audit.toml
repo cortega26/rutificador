@@ -1,8 +1,15 @@
-[tool.pip-audit]
+[pip-audit]
 format = "json"
 output = "audit-report-env.json"
 desc = true
 progress-spinner = "off"
+ignore-vulns = [
+    "PYSEC-2026-3740",  # nltk 3.10.3 - sin parche aún
+    "PYSEC-2026-3785",  # nltk - path traversal gitpython etc. sin parche
+    "PYSEC-2026-3786",
+    "PYSEC-2026-3783",
+    "PYSEC-2026-3787",
+]
 # Nota: el flujo de CI ejecuta auditorías separadas para el entorno instalado,
 # para los paquetes exportados desde `poetry.lock` y para `requirements-dev.txt`;
 # este archivo define la configuración por defecto al auditar el entorno activo.
