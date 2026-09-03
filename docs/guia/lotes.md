@@ -5,11 +5,11 @@
 ```python
 from rutificador import ProcesadorLotesRut
 
-ruts = ['12.345.678-5', '98.765.432-1', '1-9']
+ruts = ["12.345.678-5", "98.765.432-1", "1-9"]
 procesador = ProcesadorLotesRut()
 
 resultado = procesador.validar_lista_ruts(ruts)
-print(len(resultado.detalles_validos))    # 2
+print(len(resultado.detalles_validos))  # 2
 print(len(resultado.detalles_invalidos))  # 1
 
 csv = procesador.formatear_lista_ruts(ruts, formato="csv")

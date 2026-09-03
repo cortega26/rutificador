@@ -1,13 +1,13 @@
 pip>=26.1.2  # Correcciones de seguridad vigentes para instalación y actualización
 pytest>=9.0.3,<10
 pytest-cov>=7
-pytest-benchmark==5.2.3
-ruff>=0.15.21
-mypy>=2.3.0
+pytest-benchmark==5.3.0
+ruff>=0.16.5
+mypy>=2.3.1
 coveralls
 deptry==0.25.1
 cyclonedx-bom==7.3.0
-pre-commit==4.6.0
+pre-commit==4.6.2
 tomli
 pydantic>=2,<3
 hypothesis
@@ -20,3 +20,4 @@ mkdocs-material>=9.5
 mkdocstrings[python]>=1.0
 pandas
 polars
+pillow==12.3.0  # fix PYSEC vulns (CVE-2026 etc.)

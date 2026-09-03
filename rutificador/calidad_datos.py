@@ -7,8 +7,8 @@ internamente ``Rut.parse`` para normalizar antes de comparar.
 """
 
 from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from .rut import Rut
 
@@ -72,7 +72,7 @@ def detectar_duplicados(
         if conteo > 1:
             try:
                 enmascarado = Rut.enmascarar(clave, mantener=4)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 enmascarado = clave[-4:] if len(clave) >= 4 else clave
             duplicados.append((enmascarado, conteo))
 
@@ -262,10 +262,10 @@ def perfilar_ruts(
 
 
 __all__ = [
-    "InformeDuplicados",
     "AuditoriaFormato",
+    "InformeDuplicados",
     "PerfilRut",
-    "detectar_duplicados",
     "auditar_consistencia_formato",
+    "detectar_duplicados",
     "perfilar_ruts",
 ]

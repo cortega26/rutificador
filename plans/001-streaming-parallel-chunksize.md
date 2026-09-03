@@ -166,10 +166,12 @@ the property style on `tests/test_property.py`. Cover:
    from rutificador.procesador import validar_flujo_ruts
    from rutificador.utils import calcular_digito_verificador
 
+
    def _muestra(n):
        for i in range(1_000_000, 1_000_000 + n):
            b = str(i)
            yield f"{b}-{calcular_digito_verificador(b)}"
+
 
    def test_flujo_paralelo_acepta_generador():
        # Pasar un generador puro (sin __len__) debe funcionar en modo paralelo.
@@ -182,8 +184,14 @@ the property style on `tests/test_property.py`. Cover:
    ```python
    def test_flujo_paralelo_igual_que_serial():
        datos = list(_muestra(100))
-       serial = [(ok, getattr(d, "valor", None)) for ok, d in validar_flujo_ruts(datos, paralelo=False)]
-       par = [(ok, getattr(d, "valor", None)) for ok, d in validar_flujo_ruts(datos, paralelo=True)]
+       serial = [
+           (ok, getattr(d, "valor", None))
+           for ok, d in validar_flujo_ruts(datos, paralelo=False)
+       ]
+       par = [
+           (ok, getattr(d, "valor", None))
+           for ok, d in validar_flujo_ruts(datos, paralelo=True)
+       ]
        assert serial == par
    ```
 3. **`chunksize` is an accepted keyword** and a custom value still yields

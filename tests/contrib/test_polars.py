@@ -5,7 +5,7 @@ import pytest
 
 polars = pytest.importorskip("polars")
 
-import rutificador.contrib.polars as _rut_polars  # noqa: E402, F401 - registro del namespace
+import rutificador.contrib.polars as _rut_polars  # noqa: F401 - registro del namespace
 
 
 def test_es_valido_series():

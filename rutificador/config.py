@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple
 
 from .exceptions import ErrorValidacionRut
 
@@ -11,7 +10,7 @@ from .exceptions import ErrorValidacionRut
 class ConfiguracionRut:
     """Clase de configuración para los parámetros de validación del RUT."""
 
-    factores_verificacion: Tuple[int, ...] = (2, 3, 4, 5, 6, 7)
+    factores_verificacion: tuple[int, ...] = (2, 3, 4, 5, 6, 7)
     modulo: int = 11
     max_digitos: int = 9
     min_digitos: int = 1
@@ -52,7 +51,7 @@ class RigorValidacion(Enum):
 
 
 __all__ = [
-    "ConfiguracionRut",
     "CONFIGURACION_POR_DEFECTO",
+    "ConfiguracionRut",
     "RigorValidacion",
 ]

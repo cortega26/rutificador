@@ -10,8 +10,10 @@ pip install rutificador[pydantic]
 from pydantic import BaseModel
 from rutificador.contrib.pydantic import RutStr
 
+
 class Usuario(BaseModel):
     rut: RutStr
+
 
 u = Usuario(rut="12.345.678-5")
 print(u.rut)  # 12345678-5
@@ -29,6 +31,7 @@ from rutificador import Rut
 from rutificador.contrib.fastapi import parametro_rut
 
 app = FastAPI()
+
 
 @app.get("/usuario/{rut}")
 def obtener_usuario(rut: Rut = Depends(parametro_rut)):

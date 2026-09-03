@@ -16,17 +16,17 @@ diferencia porcentual y veredicto.
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 def _nombre_legible(nombre_completo: str) -> str:
     return nombre_completo.replace("tests/benchmarks/test_benchmarks_core.py::", "")
 
 
-def _cargar_benchmarks(ruta: Path) -> Dict[str, float]:
+def _cargar_benchmarks(ruta: Path) -> dict[str, float]:
     with open(ruta, encoding="utf-8") as f:
-        datos: Dict[str, Any] = json.load(f)
-    medias: Dict[str, float] = {}
+        datos: dict[str, Any] = json.load(f)
+    medias: dict[str, float] = {}
     for bench in datos.get("benchmarks", []):
         nombre = bench.get("name", "")
         stats = bench.get("stats", {})

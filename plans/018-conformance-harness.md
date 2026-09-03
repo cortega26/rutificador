@@ -241,23 +241,29 @@ from typing import Any
 # --- Sección de adaptación para implementaciones externas ---
 # Para usar con otra implementación, reemplaza estas funciones.
 
+
 def dv_implementation(base: str, config: dict) -> str:
     """Calcula el dígito verificador para una base numérica."""
     from rutificador.utils import calcular_digito_verificador
+
     return calcular_digito_verificador(base)
+
 
 def validation_implementation(entrada: str, modo: str, config: dict) -> dict:
     """Valida una entrada y retorna {estado, normalizado, codigos_error}."""
     from rutificador import Rut, RigorValidacion
     from rutificador.config import ConfiguracionRut
 
-    modo_enum = RigorValidacion.ESTRICTO if modo == "estricto" else RigorValidacion.FLEXIBLE
+    modo_enum = (
+        RigorValidacion.ESTRICTO if modo == "estricto" else RigorValidacion.FLEXIBLE
+    )
     resultado = Rut.parse(entrada, modo=modo_enum)
     return {
         "estado": resultado.estado,
         "normalizado": resultado.normalizado,
         "codigos_error": [e.codigo for e in resultado.errores],
     }
+
 
 # --- Fin de sección de adaptación ---
 
@@ -283,7 +289,9 @@ def run_conformance(vectors_path: Path) -> int:
         status = "PASS" if result.lower() == expected else "FAIL"
         if status == "FAIL":
             failures += 1
-        print(f"  [{status}] base={caso['base']:>10}  esperado={expected}  obtenido={result}")
+        print(
+            f"  [{status}] base={caso['base']:>10}  esperado={expected}  obtenido={result}"
+        )
 
     # Casos de validación
     print("\n--- Validación de RUT ---")
@@ -298,10 +306,12 @@ def run_conformance(vectors_path: Path) -> int:
         status = "PASS" if (estado_ok and codigo_ok) else "FAIL"
         if status == "FAIL":
             failures += 1
-        print(f"  [{status}] entrada='{caso['entrada']}'  modo={caso['modo']}  "
-              f"estado={result['estado']} (esperado={caso['estado_esperado']})")
+        print(
+            f"  [{status}] entrada='{caso['entrada']}'  modo={caso['modo']}  "
+            f"estado={result['estado']} (esperado={caso['estado_esperado']})"
+        )
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"Resultado: {total - failures}/{total} pasaron")
     if failures:
         print(f"  {failures} FALLOS")
@@ -353,6 +363,7 @@ def export_json(vectors, output_dir):
     path.write_text(json.dumps(vectors, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"  JSON → {path}")
 
+
 def export_yaml(vectors, output_dir):
     try:
         import yaml
@@ -360,7 +371,9 @@ def export_yaml(vectors, output_dir):
         print("  YAML: PyYAML no instalado. Saltando.")
         return
     path = output_dir / "conformance.yaml"
-    path.write_text(yaml.dump(vectors, allow_unicode=True, sort_keys=False), encoding="utf-8")
+    path.write_text(
+        yaml.dump(vectors, allow_unicode=True, sort_keys=False), encoding="utf-8"
+    )
     print(f"  YAML → {path}")
 
 
@@ -376,6 +389,7 @@ def main():
     export_yaml(vectors, output_dir)
 
     print(f"\nVectors exportados a {output_dir}/")
+
 
 if __name__ == "__main__":
     main()

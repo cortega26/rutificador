@@ -7,7 +7,7 @@ parámetros de ruta y query.
 """
 
 import logging
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 try:
     from fastapi import Depends, HTTPException, Query
@@ -19,8 +19,8 @@ except ImportError:
     # Este módulo solo debe usarse si fastapi está instalado
     HTTP_422 = 422
 
-from rutificador.rut import Rut
 from rutificador.exceptions import ErrorValidacionRut
+from rutificador.rut import Rut
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +54,9 @@ async def obtener_param_rut(
 def consulta_rut(
     default: Any = ...,
     *,
-    alias: Optional[str] = None,
-    title: Optional[str] = None,
-    description: Optional[str] = None,
+    alias: str | None = None,
+    title: str | None = None,
+    description: str | None = None,
     **kwargs,
 ):
     """Factory para un Query parameter que se valida como RUT."""
@@ -76,9 +76,9 @@ parametro_rut = obtener_param_rut
 ParametroRut = parametro_rut  # pylint: disable=invalid-name
 
 __all__ = [
-    "obtener_param_rut",
-    "parametro_rut",
+    "ConsultaRut",
     "ParametroRut",
     "consulta_rut",
-    "ConsultaRut",
+    "obtener_param_rut",
+    "parametro_rut",
 ]

@@ -7,21 +7,21 @@ Proporciona ``ValidadorRut`` con dos modos de rigor (``ESTRICTO``,
 
 import logging
 import re
-from typing import Optional, Match
+from re import Match
 
 from .config import CONFIGURACION_POR_DEFECTO, ConfiguracionRut, RigorValidacion
 from .exceptions import (
-    ErrorFormatoRut,
     ErrorDigitoRut,
+    ErrorFormatoRut,
     ErrorLongitudRut,
     ErrorValidacionRut,
 )
 from .utils import (
     RE_BASE_CON_PUNTOS,
     RE_BASE_DIGITOS,
-    normalizar_base_rut,
-    asegurar_cadena_no_vacia,
     _limpiar_entrada,
+    asegurar_cadena_no_vacia,
+    normalizar_base_rut,
 )
 
 logger = logging.getLogger(__name__)
@@ -100,7 +100,7 @@ class ValidadorRut:
         return base_normalizada
 
     def validar_digito_verificador(
-        self, digito_ingresado: Optional[str], digito_calculado: str
+        self, digito_ingresado: str | None, digito_calculado: str
     ) -> None:
         """Valida el dígito verificador del RUT."""
         if digito_ingresado is None:

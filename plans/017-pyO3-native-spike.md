@@ -221,15 +221,28 @@ Crear `scripts/bench_dv_comparison.py`:
 
 import time
 import sys
-sys.path.insert(0, '.')
+
+sys.path.insert(0, ".")
 
 from rutificador.utils import calcular_digito_verificador
 from rutificador_core import calcular_dv_rust
 
 BASES = [
-    "1", "12", "123", "1234", "12345", "123456", "1234567", "12345678",
-    "99999999", "1000000", "50000000", "76000000", "12345678",
+    "1",
+    "12",
+    "123",
+    "1234",
+    "12345",
+    "123456",
+    "1234567",
+    "12345678",
+    "99999999",
+    "1000000",
+    "50000000",
+    "76000000",
+    "12345678",
 ]
+
 
 def bench_python(iterations: int = 100_000):
     start = time.perf_counter()
@@ -239,6 +252,7 @@ def bench_python(iterations: int = 100_000):
     elapsed = time.perf_counter() - start
     return elapsed
 
+
 def bench_rust(iterations: int = 100_000):
     start = time.perf_counter()
     for _ in range(iterations):
@@ -247,10 +261,11 @@ def bench_rust(iterations: int = 100_000):
     elapsed = time.perf_counter() - start
     return elapsed
 
+
 if __name__ == "__main__":
     ITER = 100_000
     print(f"Benchmark: {len(BASES)} bases × {ITER} iteraciones")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     # Warmup
     bench_python(1000)

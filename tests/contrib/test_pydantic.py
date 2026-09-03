@@ -1,5 +1,6 @@
 import pytest
 from pydantic import BaseModel, ValidationError
+
 from rutificador.contrib.pydantic.rutstr import RutStr
 
 

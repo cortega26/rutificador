@@ -13,7 +13,8 @@ import sys
 import time
 import xml.etree.ElementTree as ET  # nosec B405  # Solo genera XML de salida, no parsea entrada
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Literal, Optional, Union
+from collections.abc import Iterator
+from typing import Any, Literal
 
 from .procesador import (
     DetalleError,
@@ -25,7 +26,7 @@ from .rut import Rut
 from .version import obtener_informacion_version
 
 
-def _leer_ruts(ruta_archivo: Optional[str]) -> Iterator[str]:
+def _leer_ruts(ruta_archivo: str | None) -> Iterator[str]:
     """Lee RUTs desde un archivo o desde la entrada estándar."""
     if ruta_archivo:
         try:
@@ -66,11 +67,11 @@ class _EstrategiaEmision(ABC):
         """Pre-emisión antes del bucle."""
 
     @abstractmethod
-    def emitir(self, item: Dict[str, Any]) -> None:
+    def emitir(self, item: dict[str, Any]) -> None:
         """Emite un elemento individual."""
 
     @abstractmethod
-    def finalizar(self, metadata: Dict[str, Any]) -> None:
+    def finalizar(self, metadata: dict[str, Any]) -> None:
         """Post-emisión y metadatos."""
 
 
@@ -78,7 +79,7 @@ class _EmisionTexto(_EstrategiaEmision):
     def iniciar(self) -> None:
         pass
 
-    def emitir(self, item: Dict[str, Any]) -> None:
+    def emitir(self, item: dict[str, Any]) -> None:
         if item["valido"]:
             print(item["resultado"])
         else:
@@ -89,7 +90,7 @@ class _EmisionTexto(_EstrategiaEmision):
                 msg += f" (¿Quisiste decir {item['sugerencia']}?)"
             print(msg, file=sys.stderr)
 
-    def finalizar(self, metadata: Dict[str, Any]) -> None:
+    def finalizar(self, metadata: dict[str, Any]) -> None:
         print("\n--- RESUMEN DE AUDITORÍA ---", file=sys.stderr)
         for k, v in metadata["audit"].items():
             print(f"{k.capitalize()}: {v}", file=sys.stderr)
@@ -99,13 +100,13 @@ class _EmisionJSON(_EstrategiaEmision):
     def iniciar(self) -> None:
         print("[", end="", flush=True)
 
-    def emitir(self, item: Dict[str, Any]) -> None:
+    def emitir(self, item: dict[str, Any]) -> None:
         if not self.primer_elemento:
             print(",", end="")
         print(json.dumps(item, ensure_ascii=False), end="")
         self.primer_elemento = False
 
-    def finalizar(self, metadata: Dict[str, Any]) -> None:
+    def finalizar(self, metadata: dict[str, Any]) -> None:
         print("]")
         print(json.dumps(metadata, indent=2, ensure_ascii=False), file=sys.stderr)
 
@@ -114,22 +115,22 @@ class _EmisionJSONL(_EstrategiaEmision):
     def iniciar(self) -> None:
         pass
 
-    def emitir(self, item: Dict[str, Any]) -> None:
+    def emitir(self, item: dict[str, Any]) -> None:
         print(json.dumps(item, ensure_ascii=False))
 
-    def finalizar(self, metadata: Dict[str, Any]) -> None:
+    def finalizar(self, metadata: dict[str, Any]) -> None:
         print(json.dumps(metadata, ensure_ascii=False), file=sys.stderr)
 
 
 class _EmisionCSV(_EstrategiaEmision):
     def __init__(self) -> None:
         super().__init__()
-        self._escritor: Optional[csv.DictWriter[Any]] = None
+        self._escritor: csv.DictWriter[Any] | None = None
 
     def iniciar(self) -> None:
         pass
 
-    def emitir(self, item: Dict[str, Any]) -> None:
+    def emitir(self, item: dict[str, Any]) -> None:
         # Mitigación de inyección de fórmulas (CSV injection)
         item_csv = {
             k: f"'{v}"
@@ -142,7 +143,7 @@ class _EmisionCSV(_EstrategiaEmision):
             self._escritor.writeheader()
         self._escritor.writerow(item_csv)
 
-    def finalizar(self, metadata: Dict[str, Any]) -> None:
+    def finalizar(self, metadata: dict[str, Any]) -> None:
         pass
 
 
@@ -150,19 +151,19 @@ class _EmisionXML(_EstrategiaEmision):
     def iniciar(self) -> None:
         print("<rutificador>", flush=True)
 
-    def emitir(self, item: Dict[str, Any]) -> None:
+    def emitir(self, item: dict[str, Any]) -> None:
         reg = ET.Element("registro")
         for k, v in item.items():
             elem = ET.SubElement(reg, k)
             elem.text = str(v)
         print(ET.tostring(reg, encoding="unicode"), end="")
 
-    def finalizar(self, metadata: Dict[str, Any]) -> None:
+    def finalizar(self, metadata: dict[str, Any]) -> None:
         print("</rutificador>")
         print(f"<!-- Audit: {metadata['audit']} -->", file=sys.stderr)
 
 
-_ESTRATEGIAS_FORMATO: Dict[str, type] = {
+_ESTRATEGIAS_FORMATO: dict[str, type] = {
     "text": _EmisionTexto,
     "json": _EmisionJSON,
     "jsonl": _EmisionJSONL,
@@ -172,7 +173,7 @@ _ESTRATEGIAS_FORMATO: Dict[str, type] = {
 
 
 def _emitir_resultados(
-    resultados: Iterator[tuple[bool, Union[str, RutProcesado, DetalleError]]],
+    resultados: Iterator[tuple[bool, str | RutProcesado | DetalleError]],
     formato: str,
     usar_sugerencias: bool = False,
     quiet: bool = False,
@@ -190,7 +191,7 @@ def _emitir_resultados(
 
     for es_valido, resultado in resultados:
         total += 1
-        item: Dict[str, Any] = {
+        item: dict[str, Any] = {
             "valido": es_valido,
             "original": "",
             "resultado": "",
@@ -282,7 +283,7 @@ def _comando_formatear(args: argparse.Namespace) -> int:
 def _comando_enmascarar(args: argparse.Namespace) -> int:
     codigo_salida = 0
     modo: Literal["mascarada", "token"] = "token" if args.token else "mascarada"
-    clave: Optional[str] = None
+    clave: str | None = None
 
     if modo == "token":
         clave = args.clave or os.environ.get("RUTIFICADOR_TOKEN_KEY")
@@ -307,9 +308,9 @@ def _comando_enmascarar(args: argparse.Namespace) -> int:
                 mayusculas=args.mayusculas,
             )
             print(resultado)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             codigo_salida = 1
-            print(f"{rut_str} [ERROR] - {str(exc)}", file=sys.stderr)
+            print(f"{rut_str} [ERROR] - {exc!s}", file=sys.stderr)
     return codigo_salida
 
 
@@ -422,7 +423,7 @@ def _crear_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = _crear_parser()
     args = parser.parse_args(argv)
     result = args.func(args)

@@ -16,7 +16,7 @@ except ImportError as exc:  # pragma: no cover
         "Polars no está instalado. Instálalo con 'pip install rutificador[polars]'"
     ) from exc
 
-from ..rut import Rut, RigorValidacion
+from ..rut import RigorValidacion, Rut
 from ._formato_comun import aplicar_formato
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class RutNamespace:
         def _val(x):
             try:
                 return Rut.parse(x, modo=modo)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         return self._s.map_elements(_val, return_dtype=pl.Object)
@@ -49,7 +49,7 @@ class RutNamespace:
             try:
                 res = Rut.parse(x, modo=modo)
                 return aplicar_formato(res, formato)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         return self._s.map_elements(_fmt, return_dtype=pl.String)
@@ -62,7 +62,7 @@ class RutNamespace:
             try:
                 res = Rut.parse(x, modo=RigorValidacion.ESTRICTO)
                 return res.estado == "valido"
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return False
 
         return self._s.map_elements(_check, return_dtype=pl.Boolean)
@@ -74,7 +74,7 @@ class RutNamespace:
             try:
                 norm, _, _ = Rut.normalizar(x, modo=RigorValidacion.FLEXIBLE)
                 return norm
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         return self._s.map_elements(_norm, return_dtype=pl.String)

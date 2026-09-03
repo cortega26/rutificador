@@ -12,9 +12,10 @@ Contrato:
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Literal, Type, cast
+from typing import Any, ClassVar, Literal, cast
 
-from pydantic_core import PydanticCustomError, core_schema as cs
+from pydantic_core import PydanticCustomError
+from pydantic_core import core_schema as cs
 
 from rutificador.config import RigorValidacion
 from rutificador.rut import Rut
@@ -55,7 +56,7 @@ class RutStr(str):
     @classmethod
     def _validar_y_normalizar(
         cls, valor: Any, formato: FormatoRut = "base-dv"
-    ) -> "RutStr":
+    ) -> RutStr:
         if not isinstance(valor, str):
             raise cls._error(
                 codigo_tipo=cls._CODIGO_ERROR_TIPO,
@@ -75,9 +76,7 @@ class RutStr(str):
         return cls._manejar_resultado_error(valor, resultado)
 
     @classmethod
-    def _manejar_resultado_exitoso(
-        cls, resultado: Any, formato: FormatoRut
-    ) -> "RutStr":
+    def _manejar_resultado_exitoso(cls, resultado: Any, formato: FormatoRut) -> RutStr:
         """Maneja los estados 'valido' y 'posible' (autocompletado)."""
         base = resultado.normalizado or resultado.base
         if not base:
@@ -96,7 +95,7 @@ class RutStr(str):
         return cls(cls._formatear(obj, formato))
 
     @classmethod
-    def _manejar_resultado_error(cls, valor: str, resultado: Any) -> "RutStr":
+    def _manejar_resultado_error(cls, valor: str, resultado: Any) -> RutStr:
         """Maneja los errores de validación, extrayendo sugerencias si es posible."""
         if resultado.errores:
             detalle = resultado.errores[0]
@@ -169,7 +168,7 @@ class RutStr(str):
         return esquema_json
 
 
-def rut_str_annotated(formato: FormatoRut = "base-dv") -> Type[RutStr]:
+def rut_str_annotated(formato: FormatoRut = "base-dv") -> type[RutStr]:
     """Genera un tipo RutStr con un formato específico para Pydantic."""
 
     class RutStrForFormat(RutStr):
@@ -185,11 +184,11 @@ def rut_str_annotated(formato: FormatoRut = "base-dv") -> Type[RutStr]:
                 serialization=cs.to_string_ser_schema(),
             )
 
-    return cast(Type[RutStr], RutStrForFormat)
+    return cast(type[RutStr], RutStrForFormat)
 
 
 # Alias para compatibilidad retroactiva
 RutStrAnnotated = rut_str_annotated  # pylint: disable=invalid-name
 
 
-__all__ = ["RutStr", "rut_str_annotated", "RutStrAnnotated", "FormatoRut"]
+__all__ = ["FormatoRut", "RutStr", "RutStrAnnotated", "rut_str_annotated"]

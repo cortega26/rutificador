@@ -25,5 +25,6 @@ pip install rutificador
 
 ```python
 import rutificador
+
 print(rutificador.__version__)
 ```
