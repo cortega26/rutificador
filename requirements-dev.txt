@@ -20,3 +20,4 @@ mkdocs-material>=9.5
 mkdocstrings[python]>=1.0
 pandas
 polars
+pillow==12.3.0  # fix PYSEC vulns (CVE-2026 etc.)
