@@ -41,7 +41,7 @@ def configurar_registro(
 
     if handler is not None:
         handler.setFormatter(formatter)
-        handler._rutificador = True
+        handler._rutificador = True  # type: ignore[attr-defined]
         logger_principal.handlers = [
             existente
             for existente in logger_principal.handlers
@@ -55,7 +55,7 @@ def configurar_registro(
         )
         if existente is None:
             existente = logging.StreamHandler()
-            existente._rutificador = True
+            existente._rutificador = True  # type: ignore[attr-defined]
             logger_principal.addHandler(existente)
         existente.setFormatter(formatter)
 
