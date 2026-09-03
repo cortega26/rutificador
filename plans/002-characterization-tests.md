@@ -124,12 +124,14 @@ from rutificador.rut import Rut
 
 logging.disable(logging.CRITICAL)
 
+
 def _ctor_valido(s: str) -> bool:
     try:
         Rut(s)
         return True
     except Exception:
         return False
+
 
 # (entrada, ctor_valido_esperado, parse_estado_esperado) — valores derivados
 # empíricamente del comportamiento ACTUAL (commit 278425b). No son un ideal;
@@ -140,18 +142,20 @@ CASOS = [
     # ... completar desde la salida del Paso 1 ...
 ]
 
+
 @pytest.mark.parametrize("entrada, ctor_ok, estado", CASOS)
 def test_comportamiento_actual_ctor_y_parse(entrada, ctor_ok, estado):
     assert _ctor_valido(entrada) is ctor_ok
     assert Rut.parse(entrada).estado == estado
+
 
 def test_divergencia_espacios_documentada():
     """Hoy el constructor acepta espacios internos y parse (ESTRICTO) los rechaza.
     Plan 003 resolverá esta inconsistencia; este test la fija para hacer
     visible ese cambio."""
     entrada = "12 345678-5"
-    assert _ctor_valido(entrada) is True          # constructor limpia espacios
-    assert Rut.parse(entrada).estado == "invalido" # parse ESTRICTO los rechaza
+    assert _ctor_valido(entrada) is True  # constructor limpia espacios
+    assert Rut.parse(entrada).estado == "invalido"  # parse ESTRICTO los rechaza
 ```
 
 **Verify**: `python -m pytest -q tests/test_consistencia_parse.py` → all pass.
@@ -165,12 +169,14 @@ branch of both the batch and streaming APIs, asserting parity with serial:
 from rutificador.procesador import validar_lista_ruts, ProcesadorLotesRut
 from rutificador.utils import calcular_digito_verificador
 
+
 def _datos(n=60):
     out = []
     for i in range(1_000_000, 1_000_000 + n):
         b = str(i)
         out.append(f"{b}-{calcular_digito_verificador(b)}")
     return out
+
 
 def test_validar_lista_paralelo_igual_que_serial():
     datos = _datos()
@@ -179,6 +185,7 @@ def test_validar_lista_paralelo_igual_que_serial():
     par = p.validar_lista_ruts(datos, paralelo=True)
     assert serial.ruts_validos == par.ruts_validos
     assert len(serial.ruts_invalidos) == len(par.ruts_invalidos)
+
 
 def test_funcion_modulo_validar_lista_paralelo():
     datos = _datos()

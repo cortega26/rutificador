@@ -10,11 +10,11 @@ rut = Rut("12.345.678-5")
 
 # Parseo seguro — nunca lanza excepción
 resultado = Rut.parse("12.345.678-5")
-print(resultado.estado)       # valido
+print(resultado.estado)  # valido
 print(resultado.normalizado)  # 12345678-5
 
 resultado = Rut.parse("12.345.678-9")
-print(resultado.estado)        # invalido
+print(resultado.estado)  # invalido
 print(resultado.codigo_error)  # DV_DISCORDANTE
 ```
 
@@ -23,9 +23,9 @@ print(resultado.codigo_error)  # DV_DISCORDANTE
 ```python
 rut = Rut("12345678-5")
 
-print(rut.formatear())                             # 12345678-5
-print(rut.formatear(separador_miles=True))         # 12.345.678-5
-print(rut.formatear(mayusculas=True))              # 12345678-5
+print(rut.formatear())  # 12345678-5
+print(rut.formatear(separador_miles=True))  # 12.345.678-5
+print(rut.formatear(mayusculas=True))  # 12345678-5
 ```
 
 ## Cálculo del dígito verificador
@@ -43,7 +43,7 @@ print(dv)  # 5
 from rutificador import Rut
 
 print(Rut.enmascarar("12.345.678-5", mantener=3, caracter="X"))  # XXXXX678-5
-print(Rut.enmascarar("12.345.678-5", mantener=4))                 # ****5678-5
+print(Rut.enmascarar("12.345.678-5", mantener=4))  # ****5678-5
 
 # Tokenización
 print(Rut.enmascarar("12.345.678-5", modo="token", clave="mi-clave"))

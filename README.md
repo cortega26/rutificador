@@ -95,11 +95,11 @@ rut = Rut("12.345.678-5")
 
 # Parseo seguro — nunca lanza excepción, siempre retorna resultado estructurado
 resultado = Rut.parse("12.345.678-5")
-print(resultado.estado)       # valido
+print(resultado.estado)  # valido
 print(resultado.normalizado)  # 12345678-5
 
 resultado = Rut.parse("12.345.678-9")
-print(resultado.estado)        # invalido
+print(resultado.estado)  # invalido
 print(resultado.codigo_error)  # DV_DISCORDANTE
 
 # Capturar error en validación directa
@@ -116,9 +116,9 @@ except ErrorValidacionRut as e:
 ```python
 rut = Rut("12345678-5")
 
-print(rut.formatear())                             # 12345678-5
-print(rut.formatear(separador_miles=True))         # 12.345.678-5
-print(rut.formatear(mayusculas=True))              # 12345678-5
+print(rut.formatear())  # 12345678-5
+print(rut.formatear(separador_miles=True))  # 12.345.678-5
+print(rut.formatear(mayusculas=True))  # 12345678-5
 print(rut.formatear(separador_miles=True, mayusculas=True))  # 12.345.678-5
 
 # Con DV en 'k'
@@ -142,7 +142,7 @@ from rutificador import Rut
 
 # Ofuscar parcialmente
 print(Rut.enmascarar("12.345.678-5", mantener=3, caracter="X"))  # XXXXX678-5
-print(Rut.enmascarar("12.345.678-5", mantener=4))                 # ****5678-5
+print(Rut.enmascarar("12.345.678-5", mantener=4))  # ****5678-5
 
 # Tokenización
 print(Rut.enmascarar("12.345.678-5", modo="token", clave="mi-clave"))  # tok_abc123...
@@ -218,11 +218,11 @@ rutificador info
 ```python
 from rutificador import ProcesadorLotesRut
 
-ruts = ['12.345.678-5', '98.765.432-1', '1-9']
+ruts = ["12.345.678-5", "98.765.432-1", "1-9"]
 procesador = ProcesadorLotesRut()
 
 resultado = procesador.validar_lista_ruts(ruts)
-print(len(resultado.detalles_validos))    # 2
+print(len(resultado.detalles_validos))  # 2
 print(len(resultado.detalles_invalidos))  # 1
 
 # Formatear a JSON, CSV o XML
@@ -263,8 +263,10 @@ pip install rutificador[pydantic]
 from pydantic import BaseModel
 from rutificador.contrib.pydantic import RutStr, rut_str_annotated
 
+
 class Usuario(BaseModel):
     rut: RutStr
+
 
 u = Usuario(rut="12.345.678-5")
 print(u.rut)  # 12345678-5
@@ -272,8 +274,10 @@ print(u.rut)  # 12345678-5
 # Formato específico
 RutConPuntos = rut_str_annotated(formato="miles-con-guion")
 
+
 class UsuarioV2(BaseModel):
     rut: RutConPuntos
+
 
 u2 = UsuarioV2(rut="12.345.678-5")
 print(u2.rut)  # 12.345.678-5
@@ -291,6 +295,7 @@ from rutificador import Rut
 from rutificador.contrib.fastapi import parametro_rut
 
 app = FastAPI()
+
 
 @app.get("/usuario/{rut}")
 def obtener_usuario(rut: Rut = Depends(parametro_rut)):
@@ -345,7 +350,7 @@ from rutificador.config import RigorValidacion, ConfiguracionRut
 
 # Modo flexible: tolera espacios, guiones extra, etc.
 validador = ValidadorRut(modo=RigorValidacion.FLEXIBLE)
-rut = Rut('12 345 678-5', validador=validador)
+rut = Rut("12 345 678-5", validador=validador)
 
 # Configuración avanzada
 config = ConfiguracionRut(max_digitos=10)
@@ -416,9 +421,11 @@ import logging
 import json
 from rutificador import configurar_registro
 
+
 class JsonFormatter(logging.Formatter):
     def format(self, record):
         return json.dumps({"nivel": record.levelname, "mensaje": record.getMessage()})
+
 
 handler = logging.StreamHandler()
 handler.setFormatter(JsonFormatter())
@@ -438,9 +445,9 @@ procesador = ProcesadorLotesRut()
 resultado = procesador.validar_lista_ruts(["12.345.678-5"], paralelo=False)
 
 detalle = resultado.detalles_validos[0]
-print(detalle.valor)           # 12345678-5
+print(detalle.valor)  # 12345678-5
 print(detalle.validador_modo)  # estricto/flexible
-print(detalle.duracion)        # segundos consumidos en la validacion
+print(detalle.duracion)  # segundos consumidos en la validacion
 
 # Errores con codigo estructurado
 resultado_error = procesador.validar_lista_ruts(["12345678-9"])
@@ -454,7 +461,7 @@ print(problema.rut, problema.codigo, problema.mensaje)
 from rutificador import evaluar_rendimiento
 
 resultados = evaluar_rendimiento(num_ruts=1000)
-print(resultados['tasa_exito'])
+print(resultados["tasa_exito"])
 ```
 
 ### Formateador personalizado
@@ -462,11 +469,13 @@ print(resultados['tasa_exito'])
 ```python
 from rutificador.formatter import FormateadorRut, FabricaFormateadorRut
 
+
 class FormateadorLista(FormateadorRut):
     def formatear(self, ruts):
-        return ','.join(ruts)
+        return ",".join(ruts)
 
-FabricaFormateadorRut.registrar_formateador('lista', FormateadorLista)
+
+FabricaFormateadorRut.registrar_formateador("lista", FormateadorLista)
 ```
 
 ---
