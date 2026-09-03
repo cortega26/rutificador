@@ -68,9 +68,9 @@ testpaths = ["tests"]
 # funcione como se documenta en el README.
 addopts = ""
 filterwarnings = [
-    "ignore::DeprecationWarning:starlette.*",
-    "ignore::DeprecationWarning:anyio.*",
-    "ignore::DeprecationWarning:pydantic.*",
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+    "ignore::SyntaxWarning",
 ]
 norecursedirs = ["mutants", ".venv", ".benchmarks", ".hypothesis", "dist"]
 

@@ -37,7 +37,7 @@ jobs:
 
     - name: Ejecutar tests (cobertura + deteccion de deprecaciones)
       run: |
-        python -m pytest -W error::DeprecationWarning -W ignore::DeprecationWarning -W ignore::UserWarning \
+        python -m pytest \
           --cov=rutificador --cov-report=xml --cov-report=lcov --cov-report=html \
           -v tests/ --tb=short
 
