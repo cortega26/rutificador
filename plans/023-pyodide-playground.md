@@ -7,16 +7,33 @@
 > in `plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
-> **Drift check (run first)**: `git diff --stat d6c28d8..HEAD -- mkdocs.yml docs/index.md docs/guia/`
+> **Drift check (run first)**: `git diff --stat d6c28d8..HEAD -- mkdocs.yml docs/index.md docs/guia/ rutificador/procesador.py rutificador/__init__.py`
 > If any in-scope file changed since this plan was written, compare the
 > "Current state" excerpts against the live code before proceeding; on a
 > mismatch, treat it as a STOP condition.
+>
+> **Historial 2026-09-15 (intento 1, BLOQUEADO y aprendido)**: el
+> playground se construyó y funciona hasta la carga del paquete, pero
+> `from rutificador import Rut` falla en Pyodide con
+> `ModuleNotFoundError: No module named '_multiprocessing'`, verificado
+> en Chrome headless con la rueda real: `rutificador/__init__.py:26`
+> importa `.procesador`, y `rutificador/procesador.py:16` hace
+> `from concurrent.futures import ProcessPoolExecutor,
+> ThreadPoolExecutor` a nivel de módulo, lo que arrastra
+> `multiprocessing.queues` → `_multiprocessing` (ausente en Pyodide).
+> La premisa "el núcleo corre bajo Pyodide tal cual" es falsa para el
+> import de paquete. El desbloqueo es el Step 0b (import perezoso),
+> agregado tras el bloqueo. Reutiliza el worktree
+> `/tmp/rutificador-exec-023`: la página (`docs/guia/playground.md`),
+> la línea de nav y el enlace ya existen SIN commitear — son tu punto
+> de partida, no los recrees (el Step 1 ahora es verificación).
 
 ## Status
 
 - **Priority**: P3
-- **Effort**: S
-- **Risk**: LOW (solo docs; sin código de librería)
+- **Effort**: S–M (el Step 0b toca el núcleo con gate completo)
+- **Risk**: MED (cambio en import-time del paquete; mitigado por proxy
+  test + suite + mypy strict + import-linter)
 - **Depends on**: none
 - **Category**: direction
 - **Planned at**: commit `d6c28d8`, 2026-09-15
@@ -64,15 +81,21 @@ decide.
 
 **In scope**:
 
-- `docs/guia/playground.md` (crear: página con el playground)
+- `rutificador/procesador.py` (solo Step 0b: mover el import de
+  `concurrent.futures` a nivel de función + anotación string con
+  `TYPE_CHECKING`; nada más)
+- `tests/test_import_liviano.py` (crear: proxy test sin multiprocessing)
+- `docs/guia/playground.md` (ya existe sin commitear en el worktree de
+  re-ejecución; verificar, no recrear)
 - `mkdocs.yml` (solo la línea de nav)
-- `docs/index.md` (solo un enlace a la nueva página al final de la
-  intro; no reescribir la página)
+- `docs/index.md` (solo un enlace al final de la intro; no reescribir
+  la página)
 - `plans/README.md` (fila de estado)
 
 **Out of scope** (NO tocar):
 
-- `rutificador/` — la librería no cambia para el playground.
+- `rutificador/` salvo `procesador.py` para el Step 0b — el resto de
+  la librería no cambia para el playground.
 - Vendorear Pyodide o la rueda en el repo (CDN + PyPI siempre; el repo
   no debe crecer megabytes).
 - Soporte offline, service workers, o theming del widget más allá de
@@ -100,6 +123,89 @@ decide.
    `pypi.org`. Si los hay, STOP.
 
 **Verify**: build verde; rueda `py3-none-any`; sin CSP bloqueante.
+
+### Step 0b: Import perezoso de `concurrent.futures` (prerrequisito tras el bloqueo)
+
+> **Historial intento 2 (v1, BLOQUEADO)**: mover el import al cuerpo del
+> método + anotación string funciona (proxy test verde, mypy strict
+> verde, import-linter KEPT), pero rompe 4 tests existentes que
+> parchean `rutificador.procesador.ThreadPoolExecutor` /
+> `.ProcessPoolExecutor` como atributos de módulo
+> (`tests/test_rutificador.py:492,519,603,629`, todos
+> `AttributeError`). Editar esos tests queda prohibido (superficie
+> privada que otros consumidores podrían usar igual). La v2 de abajo
+> conserva compatibilidad total vía `__getattr__` PEP 562. Reutiliza
+> el worktree `/tmp/rutificador-exec-023`: el test proxy y la página
+> ya existen sin commitear; el cambio va sobre el `procesador.py` ya
+> modificado (no revertir la v1, extenderla).
+
+Sin este paso el navegador falla (ver Historial del encabezado).
+Objetivo: `from rutificador import Rut` + `Rut.parse(...)` funcionan
+aunque `multiprocessing`, `_multiprocessing` y
+`concurrent.futures.process` sean inimportables, sin cambiar ningún
+comportamiento en CPython Y sin romper a quien acceda a
+`rutificador.procesador.ProcessPoolExecutor` (tests y consumidores).
+
+1. Lee `rutificador/procesador.py:1-40` y `:110-140`. Confirma con
+   `grep -n "ProcessPoolExecutor\|ThreadPoolExecutor\|concurrent"
+   rutificador/procesador.py` todos los usos a nivel de módulo (la
+   línea 16 y la anotación de `obtener_clase_ejecutor` son los
+   conocidos; si hay más usos runtime a nivel de módulo, STOP).
+2. Parte de la v1 (ya hecha en el worktree, verificar, no rehacer):
+   el import fuera del nivel de módulo y la anotación string con
+   `TYPE_CHECKING`. NUEVO en v2 — agrega al final de
+   `rutificador/procesador.py` (antes de `__all__` si existe; si no,
+   al final del archivo) un alias perezoso PEP 562:
+   ```python
+   def __getattr__(nombre: str) -> Any:
+       """Alias perezosos para los ejecutores (compatibilidad + Pyodide).
+
+       `from rutificador import Rut` nunca toca estos atributos, así que
+       el import del paquete no arrastra `multiprocessing` (ausente en
+       Pyodide). Quien los acceda obtiene la clase real bajo demanda.
+       """
+       if nombre in {"ProcessPoolExecutor", "ThreadPoolExecutor"}:
+           from concurrent import futures
+           return getattr(futures, nombre)
+       raise AttributeError(f"módulo {__name__!r} sin atributo {nombre!r}")
+   ```
+   (`Any` ya está importado en el bloque `typing` del archivo; si no
+   lo estuviera, STOP.) No cambies lógica, nombres ni `__all__`. Los 4
+   tests de `tests/test_rutificador.py:492,519,603,629` deben pasar SIN
+   modificarlos: `monkeypatch.setattr` y `from ... import ...` siguen
+   funcionando vía `__getattr__` en CPython.
+3. Crea `tests/test_import_liviano.py`: test que lanza por subprocess
+   (`sys.executable -c`, patrón `ejecutar_cli` de
+   `tests/test_cli.py:13-24` con `timeout=15`) un snippet que instala
+   un `meta_path` finder que lanza `ImportError` ante
+   `multiprocessing`, `_multiprocessing` y `concurrent.futures.process`
+   (solo esos; NO bloquees `concurrent.futures` entero a ciegas — si el
+   import del paquete lo necesitara, el test debe decirlo, no
+   ocultarlo), y luego hace `from rutificador import Rut` +
+   `Rut.parse("12.345.678-5")` esperando `valido`, y
+   `Rut.parse("12.345.678-9")` esperando `invalido`. Assert
+   `returncode == 0`. Si el snippet falla por OTRA importación con
+   dependencia de multiprocessing en la cadena (distinta de
+   `procesador.py:16`), STOP: ampliar el alcance lo decide el revisor.
+4. Corre: el proxy test (`tests/test_import_liviano.py`, ya existe —
+   verificar, no recrear), los 4 tests de parcheo
+   (`tests/test_rutificador.py -k "backend_process or cae_a_threads or
+   por_defecto_utiliza or thread_backend"` — ajusta el `-k` a los
+   nombres reales leídos del archivo), la suite con ignores,
+   `ruff check .`, `ruff format --check .`,
+   `mypy --strict rutificador/procesador.py`,
+   `mypy rutificador/ --ignore-missing-imports` y `lint-imports`.
+
+**Verify**: proxy test verde; los 4 tests de parcheo verdes SIN
+modificarlos; suite, ruff, mypy (strict + general) e import-linter
+verdes; importar el paquete sin tocar los alias no importa
+`concurrent.futures` (compruébalo: subprocess con el bloqueador que
+importe `rutificador.procesador` a secas — debe funcionar).
+
+**Verify**: `tests/test_import_liviano.py` en verde; suite, ruff, mypy
+(strict + general) e import-linter verdes; `grep -n
+"^from concurrent\|^import concurrent" rutificador/procesador.py`
+vacío (sin imports de concurrent a nivel de módulo).
 
 ### Step 1: Crear `docs/guia/playground.md`
 
@@ -158,6 +264,9 @@ Docs sin tests Python. Verificación:
 
 Machine-checkable. ALL must hold:
 
+- [ ] `tests/test_import_liviano.py` en verde + suite con ignores en
+  verde + `mypy --strict rutificador/procesador.py` sin issues +
+  `lint-imports` con 3 contratos KEPT
 - [ ] `mkdocs build --strict` → exit 0, `Documentation built`
 - [ ] `site/guia/playground/index.html` contiene `rut-input`,
   `rut-validar`, `rut-salida` y el script con versión Pyodide fijada
@@ -171,6 +280,11 @@ Machine-checkable. ALL must hold:
 Stop and report back (do not improvise) if:
 
 - La rueda de PyPI no es `py3-none-any` (la premisa "puro Python" falla).
+- El proxy test del Step 0b revela otra dependencia de multiprocessing
+  en la cadena fuera de `procesador.py:16`, o la v2 (`__getattr__`)
+  rompe strict / import-linter / suite (incluidos los 4 tests de
+  parcheo SIN modificar) dos veces. NO editar
+  `tests/test_rutificador.py` para hacerlo pasar: STOP y reporta.
 - `docs.yml` impone CSP que bloquea el CDN o PyPI.
 - El CDN de Pyodide no es alcanzable desde tu entorno (no apruebes la
   prueba manual a ciegas).

@@ -128,7 +128,23 @@ Solo stdlib + `from rutificador.procesador import validar_flujo_ruts`.
 
 ### Step 2: Benchmark con tarea testigo
 
-`/tmp/async-spike/bench.py`: lote de 10 000 RUTs (`_muestra(10000)`),
+> **Lección del intento 2026-09-15 (ver historial al pie)**: en entorno
+> compartido/ruidoso la varianza supera el 30 % y el plan obliga a parar
+> como no-concluyente. Antes de medir, aplica los controles de abajo; son
+> parte del paso, no opcionales.
+
+Controles de entorno (en orden, parar en el primero que falle):
+
+1. Máquina quieta: cierra cargas pesadas vecinas; si existe `taskset`,
+   fija afinidad a 2 CPUs libres (`taskset -c 2,3 ...`) para todas las
+   corridas y anótalo.
+2. Calibración: corre SOLO el serial 3 veces sobre 10 000 RUTs. Si la
+   varianza (max-min)/mediana supera el 10 %, el entorno no sirve:
+   agranda el lote a 50 000 y repite; si sigue >10 %, STOP como
+   no-concluyente (no es tu prototipo, es la máquina).
+3. Recién entonces corre el benchmark completo: lote 10 000 (o 50 000 si
+   calibraste con ese), 4 variantes, **5 corridas**, mediana. Reporta
+   varianza por variante.
 mide con `time.perf_counter`:
 
 1. serial (`paralelo=False`),
@@ -139,8 +155,11 @@ mide con `time.perf_counter`:
    bloqueo del loop.
 
 Imprime tabla `variante | segundos | iteraciones_testigo` y el veredicto
-numérico según el criterio de "Current state". Repite 3 veces y reporta
-la mediana (el GIL y el ruido de CI exigen no creer una sola corrida).
+numérico según el criterio de "Current state". Si tras los controles la
+varianza de alguna variante sigue >30 %, el veredicto es **no-go** (una
+API nueva necesita evidencia positiva; ganancia persistentemente
+inmedible = no agregar superficie). Solo si ni siquiera la calibración
+pasa se reporta no-concluyente.
 
 **Verify**: tabla impresa con 4 filas × 3 corridas + veredicto que cita
 los números. Guarda la salida: va pegada en las notas.
@@ -183,13 +202,23 @@ Stop and report back (do not improvise) if:
 - `validar_flujo_ruts` ya no existe o su firma/retorno cambió (drift).
 - La paridad serial-vs-async falla dos veces (prototipo o semántica
   cambió bajo tus pies).
-- El benchmark no discrimina nada (varianza >30 % entre corridas en este
-  entorno): repórtalo como no-concluyente en vez de forzar un veredicto.
+- El benchmark no discrimina: si la calibración (Step 2, control 2) no
+  pasa ni con lote 50 000, repórtalo como no-concluyente (es la máquina).
+  Si la calibración pasa pero una variante sigue con varianza >30 % tras
+  los controles, el veredicto es **no-go** (ver Step 2), no inconcluyente.
 - El puente requeriría dependencias nuevas para funcionar: STOP, eso
   invalida la premisa "stdlib + instalado".
 - Cualquier verificación falla dos veces tras intento razonable.
 
 ## Maintenance notes
+
+- Historial 2026-09-15 (intento 2, worktree `/tmp/rutificador-exec-022`,
+  commit `ad52a53`, notas con 5 secciones y `Decisión: no-concluyente`):
+  con controles (taskset, calibración serial), la calibración no pasó
+  ni en lote 50 000 (19.6 % en 10k, 13.4 % en 50k; load ≈21.6
+  sostenido). Se confirmó que la varianza del intento 1 era la
+  máquina, no el prototipo. Tercer intento solo con hardware quieto
+  (load < nº CPUs, idle >50 % sostenido).
 
 - Si go: el plan de construcción debe incluir test de no-bloqueo del
   loop (tarea testigo como assert, no solo benchmark manual) o la
