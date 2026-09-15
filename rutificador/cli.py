@@ -177,6 +177,7 @@ def _emitir_resultados(
     formato: str,
     usar_sugerencias: bool = False,
     quiet: bool = False,
+    max_tasa_error: float | None = None,
 ) -> int:
     codigo_salida = 0
     total = 0
@@ -225,6 +226,7 @@ def _emitir_resultados(
         estrategia.emitir(item)
 
     final_audit = time.perf_counter()
+    tasa_error = (total - validos) / total if total > 0 else 0.0
     metadata = {
         "audit": {
             "version": obtener_informacion_version()["version"],
@@ -233,11 +235,22 @@ def _emitir_resultados(
             "invalidos": total - validos,
             "tiempo_segundos": round(final_audit - inicio_audit, 4),
             "tasa_exito": f"{(validos / total * 100):.1f}%" if total > 0 else "0%",
+            "tasa_error": round(tasa_error, 4),
         }
     }
 
     if not quiet:
         estrategia.finalizar(metadata)
+
+    if max_tasa_error is not None:
+        if tasa_error > max_tasa_error:
+            print(
+                f"Tasa de error {tasa_error:.1%} supera el máximo tolerado "
+                f"{max_tasa_error:.1%} ({total - validos}/{total})",
+                file=sys.stderr,
+            )
+            return 2
+        return 0
 
     return codigo_salida
 
@@ -253,6 +266,13 @@ def _procesar_con_mejorar(ruts: Iterator[str], mejorar: bool = False) -> Iterato
 
 
 def _comando_validar(args: argparse.Namespace) -> int:
+    max_tasa_error = args.max_tasa_error
+    if max_tasa_error is not None and not 0.0 <= max_tasa_error <= 1.0:
+        print(
+            f"Error: --max-tasa-error debe estar en [0.0, 1.0] (recibido: {max_tasa_error})",
+            file=sys.stderr,
+        )
+        return 2
     ruts = _leer_ruts(args.archivo)
     ruts_procesados = _procesar_con_mejorar(ruts, args.mejorar)
 
@@ -261,7 +281,11 @@ def _comando_validar(args: argparse.Namespace) -> int:
         paralelo=args.paralelo,
     )
     return _emitir_resultados(
-        resultados, args.format, usar_sugerencias=args.sugerir, quiet=args.quiet
+        resultados,
+        args.format,
+        usar_sugerencias=args.sugerir,
+        quiet=args.quiet,
+        max_tasa_error=args.max_tasa_error,
     )
 
 
@@ -355,6 +379,13 @@ def _crear_parser() -> argparse.ArgumentParser:
             "--quiet", "-q", action="store_true", help="Suprime el resumen de auditoría"
         )
         if sub == "validar":
+            p.add_argument(
+                "--max-tasa-error",
+                type=float,
+                default=None,
+                help="Tasa máxima tolerada de RUTs inválidos (0.0-1.0). "
+                "Si se supera, validar retorna exit code 2.",
+            )
             p.set_defaults(func=_comando_validar)
         else:
             p.add_argument(

@@ -189,3 +189,36 @@ def test_enmascarar_sin_token_sigue_funcionando():
     resultado = ejecutar_cli("enmascarar", entrada=entrada)
     assert resultado.returncode == 0
     assert "****5678-5" in resultado.stdout
+
+
+def test_validar_max_tasa_error_tolera():
+    entrada = "12345678-5\n12345678-9\n"
+    resultado = ejecutar_cli("validar", "--max-tasa-error", "0.5", entrada=entrada)
+    assert resultado.returncode == 0
+
+
+def test_validar_max_tasa_error_excede():
+    entrada = "12345678-5\n12345678-9\n"
+    resultado = ejecutar_cli("validar", "--max-tasa-error", "0.49", entrada=entrada)
+    assert resultado.returncode == 2
+    assert "supera el máximo" in resultado.stderr
+
+
+def test_validar_max_tasa_error_fuera_de_rango():
+    entrada = "12345678-5\n12345678-9\n"
+    resultado = ejecutar_cli("validar", "--max-tasa-error", "1.5", entrada=entrada)
+    assert resultado.returncode == 2
+
+
+def test_validar_sin_flag_compatible():
+    entrada = "12345678-5\n12345678-9\n"
+    resultado = ejecutar_cli("validar", entrada=entrada)
+    assert resultado.returncode == 1
+
+
+def test_metadata_incluye_tasa_error():
+    entrada = "12345678-5\n12345678-9\n"
+    resultado = ejecutar_cli("validar", "--format", "json", entrada=entrada)
+    assert resultado.returncode == 1
+    metadata = json.loads(resultado.stderr[resultado.stderr.index("{") :])
+    assert metadata["audit"]["tasa_error"] == 0.5
