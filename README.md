@@ -188,6 +188,9 @@ rutificador validar ruts_pesados.txt --paralelo --format csv
 # Autocorreccion + sugerencias
 rutificador validar sucia_db.txt --mejorar --sugerir
 
+# Gate de calidad en CI (falla solo si más del 1 % es inválido)
+rutificador validar ruts.txt --max-tasa-error 0.01 --quiet || echo "gate fallido"
+
 # Informacion del sistema
 rutificador info
 ```
@@ -200,6 +203,8 @@ rutificador info
 | `formatear` | Valida y formatea RUTs con opciones de salida |
 | `enmascarar` | Ofusca/tokeniza RUTs para proteger datos sensibles |
 | `info` | Muestra versión, entorno y funcionalidades |
+
+- **Gate de calidad** — `validar --max-tasa-error 0.01` retorna `0` si la tasa de inválidos está dentro del umbral y `2` si lo supera (detalle en `docs/guia/cli.md`).
 
 ### Formatos de salida
 

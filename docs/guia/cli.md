@@ -24,6 +24,9 @@ rutificador validar sucia_db.txt --mejorar --sugerir
 
 # Información del sistema
 rutificador info
+
+# Gate de calidad en CI (falla solo si más del 1 % es inválido)
+rutificador validar ruts.txt --max-tasa-error 0.01 --quiet || echo "gate fallido"
 ```
 
 ## Comandos
@@ -44,3 +47,21 @@ rutificador info
 | `jsonl` | Una línea por registro — ideal para Big Data |
 | `csv` | Hoja de cálculo con cabecera |
 | `xml` | Estructura para integraciones legacy |
+
+## Gate de calidad (`validar --max-tasa-error`)
+
+El flag `--max-tasa-error <0.0-1.0>` define la tasa máxima tolerada de
+RUTs inválidos. Si la tasa de error supera el umbral, `validar` retorna
+`2` e informa `Tasa de error X% supera el máximo tolerado Y% (n/m)` por
+stderr. El resumen de auditoría incluye siempre `tasa_error`.
+
+| Exit code | Significado |
+|-----------|-------------|
+| `0` | Todo válido, o tasa de error dentro del umbral (`--max-tasa-error`) |
+| `1` | Hay RUTs inválidos (sin flag `--max-tasa-error`) |
+| `2` | Tasa de error supera el umbral, o uso inválido (incluye errores de argparse) |
+
+```bash
+# Falla solo si más del 1 % de las filas es inválido
+rutificador validar ruts.txt --max-tasa-error 0.01 --quiet || echo "gate fallido"
+```

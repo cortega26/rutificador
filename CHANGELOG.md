@@ -4,6 +4,12 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [2.1.0] - 2026-09-15
+
+### Añadido
+
+- [FEAT] CLI validar: flag --max-tasa-error (0.0-1.0) como gate de calidad; retorna exit code 2 si la tasa de inválidos supera el umbral y agrega `tasa_error` al resumen de auditoría.
+
 ## [2.0.0] - 2026-07-14
 
 ### Breaking Changes
