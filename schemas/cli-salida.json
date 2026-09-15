@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tooltician.com/rutificador/schemas/cli-salida.json",
+  "title": "Rutificador CLI — Contrato de salidas JSON/JSONL",
+  "description": "Contrato versionado de las salidas machine-readable de `rutificador validar|formatear --format json|jsonl`. Con `--format json`, stdout lleva el array de ítems y stderr el objeto metadata; con `--format jsonl`, stdout lleva un ítem por línea y stderr el mismo objeto metadata. Los formatos text/csv/xml quedan fuera de este contrato por no ser machine-readable estables. El exit code viaja en el proceso, no en el cuerpo.",
+  "version": "1.0.0",
+  "$defs": {
+    "item": {
+      "title": "Ítem de resultado",
+      "description": "Un resultado por RUT procesado. Solo `valido` y `original` están garantizados; el resto viaja como string vacío cuando no aplica.",
+      "type": "object",
+      "required": ["valido", "original"],
+      "properties": {
+        "valido": { "type": "boolean" },
+        "original": { "type": "string" },
+        "resultado": { "type": "string" },
+        "mensaje_error": { "type": "string" },
+        "codigo_error": { "type": "string" },
+        "sugerencia": { "type": "string" }
+      }
+    },
+    "metadata": {
+      "title": "Metadatos de auditoría",
+      "description": "Objeto emitido a stderr al finalizar (salvo --quiet). `tasa_exito` es string con formato de porcentaje y `tasa_error` número redondeado a 4 decimales.",
+      "type": "object",
+      "required": ["audit"],
+      "properties": {
+        "audit": {
+          "type": "object",
+          "required": ["version", "total", "validos", "invalidos", "tiempo_segundos", "tasa_exito", "tasa_error"],
+          "properties": {
+            "version": { "type": "string" },
+            "total": { "type": "integer", "minimum": 0 },
+            "validos": { "type": "integer", "minimum": 0 },
+            "invalidos": { "type": "integer", "minimum": 0 },
+            "tiempo_segundos": { "type": "number" },
+            "tasa_exito": { "type": "string" },
+            "tasa_error": { "type": "number" }
+          }
+        }
+      }
+    },
+    "salida_json": {
+      "title": "Salida --format json",
+      "description": "Representación conjunta de ambas mitades de la salida: `items` es el array emitido a stdout y `metadata` el objeto emitido a stderr.",
+      "type": "object",
+      "required": ["items", "metadata"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/item" }
+        },
+        "metadata": { "$ref": "#/$defs/metadata" }
+      }
+    },
+    "salida_jsonl": {
+      "title": "Salida --format jsonl",
+      "description": "Cada línea no vacía de stdout es un ítem; stderr lleva el objeto metadata. Validar línea por línea contra #/$defs/item.",
+      "$ref": "#/$defs/item"
+    }
+  }
+}
