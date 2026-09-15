@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tooltician.com/rutificador/schemas/fastapi-error-422.json",
+  "title": "Rutificador FastAPI — Contrato del detalle de error 422",
+  "description": "Contrato versionado del cuerpo de respuesta cuando `obtener_param_rut` rechaza un RUT: objeto con `detail` como array no vacío de {loc, msg, type} al estilo FastAPI. El código 422 viaja en el status HTTP, no en el cuerpo.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["detail"],
+  "properties": {
+    "detail": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "properties": {
+          "loc": {
+            "type": "array",
+            "minItems": 2,
+            "items": { "type": "string" },
+            "description": "Ubicación del parámetro; típicamente [\"query\", \"rut\"].",
+            "examples": [["query", "rut"]]
+          },
+          "msg": { "type": "string" },
+          "type": {
+            "type": "string",
+            "description": "Código de error del validador (p. ej. DV_DISCORDANTE) o valor_error.rut_invalido como fallback."
+          }
+        }
+      }
+    }
+  }
+}
