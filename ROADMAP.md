@@ -61,6 +61,8 @@ comunidad y disponibilidad de mantenedores.
 - **Port cross-platform del validador core** (Rust → WASM, TypeScript):
   permitiría validación client-side en navegadores, un paquete npm
   `@tooltician/rutificador`, y uso en Deno/Cloudflare Workers.
+  Contrato de conformidad obligatorio: `docs/conformidad.md` y
+  `tests/vectors/conformance.json` (harness versionado, plan 018).
 - **Integración con SRI** (Servicio de Impuestos Internos): lookup opcional
   contra registros oficiales como extra `[sri]`.
 - **CLI interactiva**: modo `--watch` para procesamiento continuo de archivos,
