@@ -15,6 +15,8 @@ resultado = Rut.parse("12.345.678-9")
 print(resultado.estado, resultado.codigo_error)  # invalido DV_DISCORDANTE
 ```
 
+Puedes [probarlo en el playground](guia/playground.md) sin instalar nada: valida RUTs en tu navegador.
+
 ## Características
 
 - **Cero dependencias base** — solo estándar de Python
