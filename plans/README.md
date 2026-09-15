@@ -55,11 +55,17 @@ inside the repo-root `.venv` (or after
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 019 | Spike — port TypeScript del validador core con gate de conformidad | P1 | S–M | — | TODO |
-| 020 | CLI `validar` como gate de calidad — flag `--max-tasa-error` | P2 | S | — | TODO |
-| 021 | Contratos machine-readable — JSON Schemas de salidas CLI y error 422 | P2 | S | 020 | TODO |
-| 022 | Spike — API async de procesamiento por lotes | P3 | S–M | — | TODO |
-| 023 | Playground interactivo Pyodide en el sitio de docs | P3 | S | — | TODO |
+| 019 | Spike — port TypeScript del validador core con gate de conformidad | P1 | S–M | — | DONE (go-condicional; fusionado PR #98) |
+| 020 | CLI `validar` como gate de calidad — flag `--max-tasa-error` | P2 | S | — | DONE (v2.1.0; fusionado PR #96) |
+| 021 | Contratos machine-readable — JSON Schemas de salidas CLI y error 422 | P2 | S | 020 | DONE (fusionado PR #97) |
+| 022 | Spike — API async de procesamiento por lotes | P3 | S–M | — | BLOCKED (intento 2: calibración 19.6 %/13.4 % en host saturado load≈21.6; solo reintentar en hardware quieto; notas en rama worktree, prototipo en /tmp/async-spike) |
+| 023 | Playground interactivo Pyodide en el sitio de docs | P3 | S–M | — | BLOCKED (v1 rompió 4 tests que parchean ejecutores como attrs de módulo; plan refinado a v2 `__getattr__` PEP 562 sin tocar tests; cambios sin commitear en /tmp/rutificador-exec-023) |
+
+### Follow-ups (ciclo 019–023)
+
+| Plan | Title | Priority | Effort | Depends on | Status |
+|------|-------|----------|--------|------------|--------|
+| 024 | ESTRICTO rechaza guiones alternativos (alinear código con spec) | P1 | S | — | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) |
 REJECTED (one-line rationale).
@@ -104,6 +110,8 @@ REJECTED (one-line rationale).
 3. **022** (spike async) y **023** (playground) en cualquier momento —
    independientes de todo. Si 019 da go, reevaluar 023 antes de
    ejecutarlo (el widget TS nativo lo volvería redundante).
+4. **024** (bugfix guiones strict) en cualquier momento — independiente
+   de todo y P1 por contradecir spec; no espera a 022/023.
 
 ## Dependency notes
 
