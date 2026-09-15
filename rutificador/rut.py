@@ -136,11 +136,17 @@ class Rut:
     @staticmethod
     def _verificar_guiones_alternativos(
         cadena_original: str,
+        modo: RigorValidacion,
+        errores: list[DetalleError],
         advertencias: list[DetalleError],
         vistos: set[str],
-    ) -> None:
+    ) -> bool:
         if any(simbolo in cadena_original for simbolo in ("_", "–", "—", "−")):
+            if modo == RigorValidacion.ESTRICTO:
+                errores.append(crear_detalle_error("CARACTERES_INVALIDOS"))
+                return False
             Rut._agregar_advertencia(advertencias, vistos, "NORMALIZACION_GUION")
+        return True
 
     @staticmethod
     def _validar_caracteres_base(
@@ -254,7 +260,10 @@ class Rut:
         ):
             return None, errores, advertencias
 
-        Rut._verificar_guiones_alternativos(cadena_original, advertencias, vistos)
+        if not Rut._verificar_guiones_alternativos(
+            cadena_original, modo, errores, advertencias, vistos
+        ):
+            return None, errores, advertencias
 
         if not Rut._validar_caracteres_base(cadena, errores):
             return None, errores, advertencias
