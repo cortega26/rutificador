@@ -77,3 +77,73 @@ Tabla de 4 variantes × 5 corridas: **no generada** — el plan ordena parar aqu
 - **Qué haría falta para un tercer intento**: máquina dedicada o ventana de carga baja verificada (p. ej. load < nº CPUs e idle sostenido >50 % en los núcleos fijados) antes de repetir calibración → benchmark completo de 4 variantes × 5 corridas.
 - **Sin boceto de API**: al no haber veredicto go, el plan no requiere proponer firmas; no se agrega superficie API.
 - **Repo intacto**: ningún archivo de `rutificador/` ni `tests/` fue tocado; sin código async nuevo ni dependencias nuevas (el prototipo vive solo en `/tmp/async-spike/`, fuera del repo).
+
+---
+
+# Intento 3 (2026-09-15) — veredicto: **no-go**
+
+> Tercer intento. La calibración PASÓ (lote 50 000, varianza 4.2 % ≤ 10 %),
+> por lo que se corrió el benchmark completo 4 variantes × 5 corridas.
+> Todas las variantes superaron el 30 % de varianza (coincidiendo con un pico
+> de carga transitorio: loadavg 1 min subió de ~4 a ~14.8 durante la corrida),
+> de modo que —según la regla prefijada del plan ("si una variante >30 % →
+> **no-go**, no inconcluyente")— el veredicto es **no-go**. Esta decisión
+> sustituye a la del intento 2; lo anterior queda como historia.
+
+## Setup (intento 3)
+
+| Componente | Valor |
+|-----------|-------|
+| Python (venv del worktree) | 3.13.12 (verificado) |
+| Plataforma | Linux x86_64, 16 CPUs |
+| Carga medida | inicio: `loadavg 3.99 5.30 7.67`, idle global ≈54 %; afinidad: CPUs 3 (77 % idle) y 5 (81 % idle) elegidas por mayor idle; `taskset -c 3,5` aplicado a calibración y benchmark |
+| Pico durante el benchmark | `loadavg 14.82 8.51 8.61` (1 min; <16 CPUs pero pico transitorio frente al inicio) |
+| Drift check | `git diff --stat d6c28d8..HEAD -- rutificador/procesador.py rutificador/contrib/fastapi.py tests/test_procesador_flujo.py` → **vacío** |
+| Baseline tests | `.venv/bin/python -m pytest tests/test_procesador_flujo.py tests/contrib/test_fastapi.py -q` → **9 passed** |
+| Prototipo | reutilizado sin cambios (`aprot.py`); `bench.py` extendido de forma aditiva (env `SPIKE_N`/`SPIKE_CORRIDAS`, sin reescribir lógica) — ambos en `/tmp/async-spike/`, fuera del repo |
+
+## Paridad (Step 1) — OK
+
+200 RUTs, comparación semántica `(es_valido, detalle)` excluyendo `duracion`
+(mismo criterio del intento 2): **`PARIDAD: OK`** (200/200 en orden).
+
+## Calibración (Step 2) — PASA en 50 000
+
+Solo serial, 3 corridas, varianza = (max−min)/mediana, umbral 10 %,
+bajo `taskset -c 3,5`:
+
+| Lote | Corridas (s) | Mediana | Varianza |
+|------|--------------|---------|----------|
+| 10 000 | 0.079, 0.065, 0.066 | 0.066 | **21.9 % (>10 % → agrandar)** |
+| 50 000 | 0.361, 0.354, 0.369 | 0.361 | **4.2 % (≤10 % → PASA)** |
+
+## Benchmark completo (Step 2) — lote 50 000, 5 corridas, `taskset -c 3,5`
+
+| Corrida | serial+testigo (s / it) | thread+testigo (s / it) | async+testigo (s / it) | testigo-sola iters |
+|---------|------------------------|------------------------|------------------------|--------------------|
+| 1 | 0.398 / 0 | 2.375 / 0 | 0.773 / 9187 | 134618 |
+| 2 | 0.729 / 0 | 1.149 / 0 | 0.484 / 426 | 296128 |
+| 3 | 0.367 / 0 | 1.261 / 0 | 0.503 / 5242 | 346871 |
+| 4 | 0.339 / 0 | 0.868 / 0 | 0.416 / 7 | 350099 |
+| 5 | 0.352 / 0 | 1.039 / 0 | 0.427 / 271 | 352169 |
+| **mediana** | **0.367 / 0** | **1.149 / 0** | **0.484 / 426** | — / 346871 |
+| **varianza** | **106.1 %** | **131.1 %** | **73.7 %** | — |
+
+- Speedup async vs thread (medianas): +57.9 % — numérico, **no citable** (varianza >30 %).
+- Condición-a (≥15 % más rápido): SÍ numérico / no citable. Condición-b (testigo avanza solo en async): SÍ numérico (426 vs 0/0) / no citable (rango async 7–9187).
+- Señal sustantiva (coherente con intentos 1–2): el serial es el más rápido en mediana; `thread` es ~3× más lento que serial; el prototipo async queda intermedio. Nada evidencia una ganancia fiable del puente async.
+
+Desviación procedimental: la primera invocación corrió con los valores por
+defecto de `bench.py` (10 000 × 3; thread 34.1 % → también habría dado no-go
+por la misma regla); se descartó y se repitió correctamente a 50 000 × 5
+(tabla de arriba, la única citable).
+
+## Decisión: **no-go**
+
+**Decisión: no-go** — la calibración pasó (4.2 % en 50 000) pero las tres
+variantes del benchmark superan el 30 % de varianza (106.1 % / 131.1 % /
+73.7 %); la regla prefijada del plan ordena veredicto **no-go** en este caso,
+y además el serial sigue siendo lo más rápido en mediana sin evidencia fiable
+de ganancia del puente async. Sin boceto de API (solo requerido si go).
+Repo intacto: ningún archivo de `rutificador/` ni `tests/` tocado; sin
+dependencias nuevas.
