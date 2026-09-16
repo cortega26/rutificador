@@ -47,3 +47,11 @@ gh attestation verify dist/rutificador-*.whl \
 ```
 
 El SBOM CycloneDX está disponible como asset en cada [GitHub Release](https://github.com/cortega26/rutificador/releases). Contiene la lista completa de dependencias de build y runtime para auditorías de seguridad.
+
+## Escaneo de Dependencias
+
+`pip-audit` se ejecuta en CI contra el entorno instalado completo y contra
+`requirements-dev.txt`, cubriendo tanto las dependencias de ejecución
+declaradas en `pyproject.toml` como las herramientas de desarrollo. El núcleo
+de la librería no tiene dependencias runtime (solo stdlib); los reportes JSON
+se publican como artefactos del workflow para facilitar la revisión.

@@ -58,7 +58,7 @@ python scripts/conformance.py --vectors tests/vectors/conformance.json
 2. Validar el archivo contra `tests/vectors/schema.json`.
 3. Adaptar `scripts/conformance.py` (o reimplementar el runner) y exigir
    exit code `0` en CI del port.
-4. El port recomendado como base nativa es Rust (ver `plans/017-pyO3-native-spike.md`;
+4. El port recomendado como base nativa es Rust (ver `plans/archive/017-pyO3-native-spike.md`;
    depende de este harness para validar la implementación nativa).
 
 ## Alcance y guardas
@@ -68,4 +68,4 @@ python scripts/conformance.py --vectors tests/vectors/conformance.json
   `ROADMAP.md:14-17`) siguen fuera de alcance y no se tocan en este trabajo.
 - Referencias: `plans/011-spec-formal-reglas-rut.md` (especificación y
   vectores), `plans/018-conformance-harness.md` (diseño del harness),
-  `plans/017-pyO3-native-spike.md` (consumidor nativo).
+  `plans/archive/017-pyO3-native-spike.md` (consumidor nativo).
