@@ -10,6 +10,12 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 - [DOC] Contratos machine-readable: JSON Schemas versionados (`schemas/cli-salida.json`, `schemas/fastapi-error-422.json`) para salidas CLI `--format json|jsonl` y detalle de error 422 FastAPI, con tests en `tests/test_contracts.py` y guía en `docs/guia/contratos.md`.
 
+## [2.2.0] - 2026-09-15
+
+### Corregido
+
+- [FIXED] ESTRICTO rechaza guiones alternativos (_, –, —, −) con CARACTERES_INVALIDOS (antes: valido con advertencia); FLEXIBLE sin cambios. Alinea código con especificación §5.1 y docstring de Rut.parse.
+
 ## [2.1.0] - 2026-09-15
 
 ### Añadido

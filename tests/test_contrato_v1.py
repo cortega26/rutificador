@@ -62,15 +62,21 @@ def test_error_formato_estable():
     assert err.hint != ""
 
 
-def test_unicode_guion_normaliza_con_advertencia():
-    res = Rut.parse("12.345.678–5")
+@pytest.mark.parametrize("valor", ["12.345.678–5", "１２３４５６７８–５"])
+def test_unicode_guion_rechazado_en_estricto(valor):
+    res = Rut.parse(valor)
+    assert res.estado == "invalido"
+    assert _contiene_codigo(res.errores, "CARACTERES_INVALIDOS")
+
+
+def test_unicode_guion_normaliza_en_flexible():
+    res = Rut.parse("12.345.678–5", modo=RigorValidacion.FLEXIBLE)
     assert res.estado == "valido"
     assert _contiene_codigo(res.advertencias, "NORMALIZACION_GUION")
 
 
-@pytest.mark.parametrize("valor", ["１２３４５６７８-５", "１２３４５６７８–５"])
-def test_unicode_fullwidth_digits_aceptado(valor):
-    res = Rut.parse(valor)
+def test_unicode_fullwidth_digits_aceptado():
+    res = Rut.parse("１２３４５６７８-５")
     assert res.estado == "valido"
 
 

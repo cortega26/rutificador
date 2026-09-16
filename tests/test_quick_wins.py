@@ -30,16 +30,17 @@ def test_repr_is_masked():
 
 
 def test_unified_cleaning_excessive_dashes():
-    """Verifica que diversos tipos de guiones sean normalizados."""
-    # Guion largo (em-dash), guion medio (en-dash), guion bajo
+    """Verifica que diversos tipos de guiones sean normalizados en modo flexible."""
+    # Guion largo (em-dash), guion medio (en-dash), guion bajo, signo menos
     casos = [
         "12345678_5",
         "12345678–5",
         "12345678—5",
         "12345678−5",
     ]
+    validador = ValidadorRut(modo=RigorValidacion.FLEXIBLE)
     for caso in casos:
-        rut = Rut(caso)
+        rut = Rut(caso, validador=validador)
         assert str(rut) == "12345678-5"
 
 
