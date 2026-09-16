@@ -1,7 +1,8 @@
 """Obtención dinámica de la versión del paquete.
 
 Lee la versión desde los metadatos del paquete instalado (``importlib.metadata``)
-o, en entornos de desarrollo, desde ``pyproject.toml``. Proporciona también la
+o, en entornos de desarrollo, desde ``pyproject.toml`` (fuente real de la
+versión; este módulo nunca la define de forma estática). Proporciona también la
 estructura tipada ``InformacionVersion`` con metadatos del proyecto.
 """
 
