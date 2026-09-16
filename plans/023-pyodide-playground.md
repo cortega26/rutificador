@@ -7,7 +7,7 @@
 > in `plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
-> **Drift check (run first)**: `git diff --stat d6c28d8..HEAD -- mkdocs.yml docs/index.md docs/guia/ rutificador/procesador.py rutificador/__init__.py`
+> **Drift check (run first)**: `git diff --stat d6c28d8..HEAD -- mkdocs.yml docs/index.md docs/guia/ rutificador/procesador.py rutificador/__init__.py pyproject.toml CHANGELOG.md`
 > If any in-scope file changed since this plan was written, compare the
 > "Current state" excerpts against the live code before proceeding; on a
 > mismatch, treat it as a STOP condition.
@@ -34,7 +34,10 @@
 - **Effort**: S–M (el Step 0b toca el núcleo con gate completo)
 - **Risk**: MED (cambio en import-time del paquete; mitigado por proxy
   test + suite + mypy strict + import-linter)
-- **Depends on**: none
+- **Depends on**: plans/024-strict-alternate-hyphens FUSIONADO (orden de
+  versiones: 024 libera `2.2.0`; este plan sube a `2.2.1`. La página solo
+  funciona con una release PyPI que contenga el Step 0b, así que este
+  plan y su release viajan juntos — ver Step 0c).
 - **Category**: direction
 - **Planned at**: commit `d6c28d8`, 2026-09-15
 
@@ -90,6 +93,8 @@ decide.
 - `mkdocs.yml` (solo la línea de nav)
 - `docs/index.md` (solo un enlace al final de la intro; no reescribir
   la página)
+- `pyproject.toml` (solo línea `version`: `2.2.0` → `2.2.1`, Step 0c)
+- `CHANGELOG.md` (solo entrada `[2.2.1]`, Step 0c)
 - `plans/README.md` (fila de estado)
 
 **Out of scope** (NO tocar):
@@ -166,14 +171,29 @@ comportamiento en CPython Y sin romper a quien acceda a
        """
        if nombre in {"ProcessPoolExecutor", "ThreadPoolExecutor"}:
            from concurrent import futures
+
            return getattr(futures, nombre)
        raise AttributeError(f"módulo {__name__!r} sin atributo {nombre!r}")
    ```
-   (`Any` ya está importado en el bloque `typing` del archivo; si no
-   lo estuviera, STOP.) No cambies lógica, nombres ni `__all__`. Los 4
-   tests de `tests/test_rutificador.py:492,519,603,629` deben pasar SIN
-   modificarlos: `monkeypatch.setattr` y `from ... import ...` siguen
-   funcionando vía `__getattr__` en CPython.
+    (`Any` ya está importado en el bloque `typing` del archivo; si no
+    lo estuviera, STOP.) No cambies lógica, nombres ni `__all__`. Los 4
+    tests de `tests/test_rutificador.py:492,519,603,629` deben pasar SIN
+    modificarlos: `monkeypatch.setattr` y `from ... import ...` siguen
+    funcionando vía `__getattr__` en CPython.
+    IMPORTANTE (aprendido en intento 3): el `__getattr__` solo NO basta,
+    porque `obtener_clase_ejecutor` importa directo desde
+    `concurrent.futures` e ignora el atributo parcheado (los 4 tests
+    pasan de `AttributeError` a `assert [] == [4]`). El cuerpo del
+    método debe resolver vía atributo de módulo para que el parcheo
+    surta efecto — forma validada:
+    ```python
+    modulo = sys.modules[__name__]
+    ejecutor_hilos = cast("type[ThreadPoolExecutor]", modulo.ThreadPoolExecutor)
+    ejecutor_procesos = cast("type[ProcessPoolExecutor]", modulo.ProcessPoolExecutor)
+    ```
+    (`cast` ya importado o agrégalo al bloque `typing`; `sys` ya
+    importado.) Esto dispara `__getattr__` bajo demanda y mantiene
+    mypy strict en verde. NO edites los 4 tests bajo ningún concepto.
 3. Crea `tests/test_import_liviano.py`: test que lanza por subprocess
    (`sys.executable -c`, patrón `ejecutar_cli` de
    `tests/test_cli.py:13-24` con `timeout=15`) un snippet que instala
@@ -202,10 +222,33 @@ verdes; importar el paquete sin tocar los alias no importa
 `concurrent.futures` (compruébalo: subprocess con el bloqueador que
 importe `rutificador.procesador` a secas — debe funcionar).
 
-**Verify**: `tests/test_import_liviano.py` en verde; suite, ruff, mypy
-(strict + general) e import-linter verdes; `grep -n
-"^from concurrent\|^import concurrent" rutificador/procesador.py`
-vacío (sin imports de concurrent a nivel de módulo).
+### Step 0c: Versión, pin y cadena JS (requiere plan 024 fusionado)
+
+La página solo funciona con una release PyPI que contenga el Step 0b,
+y el gate de versionado exige bump por el cambio en `rutificador/`.
+
+1. Confirma prerrequisito: `grep -n '^version' pyproject.toml` debe
+   dar `2.2.0` (plan 024 fusionado). Si da otro valor, STOP
+   (colisión de versiones: este paso asume exactamente 2.2.0).
+2. `pyproject.toml`: `2.2.0` → `2.2.1` (PATCH: refactor sin cambio
+   observable en CPython). `CHANGELOG.md`: sección `## [2.2.1]`
+   (fecha del día) con `- [FIXED] import del paquete ya no arrastra
+   multiprocessing (compatibilidad Pyodide, startup más liviano).`
+3. Página: `micropip.install("rutificador==2.2.1")` exacto (debe
+   coincidir con el bump; la página NO funciona con 2.0.0/2.1.0,
+   probado en intento 3).
+4. Cadena JS (defecto pendiente del intento 3): la cadena `.then`
+   nunca se resolvía aun con descargas 200, mientras la variante
+   `await` idéntica completaba. Primero repite la prueba manual con
+   la rueda 2.2.1: si ahora completa, era un artefacto del fallo de
+   import (excepción no propagada colgando la cadena) — anótalo y
+   sigue. Si sigue colgada, depura el tramo mínimo (compara contra la
+   variante `await` que sí funciona; reescribir ese tramo con
+   `async/await` vanilla está permitido) hasta que la checklist de
+   3 casos pase. Si no hay forma mínima de hacerla resolver, STOP.
+
+**Verify**: versión `2.2.1`; pin de la página idéntico; checklist
+manual 3/3 en verde de verdad (vacío amable, válido, inválido+código).
 
 ### Step 1: Crear `docs/guia/playground.md`
 
@@ -271,8 +314,12 @@ Machine-checkable. ALL must hold:
 - [ ] `site/guia/playground/index.html` contiene `rut-input`,
   `rut-validar`, `rut-salida` y el script con versión Pyodide fijada
 - [ ] `grep -c latest docs/guia/playground.md` = 0
-- [ ] `ruff check .` limpio (garantiza: solo docs + nav tocaron el árbol)
+- [ ] Checklist manual navegador 3/3 pasando DE VERDAD (vacío amable,
+  válido, inválido+código) con la rueda pinneda
+- [ ] `pyproject.toml` en `2.2.1` y pin de la página idéntico
+- [ ] `ruff check .` limpio
 - [ ] `git diff --name-only d6c28d8...HEAD` lista solo archivos del Scope
+  (evaluado contra la base real del worktree si difiere; documentar)
 - [ ] `plans/README.md` status row updated
 
 ## STOP conditions
@@ -294,6 +341,13 @@ Stop and report back (do not improvise) if:
 
 ## Maintenance notes
 
+- Historial intento 3 (2026-09-15, worktree `/tmp/rutificador-exec-023`,
+  commit `cc784a8`): v2 funciona (107 tests intactos en verde, strict,
+  import-linter, proxy); el navegador probó que NINGUNA rueda publicada
+  (2.0.0 ni 2.1.0) contiene el fix → la página exige release con Step
+  0b (de ahí el Step 0c). Posible segundo defecto pendiente: la cadena
+  `.then` no resolvía aun con descargas 200 mientras `await` sí — el
+  Step 0c lo cubre (pudo ser artefacto del import fallido).
 - Cada release de la librería: actualizar el pin `rutificador==X.Y.Z`
   en el script (o la demo miente con versión vieja). El revisor debe
   exigirlo junto al bump de `pyproject.toml`.
