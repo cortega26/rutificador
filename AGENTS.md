@@ -1,206 +1,48 @@
-# AGENTS.md · AI Delivery Playbook v4.1
+# AGENTS.md · rutificador
 
-> **Propósito** · Proveer instrucciones operativas actualizadas para asistentes de código que trabajen en entornos regulados. Este documento está dirigido exclusivamente a agentes de IA.
+Librería Python para validar/formatear RUT chileno. Core con **cero dependencias** (solo stdlib); integraciones opcionales en `rutificador/contrib/` (pydantic, fastapi, pandas, polars). Python `>=3.10` (CI: 3.10–3.14, dev: 3.13); mantener compatibilidad con 3.10. Rama principal: `master`. Detalle de arquitectura: `CLAUDE.md`.
 
----
+## Setup
 
-## 1. Principios de Ejecución
-
-1. **Eficiencia dirigida** · Minimiza rondas generando la mejor propuesta viable en el primer intento.
-2. **Contexto anclado** · Trabaja solo sobre artefactos confirmados; cualquier suposición debe declararse y ser reversible.
-3. **Seguridad por defecto** · Adoptar librerías y patrones seguros sin esperar a la etapa final.
-4. **Trazabilidad total** · Toda salida debe indicar modelo, semillas y supuestos clave.
-5. **Idioma operativo** · Variables, comentarios y documentación en español salvo que el repositorio tenga un estándar explícito distinto.
-
----
-
-## 2. Estrategia de Modelos
-
-- **Capa principal** · `gpt-5.3-codex-max@2025-10-01` para arquitectura o migraciones críticas.
-- **Capa optimizada** · `claude-4.1-sonnet` para tareas de mantenimiento/lint.
-- **Capa de razonamiento** · Modelos O-series u homólogos cuando se requiera verificación formal.
-
-**Configuración obligatoria**
-
-```yaml
-model_profile:
-  seed: 42
-  temperature: 0.05 # 0 para código determinista, 0.1 para investigación ligera
-  top_p: 0.95
-  max_retries: 2
-  fallback: ["gpt-5.3", "claude-4-haiku"]
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+pip install -e .
 ```
 
-> Registrar en cada entrega: modelo efectivo, temperatura y número de reintentos.
+## Comandos (orden CI: formato → lint → tipos → tests)
 
----
-
-## 3. Protocolo de Compromiso
-
-1. **Descubrimiento** · Leer `pyproject/requirements`, scripts de calidad y archivos modificados antes de proponer cambios.
-2. **Plan mínimo** · Si la tarea no es trivial, exponer 3‑5 pasos; mantener un solo paso “in_progress”.
-3. **Suposiciones** · Formato `ASUNTO · riesgo · mitigación`. Ej.: `Base de datos · esquema desconocido · asumir v1 y confirmar`.
-4. **Finalización** · Resumir cambios, archivos tocados y comandos ejecutados; sugerir próximos pasos if aplicable.
-
----
-
-## 4. Seguridad y Cumplimiento
-
-### Canal seguro de entrega
-
-- **Entrada** · Validar siempre datos externos (CLI, archivos, HTTP).
-- **Salida** · Evitar registrar secretos; usar placeholders (`<TOKEN>`).
-- **Dependencias** · Preferir versiones fijadas; correr `pip-audit`/`npm audit` cuando se agreguen paquetes.
-
-### Validación escalonada
-
-| Etapa               | Objetivo                                                                     | Herramientas        |
-| ------------------- | ---------------------------------------------------------------------------- | ------------------- |
-| S1 · Análisis       | Identificar superficies sensibles y normativas aplicables (GDPR, HIPAA, PCI) | Checklist interno   |
-| S2 · Implementación | Incluir controles (Validaciones, RBAC, sanitización)                         | Librerías del stack |
-| S3 · Revisión       | Ejecutar SAST (CodeQL/semgrep) + pruebas de seguridad                        | Workflows CI        |
-
-> Marca cualquier módulo que trate datos personales con `# SECURITY-CRITICAL` y solicita revisión humana.
-
----
-
-## 5. Estándares de Salida
-
-### Bloque META obligatorio
-
-```yaml
-META:
-  modelo: "gpt-5.4"
-  seed: 42
-  reintentos: 0
-  complejidad: 0.6 # 0‑1
-  supuestos:
-    - "No existen migraciones pendientes"
-  validaciones:
-    - "pytest"
-    - "ruff check"
-  riesgos:
-    - "Posible degradación en lotes >1e6 RUTs"
+```bash
+pytest -q                                   # suite completa
+pytest tests/test_rutificador.py -v --tb=short        # un archivo
+pytest tests/test_rutificador.py::test_nombre -v      # un test
+ruff format . --check                       # formato (CI falla con `git diff --exit-code`)
+ruff check .                                # lint
+mypy rutificador/ --ignore-missing-imports  # tipos; estricto en CI para los 10 módulos core
+bandit -r rutificador/                      # seguridad
+deptry rutificador                          # coherencia dependencias
+lint-imports                                # límites arquitectónicos (import-linter)
+mkdocs build --strict                       # solo si tocas docs/
+pytest tests/benchmarks/ tests/test_benchmark.py --benchmark-only  # caro; solo cambios de perf
 ```
 
-### Formatos soportados
+## Límites arquitectónicos (verifica `lint-imports`, contratos en `pyproject.toml`)
 
-1. **Unified diff enriquecido** (default).
-2. **JSON Edit Plan** (`edits[]`) cuando no se modifica código directamente.
-3. **Tabla de hallazgos** para auditorías o revisiones.
+- Núcleo (`config`, `validador`, `rut`, `procesador`, `formatter`, `sugestor`, `utils`, `errores`, `exceptions`, `version`, `calidad_datos`) **no** puede importar `rutificador.contrib.*` ni `rutificador.cli`.
+- Módulos `contrib` independientes entre sí (excepción: `pandas`/`polars` → `_formato_comun`).
+- Nuevas dependencias third-party van solo a `contrib/` + extra en `pyproject.toml` (+ `requirements-dev.txt` para tests).
 
-Incluir siempre comandos reproducibles (`make lint`, `pytest`, etc.) y resaltar si no se ejecutaron por límite del entorno.
+## Gotchas que rompen CI o el playground
 
----
+- **Import liviano**: `from rutificador import Rut` debe funcionar sin `multiprocessing` (playground Pyodide, `tests/test_import_liviano.py`). No importes `multiprocessing`/`concurrent.futures.process` a nivel de módulo en el núcleo; hazlo lazy dentro de funciones.
+- **API dual de `Rut`**: `Rut(s)` lanza excepción si inválido; `Rut.parse(s, modo=)` nunca lanza, retorna `ValidacionResultado(estado, errores)`. `ESTRICTO` rechaza espacios/guiones internos; `FLEXIBLE` los acepta con advertencia `NORMALIZACION_*`.
+- **Warnings en tests**: `conftest.py` ignora `DeprecationWarning` globalmente (ruido anyio/starlette) y fuerza `spawn` en multiprocessing. No "arregles" esos filtros ni asumas semántica `fork`.
+- **Seguridad**: no loguear RUTs crudos (excepciones sanitizan PII); CSV escapa inyección de fórmulas (`=+-@` con prefijo `'`); DV se calcula con `itertools.cycle`, no lo cambies a aritmética con `%` en el loop.
+- **CLI**: `validar --max-tasa-error` retorna `2` (no `1`) si se supera el umbral; es el gate de calidad en CI ajenos.
+- **Versionado bloqueante**: `version-bump-gate.yml` exige diff en `rutificador/version.py` para todo PR que toque `rutificador/`; `publish-package.yml` publica según `version` en `pyproject.toml` (fuente real, `version.py` la lee dinámicamente). Para cambios de código: bump en `pyproject.toml` + entrada en `CHANGELOG.md` + un toque a `rutificador/version.py` (aunque sea docstring) para pasar el gate.
 
-## 6. Validación Continua
+## Convenciones
 
-### Pipeline mínimo
-
-1. **Formato** · `ruff format --check .` o equivalente.
-2. **Lint** · `ruff check .` / `eslint .`.
-3. **Tipos** · `mypy --strict .` / `tsc --noEmit`.
-4. **Pruebas** · `pytest -q` / `npm test`.
-5. **Seguridad** · `bandit -r src/`, `safety check`, `npm audit`.
-6. **Cobertura** · ≥85 % en líneas tocadas.
-7. **Performance (si aplica)** · Benchmark del camino crítico, registrar comparativa.
-
-> Documentar cualquier paso omitido con razón y mitigación.
-
----
-
-## 7. Marcos de Pruebas
-
-- **Unitarias** · Independientes, rápidas, sin IO externo.
-- **Property-based** · Hypothesis / fast-check para validar invariantes numéricas o de formato.
-- **Integración** · Cubrir interacción entre CLI, validadores y formateadores.
-- **Seguridad** · Pruebas negativas: RUTs malformados, entradas maliciosas, ataques de tamaño.
-- **Rendimiento** · Ensayar lotes grandes usando generadores; registrar tiempos y memoria.
-
-### Plantilla de caso
-
-```python
-@pytest.mark.parametrize("entrada, esperado", [...])
-def test_validacion_rut(entrada, esperado):
-    with caplog.at_level(logging.DEBUG):
-        if esperado.exito:
-            assert Rut(entrada).formatear() == esperado.valor
-        else:
-            with pytest.raises(RutInvalidoError):
-                Rut(entrada)
-```
-
----
-
-## 8. Perfiles por Stack
-
-| Stack                     | Lint/Tipo                                       | Tests                        | Seguridad          | Notas                                            |
-| ------------------------- | ----------------------------------------------- | ---------------------------- | ------------------ | ------------------------------------------------ |
-| **Python ≥3.11**          | `ruff`, `mypy --strict`                         | `pytest --cov=rutificador`   | `bandit`, `safety` | Usar `pathlib`, `Protocol`, dataclasses.         |
-| **TypeScript (Node LTS)** | `prettier`, `eslint`, `tsc --noEmit`            | `vitest --run`               | `npm audit`        | Evitar `any`, usar `zod` para validar entradas.  |
-| **Go ≥1.22**              | `gofmt`, `golangci-lint`                        | `go test -race -cover ./...` | `gosec ./...`      | Respetar contextos y devolver errores envueltos. |
-| **Rust stable**           | `cargo fmt --check`, `cargo clippy -D warnings` | `cargo test`                 | `cargo audit`      | Preferir `Result` con thiserror.                 |
-
----
-
-## 9. Documentación y Control de Cambios
-
-- Actualizar `README` o guías si se añaden flags, scripts o procesos.
-- Siempre que se libere o se suban cambios de código, incrementar la versión en `rutificador/version.py`; el CI de PyPI rechaza publicar versiones repetidas.
-- Las entradas de `CHANGELOG.md` deben incluir etiquetas `[SECURITY]`, `[PERF]`, `[BREAKING]` según corresponda.
-- Para decisiones arquitectónicas, crear/editar ADR con: contexto, opciones, decisión, consecuencias.
-- Mantener referencias a requisitos regulatorios cumplidos (ej. “Cumple GDPR Art. 32 mediante cifrado at-rest”).
-
----
-
-## 10. Colaboración Humano‑IA
-
-1. **Transparencia** · Marcar bloques generados por IA en docstrings o comentarios solo si la política del repo lo solicita.
-2. **Revisión requerida** · Señalar explícitamente las zonas que exigen revisión humana (ex. “Lógica de autenticación”).
-3. **Feedback loop** · Registrar correcciones recibidas para limitar repeticiones: `LEARNED: preferir pathlib sobre os.path`.
-4. **CI asistida** · Referenciar el workflow `ai-generated-validation.yml` cuando se creen archivos `*AI-GENERATED*`.
-
----
-
-## 11. Plantillas rápidas
-
-### Respuesta estándar
-
-```
-META: {...}
-PLAN:
-- Paso 1 · estado
-- Paso 2 · estado
-SECURITY: Riesgos identificados + mitigación
-PERFORMANCE: Consideraciones o pruebas
-COMMANDS: ["pytest -q"]
-RESULTS: Resumen de cambios + archivos
-NEXT: Pasos sugeridos (opcional)
-```
-
-### JSON Edit Plan
-
-```json
-{
-  "edits": [
-    {
-      "path": "rutificador/rut.py",
-      "action": "modify",
-      "rationale": "Propagar validador personalizado",
-      "impact": "compatible",
-      "review_required": true
-    }
-  ],
-  "meta": {
-    "modelo": "gpt-5.3-codex-max",
-    "seed": 42,
-    "seguridad": "validada"
-  }
-}
-```
-
----
-
-**Fin · AI Delivery Playbook v4.1**
-
-_Este documento unifica selección de modelos, rigor de seguridad y colaboración humana para acelerar entregas sin perder trazabilidad._
+- Español: código, docstrings (estilo Google), commits y docs.
+- Commits Convencionales (`feat:`, `fix:`, `docs:`, `chore:`, `release:`); SemVer; release vía tag `v*`.
+- Type hints obligatorios en código nuevo (mypy estricto en core). `ruff` para formato/lint (pre-commit solo tiene ruff; ignora la mención a black/flake8 en `CLAUDE.md`, está desactualizada).

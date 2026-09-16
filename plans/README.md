@@ -19,19 +19,19 @@ inside the repo-root `.venv` (or after
 
 ## Lifecycle rule (standing — applies to all future work)
 
-- Plans with status **DONE** live in `plans/archive/`, never in `plans/`
-  root. The tables below remain the record of what each plan decided.
-- When a plan reaches DONE, move its file (plus any deliverable notes,
-  e.g. `NNN-SPIKE-NOTES.md`) to `plans/archive/` **in the same change**
+- Plans with status **DONE** or **REJECTED** live in `plans/archive/`,
+  never in `plans/` root. The tables below remain the record of what each
+  plan decided.
+- When a plan reaches DONE or REJECTED, move its file (plus any deliverable
+  notes, e.g. `NNN-SPIKE-NOTES.md`) to `plans/archive/` **in the same change**
   that flips its status row — `git mv`, never copy+delete, so history
   is preserved. New plans keep numbering monotonic; never reuse a number
   from the archive.
 - `reconcile`, `execute` and any future audit must look in **both**
   `plans/` (active: TODO / IN PROGRESS / BLOCKED) **and**
-  `plans/archive/` (DONE record). A finding already planned in the
+  `plans/archive/` (terminal record: DONE and REJECTED, with rationale in
+  the status row). A finding already planned in the
   archive is not a new finding.
-- REJECTED plans stay in `plans/` root as the active record of decided
-  non-goals (with their rationale in the status row).
 
 ## Execution order & status
 

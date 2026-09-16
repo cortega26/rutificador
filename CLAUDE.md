@@ -30,7 +30,7 @@ mypy rutificador/ --ignore-missing-imports
 # Security scan
 bandit -r rutificador/
 
-# Pre-commit (black + flake8)
+# Pre-commit (ruff)
 pre-commit run --all-files
 ```
 
