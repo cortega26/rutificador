@@ -4,11 +4,11 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
-## [No publicado]
+## [2.3.0] - 2026-09-16
 
-### Documentación
+### Añadido
 
-- [DOC] Contratos machine-readable: JSON Schemas versionados (`schemas/cli-salida.json`, `schemas/fastapi-error-422.json`) para salidas CLI `--format json|jsonl` y detalle de error 422 FastAPI, con tests en `tests/test_contracts.py` y guía en `docs/guia/contratos.md`.
+- [FEAT] Contratos machine-readable: JSON Schemas versionados (`schemas/cli-salida.json`, `schemas/fastapi-error-422.json`) para salidas CLI `--format json|jsonl` y detalle de error 422 FastAPI, con tests en `tests/test_contracts.py` y guía en `docs/guia/contratos.md`.
 
 ## [2.2.1] - 2026-09-16
 
