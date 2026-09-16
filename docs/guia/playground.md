@@ -15,7 +15,7 @@ código Python puro del paquete, y su comportamiento esperado está fijado por e
 (function () {
   // Versiones fijadas: no usar etiquetas móviles en el CDN.
   var PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js";
-  var PAQUETE = "rutificador==2.0.0";
+  var PAQUETE = "rutificador==2.2.1";
   var pyodide = null;
   var cargando = null;
   var salida = document.getElementById("rut-salida");
