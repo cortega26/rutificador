@@ -1,0 +1,62 @@
+name: Recordatorio ventana Python
+
+# Tarea programada (acordada 2026-09-16): migrar la ventana soportada de
+# Python 3.10-3.14 a 3.11-3.15 una vez que 3.15.0 final salga (2026-10-01,
+# PEP 790) y 3.10 llegue a EOL (octubre 2026, PEP 619).
+# Dispara el 15 oct y el 15 nov (el segundo es respaldo por si el primero
+# falla o la release se atrasa). Solo corre en master (limitacion de cron).
+# Es idempotente: no hace nada si 3.15 ya esta en la matriz o si el issue
+# sigue abierto. Se puede eliminar cuando la migracion este hecha.
+
+on:
+  schedule:
+    - cron: "0 9 15 10,11 *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  recordar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Evaluar si corresponde recordar
+        id: estado
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if grep -q '"3.15"' .github/workflows/ci.yml; then
+            echo "migrado=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "migrado=false" >> "$GITHUB_OUTPUT"
+          fi
+          ABIERTOS=$(gh issue list --search "Ventana Python 3.11-3.15 in:title" --state open --json number --jq length)
+          echo "abiertos=$ABIERTOS" >> "$GITHUB_OUTPUT"
+
+      - name: Crear issue de migracion
+        if: steps.estado.outputs.migrado == 'false' && steps.estado.outputs.abiertos == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Ventana Python 3.11-3.15 (programado oct 2026)" \
+            --label enhancement \
+            --body "Llego octubre 2026: Python 3.15.0 final debio salir el 2026-10-01 (PEP 790) y Python 3.10 llego a EOL (PEP 619). Hora de mover la ventana soportada de 3.10-3.14 a 3.11-3.15.
+
+          ## Pre-verificar (las fechas pueden correrse)
+
+          - 3.15.0 final realmente publicado: https://www.python.org/downloads/
+          - 3.10 efectivamente EOL: https://devguide.python.org/versions/
+          - Si algo se atraso, cerrar este issue: el workflow lo recreara el 15 nov (o el proximo octubre).
+
+          ## Checklist
+
+          1. \`.github/workflows/ci.yml\`: matriz a \`[\"3.11\", \"3.12\", \"3.13\", \"3.14\", \"3.15\"]\`, sin \`continue-on-error\` ni \`allow-prereleases\` (3.15 ya final).
+          2. \`pyproject.toml\`: \`python = \">=3.11,<4.0\"\`; quitar clasificador 3.10; agregar clasificador 3.15.
+          3. \`README.md\`: badge Python a \`3.11--3.15\`.
+          4. \`AGENTS.md\`: actualizar \"CI: 3.10-3.14\" a \"3.11-3.15\".
+          5. \`CHANGELOG.md\`: entrada minor por la nueva ventana de soporte y publicar como 2.4.0 (bump + toque a \`rutificador/version.py\` por el gate).
+          6. Tras mergear: este workflow (\`recordatorio-python.yml\`) ya es innecesario y se puede eliminar (es idempotente, pero no aporta mas)."
