@@ -58,14 +58,14 @@ inside the repo-root `.venv` (or after
 | 019 | Spike — port TypeScript del validador core con gate de conformidad | P1 | S–M | — | DONE (go-condicional; fusionado PR #98) |
 | 020 | CLI `validar` como gate de calidad — flag `--max-tasa-error` | P2 | S | — | DONE (v2.1.0; fusionado PR #96) |
 | 021 | Contratos machine-readable — JSON Schemas de salidas CLI y error 422 | P2 | S | 020 | DONE (fusionado PR #97) |
-| 022 | Spike — API async de procesamiento por lotes | P3 | S–M | — | BLOCKED (intento 2: calibración 19.6 %/13.4 % en host saturado load≈21.6; solo reintentar en hardware quieto; notas en rama worktree, prototipo en /tmp/async-spike) |
-| 023 | Playground interactivo Pyodide en el sitio de docs | P3 | S–M | — | BLOCKED (v1 rompió 4 tests que parchean ejecutores como attrs de módulo; plan refinado a v2 `__getattr__` PEP 562 sin tocar tests; cambios sin commitear en /tmp/rutificador-exec-023) |
+| 022 | Spike — API async de procesamiento por lotes | P3 | S–M | — | DONE (no-go final tras 3 intentos: sin evidencia de ganancia; serial más rápido, async nunca mejor; no reintentar sin hardware dedicado + motivo nuevo) |
+| 023 | Playground interactivo Pyodide en el sitio de docs | P3 | S–M | 024 | BLOCKED (v2 validada en verde incl. 107 tests intactos; exige 024 fusionado + release 2.2.1 con el fix + pin; posible 2º defecto JS en Step 0c; trabajo en /tmp/rutificador-exec-023 commit cc784a8) |
 
 ### Follow-ups (ciclo 019–023)
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 024 | ESTRICTO rechaza guiones alternativos (alinear código con spec) | P1 | S | — | TODO |
+| 024 | ESTRICTO rechaza guiones alternativos (alinear código con spec) | P1 | S | — | DONE (323 passed, conformidad 29/29, vectores 1.1.0, v2.2.0; rama advisor/024-strict-alternate-hyphens en /tmp/rutificador-exec-024, sin merge) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) |
 REJECTED (one-line rationale).
