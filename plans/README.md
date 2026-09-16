@@ -59,7 +59,7 @@ inside the repo-root `.venv` (or after
 | 020 | CLI `validar` como gate de calidad — flag `--max-tasa-error` | P2 | S | — | DONE (v2.1.0; fusionado PR #96) |
 | 021 | Contratos machine-readable — JSON Schemas de salidas CLI y error 422 | P2 | S | 020 | DONE (fusionado PR #97) |
 | 022 | Spike — API async de procesamiento por lotes | P3 | S–M | — | DONE (no-go final tras 3 intentos; fusionado PR #102) |
-| 023 | Playground interactivo Pyodide en el sitio de docs | P3 | S–M | 024 | BLOCKED (v2 validada en verde incl. 107 tests intactos; exige 024 fusionado + release 2.2.1 con el fix + pin; posible 2º defecto JS en Step 0c; trabajo en /tmp/rutificador-exec-023 commit cc784a8) |
+| 023 | Playground interactivo Pyodide en el sitio de docs | P3 | S–M | 024 | DONE (v2.2.1; fusionado PR #104) |
 
 ### Follow-ups (ciclo 019–023)
 
