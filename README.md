@@ -17,6 +17,8 @@
 
 Biblioteca Python para validar, calcular y formatear el Rol Único Tributario (RUT) chileno. **Sin dependencias externas**, tipado estático completo, y soporte para procesamiento por lotes, streaming, CLI, e integraciones opcionales con Pydantic v2, FastAPI, pandas y polars.
 
+Documentación completa (guías, referencia de API y playground interactivo): [tooltician.com/rutificador](https://tooltician.com/rutificador/).
+
 ```python
 from rutificador import Rut
 
@@ -24,7 +26,7 @@ rut = Rut("12.345.678-5")
 print(rut.formatear(separador_miles=True))  # 12.345.678-5
 
 resultado = Rut.parse("12.345.678-9")
-print(resultado.estado, resultado.codigo_error)  # invalido DV_DISCORDANTE
+print(resultado.estado, resultado.errores[0].codigo)  # invalido DV_DISCORDANTE
 ```
 
 ## Tabla de Contenidos
@@ -66,6 +68,8 @@ print(resultado.estado, resultado.codigo_error)  # invalido DV_DISCORDANTE
 - **Integraciones opcionales** — Pydantic v2, FastAPI, pandas, polars.
 - **Tipado estático** — `py.typed` (PEP 561), cobertura mypy completa.
 - **CLI profesional** — salida en text, JSON, JSONL, CSV y XML.
+- **Gate de calidad en CI** — `validar --max-tasa-error` falla solo si se supera el umbral de inválidos.
+- **Calidad de datos** — duplicados, auditoría de formatos y perfilado (`rutificador.calidad_datos`).
 
 ## Instalación
 
@@ -100,7 +104,7 @@ print(resultado.normalizado)  # 12345678-5
 
 resultado = Rut.parse("12.345.678-9")
 print(resultado.estado)  # invalido
-print(resultado.codigo_error)  # DV_DISCORDANTE
+print(resultado.errores[0].codigo)  # DV_DISCORDANTE
 
 # Capturar error en validación directa
 from rutificador.exceptions import ErrorValidacionRut
@@ -154,12 +158,11 @@ print(Rut.enmascarar("12.345.678-5", modo="token", clave="mi-clave"))  # tok_abc
 from rutificador import Rut
 
 # Sugerir correcciones para un RUT con error tipográfico
-sugerencias = Rut.sugerir("12.345.687-5")
-print(sugerencias)  # ['12345678-5', ...]
+sugerencias = Rut.sugerir("12.345.678-9")
+print(sugerencias[0])  # 12345678-5
 
 # Autocorrección inteligente
-mejor_opcion = Rut.mejorar("12a345678-k")
-print(mejor_opcion)  # 12345678-5
+print(Rut.mejorar("12a345678-5"))  # 12345678-5
 ```
 
 ---
@@ -185,13 +188,13 @@ rutificador validar ruts.txt --format jsonl > resultados.jsonl
 # Procesamiento paralelo
 rutificador validar ruts_pesados.txt --paralelo --format csv
 
-# Autocorreccion + sugerencias
+# Autocorrección + sugerencias
 rutificador validar sucia_db.txt --mejorar --sugerir
 
 # Gate de calidad en CI (falla solo si más del 1 % es inválido)
 rutificador validar ruts.txt --max-tasa-error 0.01 --quiet || echo "gate fallido"
 
-# Informacion del sistema
+# Información del sistema
 rutificador info
 ```
 
@@ -211,7 +214,7 @@ rutificador info
 | Formato | Descripción |
 |---------|-------------|
 | `text` | Legible por humanos con resumen de auditoría en stderr |
-| `json` | Array JSON estándar (OOM-Safe via streaming) |
+| `json` | Array JSON estándar (streaming, bajo consumo de memoria) |
 | `jsonl` | Una línea por registro — ideal para Big Data |
 | `csv` | Hoja de cálculo con cabecera |
 | `xml` | Estructura incremental para integraciones legacy |
@@ -228,7 +231,7 @@ procesador = ProcesadorLotesRut()
 
 resultado = procesador.validar_lista_ruts(ruts)
 print(len(resultado.detalles_validos))  # 2
-print(len(resultado.detalles_invalidos))  # 1
+print(len(resultado.ruts_invalidos))  # 1
 
 # Formatear a JSON, CSV o XML
 csv = procesador.formatear_lista_ruts(ruts, formato="csv")
@@ -252,6 +255,15 @@ ruts = (linea.strip() for linea in open("muy_grande.txt"))
 for es_valido, resultado in validar_flujo_ruts(ruts):
     if es_valido:
         print(resultado.valor)
+```
+
+### Calidad de datos
+
+```python
+from rutificador import detectar_duplicados
+
+informe = detectar_duplicados(["12.345.678-5", "12345678-5", "1-9"])
+print(informe.total_unicos, informe.total_duplicados)  # 2 2
 ```
 
 ---
@@ -317,18 +329,12 @@ pip install rutificador[pandas]
 
 ```python
 import pandas as pd
-import rutificador.pandas  # activa el accessor .rut
+import rutificador.contrib.pandas  # registra el accessor Series.rut
 
-s = pd.Series(["12.345.678-5", "12.345.678-9", "invalid"])
-print(s.rut.es_valido())
-# 0     True
-# 1    False
-# 2    False
+s = pd.Series(["12.345.678-5", "12.345.678-9", "invalido"])
+print(s.rut.es_valido.tolist())  # [True, False, False]
 
-print(s.rut.formatear(formato="miles"))
-# 0    12.345.678-5
-# 1          None
-# 2          None
+print(s.rut.formatear(formato="miles").tolist())  # ['12.345.678-5', nan, nan]
 ```
 
 ### polars
@@ -339,10 +345,11 @@ pip install rutificador[polars]
 
 ```python
 import polars as pl
-import rutificador.polars  # activa el namespace .rut
+import rutificador.contrib.polars  # registra el namespace Series.rut
 
-df = pl.DataFrame({"rut": ["12.345.678-5", "12.345.678-9", "invalid"]})
-print(df.with_columns(pl.col("rut").rut.es_valido()))
+s = pl.Series("rut", ["12.345.678-5", "12.345.678-9", "invalido"])
+print(s.rut.es_valido.to_list())  # [True, False, False]
+print(s.rut.formatear(formato="miles").to_list())  # ['12.345.678-5', None, None]
 ```
 
 ---
@@ -390,7 +397,7 @@ for err in res.errores:
 | `RUT_VACIO` | Entrada vacía |
 | `CARACTERES_INVALIDOS` | Caracteres no permitidos |
 | `FORMATO_PUNTOS` | Separadores de miles inválidos |
-| `FORMATO_GUION` | Guión inválido |
+| `FORMATO_GUION` | Guion inválido |
 | `LONGITUD_MINIMA` | Longitud mínima no alcanzada |
 | `LONGITUD_MAXIMA` | Longitud máxima excedida |
 | `DV_INVALIDO` | Dígito verificador inválido |
