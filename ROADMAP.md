@@ -36,4 +36,4 @@ Rutificador sigue [SemVer](https://semver.org/lang/es/):
 
 ---
 
-*Última actualización: 2026-09-16 · v2.2.1*
+Última actualización: 2026-09-16 · v2.2.1
