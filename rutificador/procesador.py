@@ -13,14 +13,18 @@ import random  # nosec B311  # Solo usado para generar datos de prueba, no cript
 import sys
 import time
 from collections.abc import Iterable, Iterator, Sequence
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from functools import partial
 from typing import (
+    TYPE_CHECKING,
     Any,
     Literal,
     TypedDict,
+    cast,
 )
+
+if TYPE_CHECKING:
+    from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from .config import ConfiguracionRut, RigorValidacion
 from .errores import DetalleError, crear_detalle_error
@@ -118,18 +122,27 @@ class ProcesadorLotesRut:
         self.max_trabajadores: int | None = max_trabajadores
         self.motor_paralelo = motor_paralelo
 
-    def obtener_clase_ejecutor(self) -> type[ThreadPoolExecutor | ProcessPoolExecutor]:
+    def obtener_clase_ejecutor(
+        self,
+    ) -> "type[ThreadPoolExecutor | ProcessPoolExecutor]":
+        # Resolución vía atributo de módulo (PEP 562 `__getattr__`) en vez
+        # de `from concurrent.futures import ...` directo: el import del
+        # paquete sigue sin arrastrar `multiprocessing` (ausente en Pyodide)
+        # y el parcheo de `rutificador.procesador.ThreadPoolExecutor` /
+        # `.ProcessPoolExecutor` en tests sigue funcionando.
+        modulo = sys.modules[__name__]
+        ejecutor_hilos = cast("type[ThreadPoolExecutor]", modulo.ThreadPoolExecutor)
+        ejecutor_procesos = cast(
+            "type[ProcessPoolExecutor]", modulo.ProcessPoolExecutor
+        )
+
         if self.motor_paralelo == "process" and sys.platform == "win32":
             logger.warning(
                 "Procesamiento en paralelo con procesos no está soportado en Windows; "
                 "usando ThreadPoolExecutor"
             )
-            return ThreadPoolExecutor
-        return (
-            ProcessPoolExecutor
-            if self.motor_paralelo == "process"
-            else ThreadPoolExecutor
-        )
+            return ejecutor_hilos
+        return ejecutor_procesos if self.motor_paralelo == "process" else ejecutor_hilos
 
     def _calcular_chunksize(self, n_items: int, max_workers: int) -> int:
         """Calcula un chunksize óptimo para el procesamiento paralelo."""
@@ -504,6 +517,20 @@ def _formatear_detalle(
         separador_miles=separador_miles,
         mayusculas=mayusculas,
     )
+
+
+def __getattr__(nombre: str) -> Any:
+    """Alias perezosos para los ejecutores (compatibilidad + Pyodide).
+
+    `from rutificador import Rut` nunca toca estos atributos, así que
+    el import del paquete no arrastra `multiprocessing` (ausente en
+    Pyodide). Quien los acceda obtiene la clase real bajo demanda.
+    """
+    if nombre in {"ProcessPoolExecutor", "ThreadPoolExecutor"}:
+        from concurrent import futures
+
+        return getattr(futures, nombre)
+    raise AttributeError(f"módulo {__name__!r} sin atributo {nombre!r}")
 
 
 __all__ = [

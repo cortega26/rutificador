@@ -75,6 +75,7 @@ nav:
       - CLI: guia/cli.md
       - Integraciones: guia/integraciones.md
       - Contratos: guia/contratos.md
+      - Playground: guia/playground.md
   - API de Referencia:
       - Rut: api/rut.md
       - Validador: api/validador.md
