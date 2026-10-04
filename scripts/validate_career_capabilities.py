@@ -124,23 +124,33 @@ def coverage_errors(caps: list[dict], root: Path) -> list[str]:
             + " (add evidence-backed capability/term)"
         )
 
-    if list((root / "schemas").glob("*.json")) or (root / "tests/vectors/schema.json").is_file():
+    if (
+        list((root / "schemas").glob("*.json"))
+        or (root / "tests/vectors/schema.json").is_file()
+    ):
         if "validation.json-schema" not in ids:
-            errors.append("JSON Schema files exist but validation.json-schema is undeclared")
-
-    if (root / "scripts/conformance.py").is_file() and "testing.conformance-harness" not in ids:
-        errors.append("scripts/conformance.py exists but testing.conformance-harness is undeclared")
+            errors.append(
+                "JSON Schema files exist but validation.json-schema is undeclared"
+            )
 
     if (
-        (root / "tests/vectors/conformance.json").is_file()
-        and "testing.conformance-vectors" not in ids
-    ):
+        root / "scripts/conformance.py"
+    ).is_file() and "testing.conformance-harness" not in ids:
+        errors.append(
+            "scripts/conformance.py exists but testing.conformance-harness is undeclared"
+        )
+
+    if (
+        root / "tests/vectors/conformance.json"
+    ).is_file() and "testing.conformance-vectors" not in ids:
         errors.append(
             "tests/vectors/conformance.json exists but testing.conformance-vectors is undeclared"
         )
 
     if (root / ".github/workflows/ci.yml").is_file() and "ci.github-actions" not in ids:
-        errors.append(".github/workflows/ci.yml exists but ci.github-actions is undeclared")
+        errors.append(
+            ".github/workflows/ci.yml exists but ci.github-actions is undeclared"
+        )
 
     return errors
 
@@ -192,9 +202,7 @@ def validate(manifest_path: Path, root: Path) -> tuple[list[str], list[str]]:
                 continue
             actual = git_blob_sha(source)
             if actual != expected:
-                stale.append(
-                    f"{cid}:{path}: STALE expected={expected} actual={actual}"
-                )
+                stale.append(f"{cid}:{path}: STALE expected={expected} actual={actual}")
 
     try:
         errors.extend(coverage_errors(caps, root))
