@@ -7,6 +7,8 @@ It is **not** a marketing profile and it is not maintained by date. Each claim
 points to one or more repository files plus the exact Git blob id that was
 inspected.
 
+CI also performs a deterministic coverage scan over mechanically observable surfaces (currently CLI output formats, public contrib integrations, JSON Schema, conformance tooling and the main CI workflow). If a new surface appears without a corresponding capability declaration, CI fails rather than silently letting the manifest become incomplete.
+
 CI runs:
 
 ```bash
