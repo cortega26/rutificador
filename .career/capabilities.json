@@ -28,6 +28,24 @@
       ]
     },
     {
+      "id": "format.text",
+      "category": "format",
+      "label": "Plain-text output",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "text",
+        "plain text",
+        "cli output"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/cli.py",
+          "blob_sha": "f99bdc7f534da4111290116f3274036ef2813ded",
+          "locator": "_EmisionTexto / _ESTRATEGIAS_FORMATO"
+        }
+      ]
+    },
+    {
       "id": "format.json",
       "category": "format",
       "label": "JSON output",
