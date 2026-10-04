@@ -1,0 +1,275 @@
+{
+  "schema_version": "project-capabilities-v1",
+  "project": {
+    "slug": "rutificador",
+    "name": "Rutificador",
+    "repository": "cortega26/rutificador",
+    "default_branch": "master"
+  },
+  "verified_against": {
+    "commit": "651cf8479a689c86b13942b27bd73e6c1f0bc8ea",
+    "verified_at": "2026-10-04"
+  },
+  "capabilities": [
+    {
+      "id": "language.python",
+      "category": "language",
+      "label": "Python",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "python"
+      ],
+      "evidence": [
+        {
+          "path": "pyproject.toml",
+          "blob_sha": "24a3ffdba2c54f07b79a90b0a6b8f43e21251ec1",
+          "locator": "project metadata / supported Python versions"
+        }
+      ]
+    },
+    {
+      "id": "format.json",
+      "category": "format",
+      "label": "JSON output",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "json",
+        "structured output"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/cli.py",
+          "blob_sha": "f99bdc7f534da4111290116f3274036ef2813ded",
+          "locator": "_EmisionJSON / _ESTRATEGIAS_FORMATO"
+        }
+      ]
+    },
+    {
+      "id": "format.jsonl",
+      "category": "format",
+      "label": "JSON Lines output",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "jsonl",
+        "json lines",
+        "structured output"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/cli.py",
+          "blob_sha": "f99bdc7f534da4111290116f3274036ef2813ded",
+          "locator": "_EmisionJSONL / _ESTRATEGIAS_FORMATO"
+        }
+      ]
+    },
+    {
+      "id": "format.csv",
+      "category": "format",
+      "label": "CSV output",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "csv",
+        "structured output"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/cli.py",
+          "blob_sha": "f99bdc7f534da4111290116f3274036ef2813ded",
+          "locator": "_EmisionCSV / _ESTRATEGIAS_FORMATO"
+        }
+      ]
+    },
+    {
+      "id": "format.xml",
+      "category": "format",
+      "label": "XML output",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "xml",
+        "structured output"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/cli.py",
+          "blob_sha": "f99bdc7f534da4111290116f3274036ef2813ded",
+          "locator": "_EmisionXML / _ESTRATEGIAS_FORMATO"
+        }
+      ]
+    },
+    {
+      "id": "validation.json-schema",
+      "category": "validation",
+      "label": "Versioned JSON Schema contracts",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "json schema",
+        "schema validation",
+        "machine-readable contracts"
+      ],
+      "evidence": [
+        {
+          "path": "tests/vectors/schema.json",
+          "blob_sha": "a9a76c9ee886ca313fe277402f2bf987caa25e91",
+          "locator": "draft 2020-12 conformance-vector schema"
+        },
+        {
+          "path": "tests/test_contracts.py",
+          "blob_sha": "7b794f0a4e0bca3143a676e184c907dcf926d57d",
+          "locator": "machine-readable contract tests"
+        }
+      ]
+    },
+    {
+      "id": "testing.conformance-vectors",
+      "category": "testing",
+      "label": "Versioned conformance vectors",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "conformance vectors",
+        "test vectors",
+        "golden cases",
+        "cross-implementation validation"
+      ],
+      "evidence": [
+        {
+          "path": "tests/vectors/conformance.json",
+          "blob_sha": "a80b4f0d7bc02c5ca2b918172c43cf034d830b28",
+          "locator": "canonical versioned vectors"
+        },
+        {
+          "path": "tests/test_spec_vectors.py",
+          "blob_sha": "14293644bea6146da4a675c8afc6b92e41f7592b",
+          "locator": "vector contract tests"
+        }
+      ]
+    },
+    {
+      "id": "testing.conformance-harness",
+      "category": "testing",
+      "label": "Standalone conformance harness",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "conformance harness",
+        "validation harness",
+        "cross-language testing"
+      ],
+      "evidence": [
+        {
+          "path": "scripts/conformance.py",
+          "blob_sha": "299a28b664671dcf7d0c593dfe4069a5f456c33a",
+          "locator": "run_conformance"
+        },
+        {
+          "path": "docs/conformidad.md",
+          "blob_sha": "569a3510ba7ea01058a6c630230ae33a630c3067",
+          "locator": "consumer contract and workflow"
+        }
+      ]
+    },
+    {
+      "id": "framework.fastapi",
+      "category": "framework",
+      "label": "FastAPI integration",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "fastapi",
+        "api validation"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/contrib/fastapi.py",
+          "blob_sha": "4b5d1840ca73209153618553f2cd49333feabeff",
+          "locator": "FastAPI dependency integration"
+        }
+      ]
+    },
+    {
+      "id": "framework.pydantic-v2",
+      "category": "framework",
+      "label": "Pydantic v2 integration",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "pydantic",
+        "pydantic v2",
+        "typed validation"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/contrib/pydantic/rutstr.py",
+          "blob_sha": "2f16f80207ee3191472c26e5ede311805b5c22a5",
+          "locator": "RutStr Pydantic core schema"
+        }
+      ]
+    },
+    {
+      "id": "integration.pandas",
+      "category": "integration",
+      "label": "Pandas integration",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "pandas",
+        "dataframe"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/contrib/pandas.py",
+          "blob_sha": "5d45d6a393cb45a6255e97c4cf16ec6fb61828f5",
+          "locator": "Pandas accessor"
+        }
+      ]
+    },
+    {
+      "id": "integration.polars",
+      "category": "integration",
+      "label": "Polars integration",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "polars",
+        "dataframe"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/contrib/polars.py",
+          "blob_sha": "d91884cfb3fe9ca01d3814e6b13e9eb686fe945d",
+          "locator": "Polars namespace"
+        }
+      ]
+    },
+    {
+      "id": "security.csv-formula-injection",
+      "category": "security",
+      "label": "CSV formula-injection mitigation",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "csv injection",
+        "formula injection",
+        "output hardening"
+      ],
+      "evidence": [
+        {
+          "path": "rutificador/cli.py",
+          "blob_sha": "f99bdc7f534da4111290116f3274036ef2813ded",
+          "locator": "_EmisionCSV.emitir"
+        }
+      ]
+    },
+    {
+      "id": "ci.github-actions",
+      "category": "ci-cd",
+      "label": "GitHub Actions CI",
+      "verification": "CODE_VERIFIED",
+      "terms": [
+        "github actions",
+        "ci",
+        "continuous integration"
+      ],
+      "evidence": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "blob_sha": "f16695a880aa5824f27f3dfa604461e05d481a24",
+          "locator": "test/lint/type/security workflow"
+        }
+      ]
+    }
+  ]
+}
