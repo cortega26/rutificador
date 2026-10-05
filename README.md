@@ -1,23 +1,30 @@
 <div align="center">
 
-*Parte del [ecosistema Tooltician](https://tooltician.com) — validación y formato de RUT chileno, sin dependencias externas.*
+# Rutificador
 
+<p><strong>El toolkit de RUT chileno que instalas una vez y dejas de reimplementar para siempre.</strong></p>
+<p>Validación, cálculo, formato, CLI, lotes e integraciones para aplicaciones Python reales — <strong>sin dependencias externas en el núcleo</strong>.</p>
+
+[![GitHub stars](https://img.shields.io/github/stars/cortega26/rutificador?style=flat&logo=github)](https://github.com/cortega26/rutificador/stargazers)
+[![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
+[![Downloads](https://img.shields.io/pypi/dm/rutificador)](https://pypi.org/project/rutificador/)
+[![Python](https://img.shields.io/badge/Python-3.10--3.14-blue)](https://www.python.org/)
+[![Integración continua](https://github.com/cortega26/rutificador/actions/workflows/ci.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/ci.yml)
+[![Licencia](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Parte de Tooltician](https://img.shields.io/badge/Parte_de-Tooltician.com-6C47FF?v=2)](https://tooltician.com)
 
-[![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
-[![Python](https://img.shields.io/badge/Python-3.10--3.14-blue)](https://www.python.org/)
-[![Downloads](https://img.shields.io/pypi/dm/rutificador)](https://pypi.org/project/rutificador/)
-[![Licencia](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Estilo de código](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://docs.astral.sh/ruff/)
-[![Integración continua](https://github.com/cortega26/rutificador/actions/workflows/ci.yml/badge.svg)](https://github.com/cortega26/rutificador/actions/workflows/ci.yml)
+<p>
+  <a href="https://tooltician.com/rutificador/"><strong>Documentación + playground</strong></a> ·
+  <a href="#instalación">Instalar</a> ·
+  <a href="#integraciones">Integraciones</a> ·
+  <a href="#línea-de-comandos">CLI</a>
+</p>
 
 </div>
 
-# Rutificador
-
-Biblioteca Python para validar, calcular y formatear el Rol Único Tributario (RUT) chileno. **Sin dependencias externas**, tipado estático completo, y soporte para procesamiento por lotes, streaming, CLI, e integraciones opcionales con Pydantic v2, FastAPI, pandas y polars.
-
-Documentación completa (guías, referencia de API y playground interactivo): [tooltician.com/rutificador](https://tooltician.com/rutificador/).
+```bash
+pip install rutificador
+```
 
 ```python
 from rutificador import Rut
@@ -29,31 +36,22 @@ resultado = Rut.parse("12.345.678-9")
 print(resultado.estado, resultado.errores[0].codigo)  # invalido DV_DISCORDANTE
 ```
 
-## Tabla de Contenidos
+## No necesitas otra regex para RUT
 
-- [Características](#caracteristicas)
-- [Instalación](#instalacion)
-- [Uso básico](#uso-basico)
-  - [Validación y parseo](#validacion-y-parseo)
-  - [Formateo](#formateo)
-  - [Dígito verificador](#calculo-del-digito-verificador)
-  - [Enmascaramiento](#enmascaramiento)
-  - [Sugerencias y autocorrección](#sugerencias-y-autocorreccion)
-- [Línea de comandos](#linea-de-comandos)
-- [Procesamiento por lotes](#procesamiento-por-lotes)
-- [Integraciones](#integraciones)
-  - [Pydantic v2](#pydantic-v2)
-  - [FastAPI](#fastapi)
-  - [pandas](#pandas)
-  - [polars](#polars)
-- [Validación avanzada](#validacion-avanzada)
-- [Referencia de errores](#referencia-de-errores)
-- [Registro y depuración](#registro-y-depuracion)
-- [API de referencia](#api-de-referencia)
-- [Desarrollo](#desarrollo)
-- [Licencia](#licencia)
+Validar un RUT parece trivial hasta que el código entra en producción: dígitos verificadores discordantes, entradas sucias, millones de filas, APIs que necesitan errores estructurados, logs que no deberían exponer identificadores y equipos que terminan manteniendo cinco implementaciones distintas.
 
----
+**Rutificador concentra todo eso en una sola interfaz estable y tipada.**
+
+| Si estás construyendo… | Ya tienes… |
+|:---|:---|
+| Una API FastAPI | Integración opcional con Pydantic v2 y FastAPI |
+| Un pipeline de datos | Procesamiento por lotes, streaming, pandas y polars |
+| Una validación de formularios | Parseo seguro con errores estructurados |
+| Una herramienta operacional | CLI con text, JSON, JSONL, CSV y XML |
+| Un sistema con datos sensibles | Enmascaramiento y tokenización |
+| CI/CD o controles de calidad | Umbrales de error y auditoría de formatos |
+
+> **Núcleo liviano:** cero dependencias externas, soporte Python 3.10–3.14 y tipado estático distribuido con `py.typed`.
 
 ## Características
 
