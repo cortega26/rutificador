@@ -106,8 +106,12 @@ def ejecutar():
 
         # El primer clic descarga Pyodide y rutificador desde la red REAL.
         page.locator("#rut-validar").click()
-        playwright_api.expect(page.locator("#rut-salida")).to_contain_text("valido", timeout=150000)
-        playwright_api.expect(page.locator("#rut-salida")).to_contain_text(RUT_NORMALIZADO)
+        playwright_api.expect(page.locator("#rut-salida")).to_contain_text(
+            "valido", timeout=150000
+        )
+        playwright_api.expect(page.locator("#rut-salida")).to_contain_text(
+            RUT_NORMALIZADO
+        )
 
         page.locator("#rut-csv-archivo").set_input_files(
             files={
@@ -116,12 +120,20 @@ def ejecutar():
                 "buffer": DATOS.encode("utf-8"),
             }
         )
-        playwright_api.expect(page.locator("#rut-csv-columna")).to_be_enabled(timeout=10000)
+        playwright_api.expect(page.locator("#rut-csv-columna")).to_be_enabled(
+            timeout=10000
+        )
         playwright_api.expect(page.locator("#rut-csv-columna")).to_have_value("RUT")
         page.locator("#rut-csv-auditar").click()
-        playwright_api.expect(page.locator("#rut-csv-descargar")).to_be_enabled(timeout=120000)
-        playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text("Total: 3")
-        playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text("Válidos: 2")
+        playwright_api.expect(page.locator("#rut-csv-descargar")).to_be_enabled(
+            timeout=120000
+        )
+        playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text(
+            "Total: 3"
+        )
+        playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text(
+            "Válidos: 2"
+        )
         playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text(
             "Duplicados adicionales: 1"
         )
