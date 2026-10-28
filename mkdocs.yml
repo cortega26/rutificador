@@ -36,6 +36,9 @@ theme:
     - content.code.copy
     - content.code.annotate
 
+extra_css:
+  - stylesheets/playground.css
+
 plugins:
   - search:
       lang: es
