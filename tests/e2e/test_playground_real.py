@@ -112,6 +112,11 @@ def ejecutar():
         playwright_api.expect(page.locator("#rut-salida")).to_contain_text(
             RUT_NORMALIZADO
         )
+        # La versión procede del importlib.metadata en Pyodide REAL,
+        # no del texto estático de la página ni de un mock.
+        playwright_api.expect(page.locator("#rut-version")).to_have_text(
+            "Motor Python: rutificador 2.4.0"
+        )
 
         page.locator("#rut-csv-archivo").set_input_files(
             files={
