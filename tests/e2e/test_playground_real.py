@@ -48,6 +48,9 @@ def verificar_csv(ruta: Path) -> None:
 
 def verificar_pantalla(page, ancho: int) -> None:
     page.set_viewport_size({"width": ancho, "height": 844})
+    # MkDocs Material usa cabecera sticky; la captura fullPage debe empezar arriba.
+    page.evaluate("window.scrollTo(0, 0)")
+    page.wait_for_timeout(120)
     page.screenshot(path=str(ARTEFACTOS / f"playground-{ancho}.png"), full_page=True)
     resultado = page.evaluate("""() => ({
         total: document.documentElement.scrollWidth,
@@ -85,6 +88,11 @@ def ejecutar():
         page.goto(URL, wait_until="domcontentloaded", timeout=45000)
         expect(page.locator("#rut-validar")).to_be_visible()
         expect(page.locator("#rut-csv-archivo")).to_be_visible()
+        ejemplo = page.request.get(
+            "http://127.0.0.1:8765/ejemplos/auditoria-demo.csv",
+            timeout=10000,
+        )
+        assert ejemplo.ok and "RUT,Referencia" in ejemplo.text(), "CSV de ejemplo inaccesible"
 
         # El primer clic descarga Pyodide y rutificador desde la red REAL.
         page.locator("#rut-validar").click()
