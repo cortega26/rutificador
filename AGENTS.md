@@ -1,6 +1,6 @@
 # AGENTS.md · rutificador
 
-Librería Python para validar/formatear RUT chileno. Core con **cero dependencias** (solo stdlib); integraciones opcionales en `rutificador/contrib/` (pydantic, fastapi, pandas, polars). Python `>=3.10` (CI: 3.10–3.14, dev: 3.13); mantener compatibilidad con 3.10. Rama principal: `master`. Detalle de arquitectura: `CLAUDE.md`.
+Librería Python para validar/formatear RUT chileno. Core con **cero dependencias** (solo stdlib); integraciones opcionales en `rutificador/contrib/` (pydantic, fastapi, pandas, polars). Python `>=3.11,<4.0` (CI: 3.11–3.15, dev: 3.13); Python 3.10 está fuera de soporte desde 2026-10-01. Rama principal: `master`. Detalle de arquitectura: `CLAUDE.md`.
 
 ## Setup
 
