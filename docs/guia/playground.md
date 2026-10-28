@@ -56,6 +56,8 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
   <div id="rut-csv-resumen" class="rut-stats" role="group" aria-label="Resumen de auditoría" aria-live="polite"></div>
 </div>
 
+**¿Este control se repite todas las semanas o meses?** Consulta los [casos de uso empresariales y la propuesta de automatización recurrente](../empresas/auditoria-rut.md). No es necesario enviar ningún archivo para preguntar por el servicio.
+
 **Cómo interpretar el resultado:** «válido» solo indica que el formato y el dígito verificador concuerdan; **no prueba que el RUT exista ni identifica a una persona**. «Posible» e «incompleto» se informan por separado. Los duplicados se detectan únicamente entre RUTs válidos normalizados. La auditoría cuenta todas las filas de un grupo duplicado y, por separado, los registros adicionales sobre el primero. Los CSV sin cabecera, con filas irregulares o con comillas malformadas se rechazan sin descartar registros silenciosamente.
 
 <script src="../../javascripts/csv-audit.js"></script>

@@ -15,7 +15,9 @@ resultado = Rut.parse("12.345.678-9")
 print(resultado.estado, resultado.codigo_error)  # invalido DV_DISCORDANTE
 ```
 
-Puedes [probarlo en el playground](guia/playground.md) sin instalar nada: valida RUTs en tu navegador.
+Puedes [probar el auditor CSV en el playground](guia/playground.md) sin instalar nada: los archivos se procesan en tu navegador.
+
+**¿Lo necesitas cada semana o mes?** Revisa [los casos de uso empresariales y la propuesta de automatización recurrente](empresas/auditoria-rut.md). El servicio profesional está en validación; el auditor gratuito sigue disponible sin registro.
 
 ## Características
 

@@ -168,9 +168,46 @@ def ejecutar():
                     valor,
                 )
         assert not errores_js, f"Excepciones JavaScript: {errores_js}"
+
+        # La landing comercial es una página estática enlazada desde el playground.
+        # No se envían RUT ni archivos al sitio de contacto externo.
+        page.goto(
+            "http://127.0.0.1:8765/empresas/auditoria-rut/",
+            wait_until="domcontentloaded",
+            timeout=30000,
+        )
+        playwright_api.expect(page.locator("h1")).to_contain_text(
+            "Auditoría de RUT para empresas"
+        )
+        playwright_api.expect(
+            page.get_by_text("3 UF", exact=False).first
+        ).to_be_visible()
+        enlaces = page.locator('a[href*="utm_campaign=auditoria_rut_b2b"]')
+        assert enlaces.count() >= 3, "Faltan enlaces de contacto atribuibles"
+        for enlace in enlaces.all():
+            destino = enlace.get_attribute("href")
+            assert destino.startswith(
+                "https://tooltician.com/es/?utm_source=rutificador"
+            )
+            assert destino.endswith("#contact")
+        for ancho in (1280, 390):
+            page.set_viewport_size({"width": ancho, "height": 844})
+            page.evaluate("window.scrollTo(0, 0)")
+            page.screenshot(
+                path=str(ARTEFACTOS / f"auditoria-b2b-{ancho}.png"),
+                full_page=True,
+            )
+            medidas = page.evaluate(
+                "() => ({scroll: document.documentElement.scrollWidth, view: window.innerWidth})"
+            )
+            assert medidas["scroll"] <= medidas["view"] + 2, (
+                f"Desbordamiento horizontal en landing B2B {ancho}px: {medidas}"
+            )
+        assert not errores_js, f"Excepciones JavaScript: {errores_js}"
         print(
             "PASS: Chromium real, Pyodide, wheel PyPI, auditoría CSV, exportación, privacidad, 390/1280px"
         )
+        print("PASS: landing B2B, contactos atribuibles y responsive 390/1280px")
         print(f"Solicitudes de descarga/control (sin datos): {len(solicitudes)}")
         context.close()
         browser.close()

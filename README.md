@@ -19,6 +19,8 @@ Biblioteca Python para validar, calcular y formatear el Rol Único Tributario (R
 
 Documentación completa (guías, referencia de API y playground interactivo): [tooltician.com/rutificador](https://tooltician.com/rutificador/).
 
+**Auditoría de datos para empresas:** [validador CSV gratuito y propuesta de control recurrente](https://tooltician.com/rutificador/empresas/auditoria-rut/). La opción B2B es un servicio profesional en evaluación, no una suscripción SaaS.
+
 ```python
 from rutificador import Rut
 
