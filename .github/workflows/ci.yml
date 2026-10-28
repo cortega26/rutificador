@@ -7,6 +7,17 @@ on:
     branches: [ master ]
 
 jobs:
+  playground:
+    name: Playground CSV (Node 22)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Pruebas de parsing, auditoria y privacidad del CSV
+        run: node --test tests/js/*.test.cjs
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -97,3 +108,6 @@ jobs:
     - name: Validar configuracion de pre-commit
       run: |
         pre-commit validate-config
+
+    - name: Verificar documentacion y assets del playground
+      run: mkdocs build --strict
