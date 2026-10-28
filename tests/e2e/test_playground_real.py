@@ -8,8 +8,6 @@ import csv
 import os
 from pathlib import Path
 
-from playwright import sync_api as playwright_api
-
 
 URL = os.environ.get("PLAYGROUND_URL", "http://127.0.0.1:8765/guia/playground/")
 ARTEFACTOS = Path(
@@ -76,6 +74,9 @@ def verificar_pantalla(page, ancho: int) -> None:
 
 
 def ejecutar():
+    # Dependencia exclusiva del job E2E: no se importa durante pytest core.
+    from playwright import sync_api as playwright_api
+
     errores_js = []
     solicitudes = []
     with playwright_api.sync_playwright() as playwright:
@@ -171,6 +172,6 @@ def ejecutar():
 if __name__ == "__main__":
     try:
         ejecutar()
-    except (playwright_api.TimeoutError, playwright_api.Error, AssertionError) as exc:
+    except Exception as exc:
         print(f"FAIL: {type(exc).__name__}: {exc}")
         raise
