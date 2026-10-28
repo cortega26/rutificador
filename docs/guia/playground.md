@@ -63,11 +63,12 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
 (function () {
   "use strict";
   var PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js";
-  // Versión publicada antes de esta iteración; el motor CSV es JS y no precisa
-  // una publicación nueva de la biblioteca.
-  var PAQUETE = "rutificador==2.3.0";
+  // La versión publicada en PyPI debe coincidir con la instalada en Pyodide.
+  var VERSION_ESPERADA = "2.4.0";
+  var PAQUETE = "rutificador==" + VERSION_ESPERADA;
   var pyodide = null;
   var cargando = null;
+  var versionMotorCargado = null;
   var entrada = document.getElementById("rut-input");
   var resultadoIndividual = document.getElementById("rut-salida");
   var archivoInput = document.getElementById("rut-csv-archivo");
@@ -99,7 +100,17 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
         .then(function () { return loadPyodide(); })
         .then(function (p) {
           return p.loadPackage("micropip").then(function () {
-            return p.pyimport("micropip").install(PAQUETE).then(function () { return p; });
+            return p.pyimport("micropip").install(PAQUETE).then(function () {
+              var versionInstalada = p.runPython(
+                "from importlib.metadata import version as _version_paquete\n" +
+                "_version_paquete('rutificador')"
+              );
+              if (versionInstalada !== VERSION_ESPERADA) {
+                throw new Error("Versión inesperada del motor: " + versionInstalada);
+              }
+              versionMotorCargado = versionInstalada;
+              return p;
+            });
           });
         });
     }
@@ -222,7 +233,8 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
       }
       mostrar(resultadoIndividual, respuesta[0] + 
         (respuesta[1] ? " — normalizado: " + respuesta[1] : "") +
-        (respuesta[2] ? " — código: " + respuesta[2] : ""));
+        (respuesta[2] ? " — código: " + respuesta[2] : "") +
+        " — motor: rutificador " + versionMotorCargado);
     } catch (_error) {
       mostrar(resultadoIndividual, "No se pudo cargar el validador. Revisa tu conexión.");
     }
@@ -271,7 +283,7 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
       botonDescargar.disabled = false;
       var s = informe.resumen;
       mostrarEstadisticas(s);
-      mostrar(estado, "Auditoría terminada. Archivo preparado para descargar.");
+      mostrar(estado, "Auditoría terminada con rutificador " + versionMotorCargado + ". Archivo preparado para descargar.");
     } catch (error) {
       mostrar(estado, errorLegible(error));
     } finally {

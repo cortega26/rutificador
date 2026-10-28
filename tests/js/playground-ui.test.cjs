@@ -65,6 +65,7 @@ function construirPagina() {
     pyimport: () => ({ install: async () => undefined }),
     runPython(programa) {
       if (programa.startsWith("globals().pop")) return null;
+      if (programa.includes("_version_paquete('rutificador')")) return "2.4.0";
       assert.ok(programa.includes("Rut.parse"));
       return {
         toJs: () => ["valido", "12345678-5", ""],
@@ -141,6 +142,7 @@ test("flujo UI: importar → seleccionar RUT → auditar → descargar (sin envi
   assert.match(get("rut-csv-resumen").textContent, /Válidos: 2/);
   assert.match(get("rut-csv-resumen").textContent, /Duplicados adicionales: 1/);
   assert.equal(pagina.pythonGlobals.size, 0, "no conservar los valores cargados en Python");
+  assert.match(get("rut-csv-estado").textContent, /rutificador 2\.4\.0/);
   await get("rut-csv-descargar").trigger("click");
   assert.equal(pagina.descargas.length, 1);
   const texto = await pagina.blob().text();
@@ -151,6 +153,12 @@ test("flujo UI: importar → seleccionar RUT → auditar → descargar (sin envi
   assert.deepEqual(pagina.scriptsExternos, [
     "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js"
   ]);
+});
+
+test("validación individual informa la versión del motor realmente verificada", async () => {
+  const pagina = construirPagina();
+  await pagina.elementos.get("rut-validar").trigger("click");
+  assert.match(pagina.elementos.get("rut-salida").textContent, /motor: rutificador 2\.4\.0/);
 });
 
 test("cambiar columna invalida la descarga anterior", async () => {

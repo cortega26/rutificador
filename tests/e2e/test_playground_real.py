@@ -112,6 +112,11 @@ def ejecutar():
         playwright_api.expect(page.locator("#rut-salida")).to_contain_text(
             RUT_NORMALIZADO
         )
+        # La versión procede del importlib.metadata en Pyodide REAL,
+        # no del texto estático de la página ni de un mock.
+        playwright_api.expect(page.locator("#rut-salida")).to_contain_text(
+            "motor: rutificador 2.4.0"
+        )
 
         page.locator("#rut-csv-archivo").set_input_files(
             files={
@@ -136,6 +141,9 @@ def ejecutar():
         )
         playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text(
             "Duplicados adicionales: 1"
+        )
+        playwright_api.expect(page.locator("#rut-csv-estado")).to_contain_text(
+            "rutificador 2.4.0"
         )
         with page.expect_download(timeout=20000) as descarga:
             page.locator("#rut-csv-descargar").click()
