@@ -15,7 +15,6 @@ Verifica RUTs individualmente o **audita hasta 15.000 registros de un archivo CS
     </div>
   </div>
   <p id="rut-salida" class="rut-feedback" role="status" aria-live="polite"></p>
-  <p id="rut-version" class="rut-feedback" role="status" aria-live="polite"></p>
 </div>
 
 ## Auditoría de archivo CSV
@@ -69,9 +68,9 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
   var PAQUETE = "rutificador==" + VERSION_ESPERADA;
   var pyodide = null;
   var cargando = null;
+  var versionMotorCargado = null;
   var entrada = document.getElementById("rut-input");
   var resultadoIndividual = document.getElementById("rut-salida");
-  var versionMotor = document.getElementById("rut-version");
   var archivoInput = document.getElementById("rut-csv-archivo");
   var separadorInput = document.getElementById("rut-csv-separador");
   var columnaInput = document.getElementById("rut-csv-columna");
@@ -109,7 +108,7 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
               if (versionInstalada !== VERSION_ESPERADA) {
                 throw new Error("Versión inesperada del motor: " + versionInstalada);
               }
-              mostrar(versionMotor, "Motor Python: rutificador " + versionInstalada);
+              versionMotorCargado = versionInstalada;
               return p;
             });
           });
@@ -234,7 +233,8 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
       }
       mostrar(resultadoIndividual, respuesta[0] + 
         (respuesta[1] ? " — normalizado: " + respuesta[1] : "") +
-        (respuesta[2] ? " — código: " + respuesta[2] : ""));
+        (respuesta[2] ? " — código: " + respuesta[2] : "") +
+        " — motor: rutificador " + versionMotorCargado);
     } catch (_error) {
       mostrar(resultadoIndividual, "No se pudo cargar el validador. Revisa tu conexión.");
     }
@@ -283,7 +283,7 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
       botonDescargar.disabled = false;
       var s = informe.resumen;
       mostrarEstadisticas(s);
-      mostrar(estado, "Auditoría terminada. Archivo preparado para descargar.");
+      mostrar(estado, "Auditoría terminada con rutificador " + versionMotorCargado + ". Archivo preparado para descargar.");
     } catch (error) {
       mostrar(estado, errorLegible(error));
     } finally {
