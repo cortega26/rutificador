@@ -8,8 +8,7 @@ import csv
 import os
 from pathlib import Path
 
-from playwright.sync_api import Error, expect, sync_playwright
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright import sync_api as playwright_api
 
 
 URL = os.environ.get("PLAYGROUND_URL", "http://127.0.0.1:8765/guia/playground/")
@@ -79,7 +78,7 @@ def verificar_pantalla(page, ancho: int) -> None:
 def ejecutar():
     errores_js = []
     solicitudes = []
-    with sync_playwright() as playwright:
+    with playwright_api.sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True, args=["--no-sandbox"])
         context = browser.new_context(
             accept_downloads=True, viewport={"width": 1280, "height": 844}
@@ -95,8 +94,8 @@ def ejecutar():
 
         print(f"Abriendo {URL}")
         page.goto(URL, wait_until="domcontentloaded", timeout=45000)
-        expect(page.locator("#rut-validar")).to_be_visible()
-        expect(page.locator("#rut-csv-archivo")).to_be_visible()
+        playwright_api.expect(page.locator("#rut-validar")).to_be_visible()
+        playwright_api.expect(page.locator("#rut-csv-archivo")).to_be_visible()
         ejemplo = page.request.get(
             "http://127.0.0.1:8765/ejemplos/auditoria-demo.csv",
             timeout=10000,
@@ -107,8 +106,8 @@ def ejecutar():
 
         # El primer clic descarga Pyodide y rutificador desde la red REAL.
         page.locator("#rut-validar").click()
-        expect(page.locator("#rut-salida")).to_contain_text("valido", timeout=150000)
-        expect(page.locator("#rut-salida")).to_contain_text(RUT_NORMALIZADO)
+        playwright_api.expect(page.locator("#rut-salida")).to_contain_text("valido", timeout=150000)
+        playwright_api.expect(page.locator("#rut-salida")).to_contain_text(RUT_NORMALIZADO)
 
         page.locator("#rut-csv-archivo").set_input_files(
             files={
@@ -117,13 +116,13 @@ def ejecutar():
                 "buffer": DATOS.encode("utf-8"),
             }
         )
-        expect(page.locator("#rut-csv-columna")).to_be_enabled(timeout=10000)
-        expect(page.locator("#rut-csv-columna")).to_have_value("RUT")
+        playwright_api.expect(page.locator("#rut-csv-columna")).to_be_enabled(timeout=10000)
+        playwright_api.expect(page.locator("#rut-csv-columna")).to_have_value("RUT")
         page.locator("#rut-csv-auditar").click()
-        expect(page.locator("#rut-csv-descargar")).to_be_enabled(timeout=120000)
-        expect(page.locator("#rut-csv-resumen")).to_contain_text("Total: 3")
-        expect(page.locator("#rut-csv-resumen")).to_contain_text("Válidos: 2")
-        expect(page.locator("#rut-csv-resumen")).to_contain_text(
+        playwright_api.expect(page.locator("#rut-csv-descargar")).to_be_enabled(timeout=120000)
+        playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text("Total: 3")
+        playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text("Válidos: 2")
+        playwright_api.expect(page.locator("#rut-csv-resumen")).to_contain_text(
             "Duplicados adicionales: 1"
         )
         with page.expect_download(timeout=20000) as descarga:
@@ -160,6 +159,6 @@ def ejecutar():
 if __name__ == "__main__":
     try:
         ejecutar()
-    except (PlaywrightTimeoutError, Error, AssertionError) as exc:
+    except (playwright_api.TimeoutError, playwright_api.Error, AssertionError) as exc:
         print(f"FAIL: {type(exc).__name__}: {exc}")
         raise
