@@ -101,7 +101,9 @@ def ejecutar():
             "http://127.0.0.1:8765/ejemplos/auditoria-demo.csv",
             timeout=10000,
         )
-        assert ejemplo.ok and "RUT,Referencia" in ejemplo.text(), "CSV de ejemplo inaccesible"
+        assert ejemplo.ok and "RUT,Referencia" in ejemplo.text(), (
+            "CSV de ejemplo inaccesible"
+        )
 
         # El primer clic descarga Pyodide y rutificador desde la red REAL.
         page.locator("#rut-validar").click()
