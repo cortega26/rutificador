@@ -5,7 +5,6 @@ descargados en el propio navegador. No requiere datos de usuarios.
 """
 
 import csv
-import io
 import os
 from pathlib import Path
 
@@ -14,7 +13,9 @@ from playwright.sync_api import expect, sync_playwright
 
 
 URL = os.environ.get("PLAYGROUND_URL", "http://127.0.0.1:8765/guia/playground/")
-ARTEFACTOS = Path(os.environ.get("PLAYGROUND_E2E_ARTIFACTS", "artifacts/playground-e2e"))
+ARTEFACTOS = Path(
+    os.environ.get("PLAYGROUND_E2E_ARTIFACTS", "artifacts/playground-e2e")
+)
 ARTEFACTOS.mkdir(parents=True, exist_ok=True)
 
 RUT_VALIDO = "12.345.678-5"
@@ -33,9 +34,14 @@ def verificar_csv(ruta: Path) -> None:
         filas = list(csv.reader(entrada))
     assert len(filas) == 4, f"Se esperaban 3 registros, recibidos {len(filas) - 1}"
     assert filas[0] == [
-        "RUT", "Nombre", "Nota",
-        "rutificador_fila", "rutificador_estado",
-        "rutificador_normalizado", "rutificador_errores", "rutificador_duplicado",
+        "RUT",
+        "Nombre",
+        "Nota",
+        "rutificador_fila",
+        "rutificador_estado",
+        "rutificador_normalizado",
+        "rutificador_errores",
+        "rutificador_duplicado",
     ], filas[0]
     assert filas[1][0:3] == [RUT_VALIDO, "Persona A", "Valor normal"]
     assert filas[2][0:3] == [RUT_NORMALIZADO, "Persona B", "'=2+2"]
@@ -75,13 +81,16 @@ def ejecutar():
     solicitudes = []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True, args=["--no-sandbox"])
-        context = browser.new_context(accept_downloads=True, viewport={"width": 1280, "height": 844})
+        context = browser.new_context(
+            accept_downloads=True, viewport={"width": 1280, "height": 844}
+        )
         page = context.new_page()
         page.on("pageerror", lambda error: errores_js.append(str(error)))
 
         def registrar(request):
             datos = request.post_data or ""
             solicitudes.append((request.url, datos))
+
         page.on("request", registrar)
 
         print(f"Abriendo {URL}")
@@ -100,7 +109,11 @@ def ejecutar():
         expect(page.locator("#rut-salida")).to_contain_text(RUT_NORMALIZADO)
 
         page.locator("#rut-csv-archivo").set_input_files(
-            files={"name": "clientes-sinteticos.csv", "mimeType": "text/csv", "buffer": DATOS.encode("utf-8")}
+            files={
+                "name": "clientes-sinteticos.csv",
+                "mimeType": "text/csv",
+                "buffer": DATOS.encode("utf-8"),
+            }
         )
         expect(page.locator("#rut-csv-columna")).to_be_enabled(timeout=10000)
         expect(page.locator("#rut-csv-columna")).to_have_value("RUT")
@@ -108,7 +121,9 @@ def ejecutar():
         expect(page.locator("#rut-csv-descargar")).to_be_enabled(timeout=120000)
         expect(page.locator("#rut-csv-resumen")).to_contain_text("Total: 3")
         expect(page.locator("#rut-csv-resumen")).to_contain_text("Válidos: 2")
-        expect(page.locator("#rut-csv-resumen")).to_contain_text("Duplicados adicionales: 1")
+        expect(page.locator("#rut-csv-resumen")).to_contain_text(
+            "Duplicados adicionales: 1"
+        )
         with page.expect_download(timeout=20000) as descarga:
             page.locator("#rut-csv-descargar").click()
         ruta = ARTEFACTOS / "rutificador-auditoria-sintetica.csv"
@@ -118,13 +133,23 @@ def ejecutar():
         verificar_pantalla(page, 390)
         # La aplicación puede descargar bibliotecas, nunca enviar las muestras.
         for url, cuerpo in solicitudes:
-            for valor in (RUT_VALIDO, RUT_NORMALIZADO, RUT_INVALIDO,
-                          "Persona A", "Persona B", "Persona C"):
+            for valor in (
+                RUT_VALIDO,
+                RUT_NORMALIZADO,
+                RUT_INVALIDO,
+                "Persona A",
+                "Persona B",
+                "Persona C",
+            ):
                 assert valor not in url and valor not in cuerpo, (
-                    "Posible exfiltración de datos sintéticos a red", url, valor
+                    "Posible exfiltración de datos sintéticos a red",
+                    url,
+                    valor,
                 )
         assert not errores_js, f"Excepciones JavaScript: {errores_js}"
-        print("PASS: Chromium real, Pyodide, wheel PyPI, auditoría CSV, exportación, privacidad, 390/1280px")
+        print(
+            "PASS: Chromium real, Pyodide, wheel PyPI, auditoría CSV, exportación, privacidad, 390/1280px"
+        )
         print(f"Solicitudes de descarga/control (sin datos): {len(solicitudes)}")
         context.close()
         browser.close()
