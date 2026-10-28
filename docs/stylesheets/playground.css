@@ -80,6 +80,7 @@
   font: inherit;
   font-size: 0.82rem;
   font-weight: 650;
+  white-space: nowrap;
   cursor: pointer;
   transition: opacity 0.1s ease;
 }
