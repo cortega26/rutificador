@@ -20,7 +20,6 @@ mkdocs-material>=9.5
 mkdocstrings[python]>=1.0
 pandas
 polars
-# Pillow solo es dependencia de desarrollo/documentacion, no del nucleo.
-# Pillow 13 corrige las CVE de 12.3.0, pero requiere Python >=3.11.
-# En Python 3.10 (EOL) se resuelve la ultima rama compatible transitivamente.
-pillow>=13.0.0,<14; python_version >= "3.11"
+# Pillow 13: dependencia exclusiva de desarrollo/documentacion, no del nucleo.
+# La ventana de Python soportada comienza en 3.11 (3.10 EOL).
+pillow>=13.0.0,<14

@@ -4,6 +4,8 @@ Lee la versión desde los metadatos del paquete instalado (``importlib.metadata`
 o, en entornos de desarrollo, desde ``pyproject.toml`` (fuente real de la
 versión; este módulo nunca la define de forma estática). Proporciona también la
 estructura tipada ``InformacionVersion`` con metadatos del proyecto.
+
+Ventana de compatibilidad certificada en la versión 2.4.0: Python 3.11–3.15.
 """
 
 import re

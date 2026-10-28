@@ -4,7 +4,7 @@ Gracias por tu interés en contribuir a **rutificador**. Este documento describe
 
 ## Requisitos
 
-- Python 3.10 o superior
+- Python 3.11 a 3.15 (ventana validada por CI)
 - Entorno virtual (`venv` o similar)
 
 ## Configuración del Entorno de Desarrollo

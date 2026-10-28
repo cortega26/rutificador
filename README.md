@@ -5,7 +5,7 @@
 [![Parte de Tooltician](https://img.shields.io/badge/Parte_de-Tooltician.com-6C47FF?v=2)](https://tooltician.com)
 
 [![PyPI version](https://img.shields.io/pypi/v/rutificador.svg)](https://pypi.org/project/rutificador/)
-[![Python](https://img.shields.io/badge/Python-3.10--3.14-blue)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.11--3.15-blue)](https://www.python.org/)
 [![Downloads](https://img.shields.io/pypi/dm/rutificador)](https://pypi.org/project/rutificador/)
 [![Licencia](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Estilo de código](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://docs.astral.sh/ruff/)

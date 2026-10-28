@@ -2,7 +2,7 @@
 
 ## Requisitos
 
-- Python 3.10 o superior
+- Python 3.11 a 3.15 (se requiere Python >=3.11)
 - Sin dependencias externas (solo biblioteca estándar)
 
 ## Instalación base
