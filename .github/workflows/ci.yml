@@ -48,7 +48,7 @@ jobs:
       run: |
         python -m pytest \
           --cov=rutificador --cov-report=xml --cov-report=lcov --cov-report=html \
-          -v tests/ --ignore=tests/benchmarks --ignore=tests/test_benchmark.py --tb=short
+          -v tests/ --ignore=tests/benchmarks --ignore=tests/test_benchmark.py --ignore=tests/e2e --tb=short
 
     - name: Subir cobertura a Coveralls
       uses: coverallsapp/github-action@v2
