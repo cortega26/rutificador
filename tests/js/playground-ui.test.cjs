@@ -50,7 +50,7 @@ function construirPagina() {
   const ids = [
     "rut-input", "rut-salida", "rut-csv-archivo", "rut-csv-separador",
     "rut-csv-columna", "rut-csv-auditar", "rut-csv-descargar",
-    "rut-csv-estado", "rut-csv-resumen", "rut-validar"
+    "rut-csv-estado", "rut-csv-resumen", "rut-validar", "rut-version"
   ];
   ids.forEach((id) => elementos.set(id, new Elemento(id === "rut-csv-columna" ? "select" : "input")));
   elementos.get("rut-csv-separador").value = "auto";
@@ -65,6 +65,7 @@ function construirPagina() {
     pyimport: () => ({ install: async () => undefined }),
     runPython(programa) {
       if (programa.startsWith("globals().pop")) return null;
+      if (programa.includes("_version_paquete('rutificador')")) return "2.4.0";
       assert.ok(programa.includes("Rut.parse"));
       return {
         toJs: () => ["valido", "12345678-5", ""],
@@ -141,6 +142,7 @@ test("flujo UI: importar → seleccionar RUT → auditar → descargar (sin envi
   assert.match(get("rut-csv-resumen").textContent, /Válidos: 2/);
   assert.match(get("rut-csv-resumen").textContent, /Duplicados adicionales: 1/);
   assert.equal(pagina.pythonGlobals.size, 0, "no conservar los valores cargados en Python");
+  assert.equal(get("rut-version").textContent, "Motor Python: rutificador 2.4.0");
   await get("rut-csv-descargar").trigger("click");
   assert.equal(pagina.descargas.length, 1);
   const texto = await pagina.blob().text();
