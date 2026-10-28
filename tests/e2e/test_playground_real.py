@@ -8,8 +8,8 @@ import csv
 import os
 from pathlib import Path
 
-from playwright.sync_api import Error, TimeoutError as PlaywrightTimeoutError
-from playwright.sync_api import expect, sync_playwright
+from playwright.sync_api import Error, expect, sync_playwright
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 URL = os.environ.get("PLAYGROUND_URL", "http://127.0.0.1:8765/guia/playground/")
