@@ -13,7 +13,6 @@
 
 </div>
 
-
 # Rutificador
 
 **Validación de RUT chilenos para aplicaciones Python, sin reimplementar el dígito verificador.**
