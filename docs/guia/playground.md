@@ -15,6 +15,7 @@ Verifica RUTs individualmente o **audita hasta 15.000 registros de un archivo CS
     </div>
   </div>
   <p id="rut-salida" class="rut-feedback" role="status" aria-live="polite"></p>
+  <p id="rut-version" class="rut-feedback" role="status" aria-live="polite"></p>
 </div>
 
 ## Auditoría de archivo CSV
@@ -63,13 +64,14 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
 (function () {
   "use strict";
   var PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js";
-  // Versión publicada antes de esta iteración; el motor CSV es JS y no precisa
-  // una publicación nueva de la biblioteca.
-  var PAQUETE = "rutificador==2.3.0";
+  // La versión publicada en PyPI debe coincidir con la instalada en Pyodide.
+  var VERSION_ESPERADA = "2.4.0";
+  var PAQUETE = "rutificador==" + VERSION_ESPERADA;
   var pyodide = null;
   var cargando = null;
   var entrada = document.getElementById("rut-input");
   var resultadoIndividual = document.getElementById("rut-salida");
+  var versionMotor = document.getElementById("rut-version");
   var archivoInput = document.getElementById("rut-csv-archivo");
   var separadorInput = document.getElementById("rut-csv-separador");
   var columnaInput = document.getElementById("rut-csv-columna");
@@ -99,7 +101,17 @@ Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas
         .then(function () { return loadPyodide(); })
         .then(function (p) {
           return p.loadPackage("micropip").then(function () {
-            return p.pyimport("micropip").install(PAQUETE).then(function () { return p; });
+            return p.pyimport("micropip").install(PAQUETE).then(function () {
+              var versionInstalada = p.runPython(
+                "from importlib.metadata import version as _version_paquete\n" +
+                "_version_paquete('rutificador')"
+              );
+              if (versionInstalada !== VERSION_ESPERADA) {
+                throw new Error("Versión inesperada del motor: " + versionInstalada);
+              }
+              mostrar(versionMotor, "Motor Python: rutificador " + versionInstalada);
+              return p;
+            });
           });
         });
     }
