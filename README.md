@@ -13,13 +13,16 @@
 
 </div>
 
+
 # Rutificador
 
-Biblioteca Python para validar, calcular y formatear el Rol Único Tributario (RUT) chileno. **Sin dependencias externas**, tipado estático completo, y soporte para procesamiento por lotes, streaming, CLI, e integraciones opcionales con Pydantic v2, FastAPI, pandas y polars.
+**Validación de RUT chilenos para aplicaciones Python, sin reimplementar el dígito verificador.**
 
-Documentación completa (guías, referencia de API y playground interactivo): [tooltician.com/rutificador](https://tooltician.com/rutificador/).
+Rutificador reúne validación, normalización, formato, manejo de errores, procesamiento por lotes, streaming y CLI. Su **núcleo no requiere dependencias externas**; las integraciones con Pydantic v2, FastAPI, pandas y polars son opcionales. Compatible con **Python 3.11–3.15**.
 
-**Auditoría de datos para empresas:** [validador CSV gratuito y propuesta de control recurrente](https://tooltician.com/rutificador/empresas/auditoria-rut/). La opción B2B es un servicio profesional en evaluación, no una suscripción SaaS.
+```bash
+pip install rutificador
+```
 
 ```python
 from rutificador import Rut
@@ -31,29 +34,20 @@ resultado = Rut.parse("12.345.678-9")
 print(resultado.estado, resultado.errores[0].codigo)  # invalido DV_DISCORDANTE
 ```
 
-## Tabla de Contenidos
+| Si necesitas… | Ya tienes… |
+| --- | --- |
+| Validar datos que llegan desde formularios o APIs | Parseo seguro y errores estructurados; integración opcional con FastAPI y Pydantic |
+| Limpiar exportaciones o grandes volúmenes | Normalización, procesamiento por lotes, streaming e integraciones con pandas/polars |
+| Incorporar controles a una automatización | CLI, formatos JSON/JSONL/CSV/XML y umbrales de error |
+| Reducir exposición accidental en registros | Enmascaramiento y tokenización de RUT |
 
-- [Características](#caracteristicas)
-- [Instalación](#instalacion)
-- [Uso básico](#uso-basico)
-  - [Validación y parseo](#validacion-y-parseo)
-  - [Formateo](#formateo)
-  - [Dígito verificador](#calculo-del-digito-verificador)
-  - [Enmascaramiento](#enmascaramiento)
-  - [Sugerencias y autocorrección](#sugerencias-y-autocorreccion)
-- [Línea de comandos](#linea-de-comandos)
-- [Procesamiento por lotes](#procesamiento-por-lotes)
-- [Integraciones](#integraciones)
-  - [Pydantic v2](#pydantic-v2)
-  - [FastAPI](#fastapi)
-  - [pandas](#pandas)
-  - [polars](#polars)
-- [Validación avanzada](#validacion-avanzada)
-- [Referencia de errores](#referencia-de-errores)
-- [Registro y depuración](#registro-y-depuracion)
-- [API de referencia](#api-de-referencia)
-- [Desarrollo](#desarrollo)
-- [Licencia](#licencia)
+**Pruébalo sin instalar nada:** [playground y auditor CSV local](https://tooltician.com/rutificador/guia/playground/). [Documentación y API](https://tooltician.com/rutificador/).
+
+**¿Necesitas ejecutar estos controles periódicamente?** Consulta la [propuesta de auditoría RUT para empresas](https://tooltician.com/rutificador/empresas/auditoria-rut/). El servicio profesional está en validación; el auditor del navegador continúa siendo gratuito.
+
+**Alcance:** un dígito verificador correcto no acredita existencia del RUT, identidad ni estado tributario en el SII. El validador no consulta esos registros.
+
+[Instalación](#instalación) · [Uso básico](#uso-básico) · [CLI](#línea-de-comandos) · [Integraciones](#integraciones) · [API](#api-de-referencia)
 
 ---
 
