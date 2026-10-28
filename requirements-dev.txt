@@ -1,5 +1,5 @@
 pip>=26.2  # Correcciones de seguridad vigentes para instalación y actualización
-pytest>=9.0.3,<10
+pytest>=9.0.3,<9.2  # pytest-benchmark 5.3.0 usa _nodeid; pytest 9.2 lo elimino
 pytest-cov>=7
 pytest-benchmark==5.3.0
 ruff>=0.16.10
@@ -20,4 +20,7 @@ mkdocs-material>=9.5
 mkdocstrings[python]>=1.0
 pandas
 polars
-pillow==12.3.0  # fix PYSEC vulns (CVE-2026 etc.)
+# Pillow solo es dependencia de desarrollo/documentacion, no del nucleo.
+# Pillow 13 corrige las CVE de 12.3.0, pero requiere Python >=3.11.
+# En Python 3.10 (EOL) se resuelve la ultima rama compatible transitivamente.
+pillow>=13.0.0,<14; python_version >= "3.11"
