@@ -2,7 +2,7 @@
 
 **¿Importas listas de clientes o proveedores y te encuentras RUT mal escritos, formatos distintos o duplicados?** Rutificador permite localizar esos problemas antes de cargar los registros a otro sistema. Para flujos que se repiten, estamos evaluando una modalidad profesional de automatización y control.
 
-[Probar auditoría CSV gratuita](../../guia/playground.md) · [Conversar sobre un control recurrente](https://tooltician.com/es/?utm_source=rutificador&utm_medium=referral&utm_campaign=auditoria_rut_b2b&utm_content=recurrente#contact)
+[Probar auditoría CSV gratuita](../guia/playground.md) · [Conversar sobre un control recurrente](https://tooltician.com/es/?utm_source=rutificador&utm_medium=referral&utm_campaign=auditoria_rut_b2b&utm_content=recurrente#contact)
 
 ## Tres problemas concretos
 
@@ -20,7 +20,7 @@ Si debes hacer las mismas verificaciones sobre exportaciones sucesivas, se puede
 
 ## Lo que puedes hacer hoy sin pagar
 
-El [auditor CSV](../../guia/playground.md) ya está publicado:
+El [auditor CSV](../guia/playground.md) ya está publicado:
 
 - Analiza archivos UTF-8 de hasta **2 MiB y 15.000 registros**, con selección de columna RUT.
 - Distingue válidos, inválidos, incompletos, posibles y duplicados normalizados.
@@ -29,7 +29,7 @@ El [auditor CSV](../../guia/playground.md) ya está publicado:
 
 El resultado indica **coherencia de formato y dígito verificador**, no existencia del RUT, identidad, estado tributario, vigencia comercial ni verificación en el SII. Tampoco reemplaza la revisión de duplicados de personas o empresas por otras reglas de negocio.
 
-[Auditar un archivo ahora](../../guia/playground.md)
+[Auditar un archivo ahora](../guia/playground.md)
 
 ## Servicio recurrente: propuesta en validación
 
