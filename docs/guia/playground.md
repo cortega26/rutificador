@@ -153,13 +153,21 @@ Elige un archivo **UTF-8**, con cabecera y columnas separadas por coma o punto y
       p.globals.set("rutificador_entrada", valor);
       var respuesta;
       try {
-        respuesta = p.runPython(
+        var resultadoProxy = p.runPython(
           "from rutificador import Rut\n" +
-          "r = Rut.parse(rutificador_entrada)\n" +
-          "(r.estado, r.normalizado or '', r.errores[0].codigo if r.errores else '')"
-        ).toJs();
+          "def _rutificador_validar_uno():\n" +
+          "    resultado = Rut.parse(rutificador_entrada)\n" +
+          "    return (resultado.estado, resultado.normalizado or '', resultado.errores[0].codigo if resultado.errores else '')\n" +
+          "_rutificador_validar_uno()"
+        );
+        try {
+          respuesta = resultadoProxy.toJs();
+        } finally {
+          resultadoProxy.destroy();
+        }
       } finally {
         p.globals.delete("rutificador_entrada");
+        p.runPython("globals().pop('_rutificador_validar_uno', None)");
       }
       mostrar(resultadoIndividual, respuesta[0] + 
         (respuesta[1] ? " — normalizado: " + respuesta[1] : "") +
@@ -204,7 +212,7 @@ Elige un archivo **UTF-8**, con cabecera y columnas separadas por coma o punto y
         );
       } finally {
         p.globals.delete("rutificador_csv_json");
-        p.runPython("del _rutificador_auditar_valores");
+        p.runPython("globals().pop('_rutificador_auditar_valores', None)");
       }
       if (miRevision !== revision) return;
       var informe = RutificadorCSV.auditar(datos, columna, JSON.parse(jsonResultados));
