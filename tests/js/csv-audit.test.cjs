@@ -106,7 +106,8 @@ test("el JS del playground tiene sintaxis válida y no envía datos por red", ()
   const scripts = [...pagina.matchAll(/<script>([\s\S]*?)<\/script>/g)];
   assert.equal(scripts.length, 1);
   new vm.Script(scripts[0][1]);
-  assert.match(pagina, /rutificador==2\.3\.0/);
+  assert.match(pagina, /VERSION_ESPERADA = "2\.4\.0"/);
+  assert.match(pagina, /PAQUETE = "rutificador==" \+ VERSION_ESPERADA/);
   assert.match(pagina, /p\.globals\.set\("rutificador_csv_json"/);
   assert.doesNotMatch(pagina, /fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage/);
 });
