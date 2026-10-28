@@ -19,9 +19,16 @@ function construirPagina() {
       this.children = [];
       this.listeners = new Map();
       this.value = "";
-      this.textContent = "";
+      this._textContent = "";
       this.disabled = false;
       this.files = [];
+    }
+    get textContent() {
+      return this._textContent + this.children.map((child) => child.textContent).join("");
+    }
+    set textContent(texto) {
+      this._textContent = String(texto);
+      this.children = [];
     }
     addEventListener(nombre, manejador) {
       this.listeners.set(nombre, manejador);
@@ -35,7 +42,7 @@ function construirPagina() {
       this.children.push(nodo);
       if (this.tagName === "select" && this.children.length === 1) this.value = nodo.value;
     }
-    replaceChildren() { this.children = []; this.value = ""; }
+    replaceChildren() { this.children = []; this.value = ""; this._textContent = ""; }
     click() { /* descarga disparada localmente */ }
     remove() { /* descarga disparada localmente */ }
   }

@@ -73,7 +73,8 @@ filterwarnings = [
     "ignore::UserWarning",
     "ignore::SyntaxWarning",
 ]
-norecursedirs = ["mutants", ".venv", ".benchmarks", ".hypothesis", "dist"]
+# Playwright E2E corre en un workflow independiente (no es dependencia de pytest core).
+norecursedirs = ["mutants", ".venv", ".benchmarks", ".hypothesis", "dist", "tests/e2e"]
 
 [tool.deptry]
 known_first_party = ["rutificador"]

@@ -1,34 +1,60 @@
 # Playground interactivo
 
-Valida RUTs individuales o **audita hasta 15.000 registros CSV** (máximo 2 MiB) desde tu navegador. Se usa [Pyodide](https://pyodide.org) y la biblioteca oficial `rutificador` de PyPI para la validación: **ningún RUT, archivo ni resultado se envía a nuestros servidores**. El navegador descarga el motor desde un CDN y PyPI; esos proveedores sí reciben las solicitudes ordinarias de descarga, pero no el contenido de tus archivos.
+Verifica RUTs individualmente o **audita hasta 15.000 registros de un archivo CSV** (máximo 2 MiB). Detecta formatos inconsistentes, errores y registros duplicados, y descarga el resultado sin alterar tu archivo original.
+
+**Privacidad:** el procesamiento ocurre en tu navegador. Ni los RUT ni el contenido del archivo se envían al servidor. Al iniciar la validación, el navegador sí descarga el motor [Pyodide](https://pyodide.org) y la biblioteca `rutificador` desde proveedores externos.
 
 ## Validación individual
 
-<label for="rut-input">RUT a validar</label>
-<input id="rut-input" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="12.345.678-5" />
-<button id="rut-validar" type="button">Validar</button>
-<p id="rut-salida" aria-live="polite"></p>
+<div class="rut-ui rut-individual">
+  <div class="rut-field">
+    <label for="rut-input">RUT a validar</label>
+    <div class="rut-inline">
+      <input id="rut-input" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="12.345.678-5" aria-describedby="rut-salida" />
+      <button id="rut-validar" class="rut-btn rut-btn--primary" type="button">Validar RUT</button>
+    </div>
+  </div>
+  <p id="rut-salida" class="rut-feedback" role="status" aria-live="polite"></p>
+</div>
 
 ## Auditoría de archivo CSV
 
-Elige un archivo **UTF-8**, con cabecera y columnas separadas por coma o punto y coma. Puedes seleccionar qué columna contiene RUT. El archivo original no se modifica; la descarga conserva todas sus filas y columnas y añade el resultado de la auditoría. Los campos que podrían ejecutar fórmulas en Excel se neutralizan en el CSV exportado.
+Selecciona un archivo **CSV UTF-8** con encabezados y campos separados por comas o puntos y comas. El informe conserva las filas y columnas originales y añade el diagnóstico de cada RUT.
 
-<label for="rut-csv-archivo">Archivo CSV (máximo 2 MiB, 15.000 registros)</label>
-<input id="rut-csv-archivo" type="file" accept=".csv,text/csv" />
-<label for="rut-csv-separador">Separador</label>
-<select id="rut-csv-separador">
-  <option value="auto">Detectar automáticamente</option>
-  <option value=",">Coma (,)</option>
-  <option value=";">Punto y coma (;)</option>
-</select>
-<label for="rut-csv-columna">Columna que contiene el RUT</label>
-<select id="rut-csv-columna" disabled>
-  <option value="">Selecciona primero un archivo</option>
-</select>
-<button id="rut-csv-auditar" type="button" disabled>Auditar archivo</button>
-<button id="rut-csv-descargar" type="button" disabled>Descargar CSV auditado</button>
-<p id="rut-csv-estado" aria-live="polite"></p>
-<p id="rut-csv-resumen" aria-live="polite"></p>
+<aside class="rut-sample">
+  <strong>¿No tienes un archivo a mano?</strong>
+  <a href="../../ejemplos/auditoria-demo.csv" download="rutificador-demo.csv">Descarga un CSV de ejemplo</a> con registros ficticios para probar el flujo.
+</aside>
+
+<div class="rut-ui rut-audit">
+  <div class="rut-grid">
+    <div class="rut-field rut-field--full">
+      <label for="rut-csv-archivo">1. Selecciona el archivo CSV</label>
+      <input id="rut-csv-archivo" type="file" accept=".csv,text/csv" aria-describedby="rut-csv-limites" />
+      <small id="rut-csv-limites">Máximo 2 MiB y 15.000 registros. Solo lectura local.</small>
+    </div>
+    <div class="rut-field">
+      <label for="rut-csv-separador">2. Separador del archivo</label>
+      <select id="rut-csv-separador">
+        <option value="auto">Detectar automáticamente</option>
+        <option value=",">Coma (,)</option>
+        <option value=";">Punto y coma (;)</option>
+      </select>
+    </div>
+    <div class="rut-field">
+      <label for="rut-csv-columna">3. Columna que contiene el RUT</label>
+      <select id="rut-csv-columna" disabled>
+        <option value="">Selecciona primero un archivo</option>
+      </select>
+    </div>
+  </div>
+  <div class="rut-actions">
+    <button id="rut-csv-auditar" class="rut-btn rut-btn--primary" type="button" disabled>Auditar archivo</button>
+    <button id="rut-csv-descargar" class="rut-btn rut-btn--secondary" type="button" disabled>Descargar resultados CSV</button>
+  </div>
+  <p id="rut-csv-estado" class="rut-feedback" role="status" aria-live="polite"></p>
+  <div id="rut-csv-resumen" class="rut-stats" role="group" aria-label="Resumen de auditoría" aria-live="polite"></div>
+</div>
 
 **Cómo interpretar el resultado:** «válido» solo indica que el formato y el dígito verificador concuerdan; **no prueba que el RUT exista ni identifica a una persona**. «Posible» e «incompleto» se informan por separado. Los duplicados se detectan únicamente entre RUTs válidos normalizados. La auditoría cuenta todas las filas de un grupo duplicado y, por separado, los registros adicionales sobre el primero. Los CSV sin cabecera, con filas irregulares o con comillas malformadas se rechazan sin descartar registros silenciosamente.
 
@@ -83,6 +109,31 @@ Elige un archivo **UTF-8**, con cabecera y columnas separadas por coma o punto y
     }, function (error) {
       cargando = null;
       throw error;
+    });
+  }
+  function mostrarEstadisticas(cifras) {
+    resumen.replaceChildren();
+    [
+      ["Total", cifras.total],
+      ["Válidos", cifras.validos],
+      ["Inválidos", cifras.invalidos],
+      ["Posibles", cifras.posibles],
+      ["Incompletos", cifras.incompletos],
+      ["Normalizados", cifras.normalizados],
+      ["Filas en grupos duplicados", cifras.filas_en_grupos_duplicados],
+      ["Duplicados adicionales", cifras.duplicados_adicionales]
+    ].forEach(function (entrada) {
+      var tarjeta = document.createElement("div");
+      tarjeta.className = "rut-stat";
+      var etiqueta = document.createElement("span");
+      etiqueta.className = "rut-stat-label";
+      etiqueta.textContent = entrada[0] + ": ";
+      var valor = document.createElement("strong");
+      valor.className = "rut-stat-value";
+      valor.textContent = String(entrada[1]);
+      tarjeta.appendChild(etiqueta);
+      tarjeta.appendChild(valor);
+      resumen.appendChild(tarjeta);
     });
   }
   function errorLegible(error) {
@@ -219,11 +270,7 @@ Elige un archivo **UTF-8**, con cabecera y columnas separadas por coma o punto y
       csvExportado = informe.csv;
       botonDescargar.disabled = false;
       var s = informe.resumen;
-      mostrar(resumen, "Total: " + s.total + " | Válidos: " + s.validos +
-        " | Inválidos: " + s.invalidos + " | Posibles: " + s.posibles +
-        " | Incompletos: " + s.incompletos + " | Normalizados: " + s.normalizados +
-        " | Filas en grupos duplicados: " + s.filas_en_grupos_duplicados +
-        " | Duplicados adicionales: " + s.duplicados_adicionales);
+      mostrarEstadisticas(s);
       mostrar(estado, "Auditoría terminada. Archivo preparado para descargar.");
     } catch (error) {
       mostrar(estado, errorLegible(error));

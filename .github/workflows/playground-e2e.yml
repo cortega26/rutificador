@@ -1,0 +1,65 @@
+name: Playground E2E real (Chromium + Pyodide)
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - "docs/**"
+      - "tests/e2e/**"
+      - ".github/workflows/playground-e2e.yml"
+      - "mkdocs.yml"
+  push:
+    branches: [master]
+    paths:
+      - "docs/**"
+      - "tests/e2e/**"
+      - ".github/workflows/playground-e2e.yml"
+      - "mkdocs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  playground-real:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Instalar herramientas de prueba y documentación
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install mkdocs mkdocs-material "mkdocstrings[python]" playwright
+          python -m playwright install --with-deps chromium
+      - name: Construir la documentación real
+        run: mkdocs build --strict
+      - name: Servir documentación localmente
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/rutificador-playground-http.log 2>&1 &
+          echo $! > /tmp/rutificador-playground-http.pid
+          python - <<'PY'
+          import time
+          import urllib.request
+          for intento in range(60):
+              try:
+                  with urllib.request.urlopen("http://127.0.0.1:8765/guia/playground/", timeout=2) as r:
+                      assert r.status == 200
+                  break
+              except Exception:
+                  time.sleep(0.5)
+          else:
+              raise RuntimeError("MkDocs no responde en localhost:8765")
+          PY
+      - name: E2E en Chromium real con paquete PyPI
+        run: python tests/e2e/test_playground_real.py
+      - name: Subir capturas y CSV sintético de evidencia
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playground-e2e-evidencia
+          path: artifacts/playground-e2e/
+          if-no-files-found: ignore

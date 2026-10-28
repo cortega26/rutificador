@@ -1,0 +1,5 @@
+RUT,Referencia,Detalle
+12.345.678-5,Ejemplo A,Formato con puntos
+12345678-5,Ejemplo B,Duplicado normalizado
+12345678-9,Ejemplo C,DV incorrecto
+,Ejemplo D,RUT vacío
