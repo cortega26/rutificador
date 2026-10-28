@@ -4,6 +4,15 @@ Todas las modificaciones notables de este proyecto se documentarán en este arch
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a la [Semántica de Versiones](https://semver.org/lang/es/).
 
+## [2.4.0] - 2026-10-27
+
+### Compatibilidad
+
+- [COMPAT] Python 3.11–3.15 es la nueva ventana soportada y verificada en CI.
+- [BREAKING] Se deja de admitir Python 3.10 tras su fin de soporte el 1 de octubre de 2026.
+- [DEVOPS] La matriz de pruebas incorpora Python 3.15 estable y elimina 3.10; se retira el workflow recordatorio de migración.
+- [DOC] Se actualizan los metadatos del paquete, la instalación y la documentación del colaborador.
+
 ## [2.3.0] - 2026-09-16
 
 ### Añadido
