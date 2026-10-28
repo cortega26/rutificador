@@ -8,7 +8,6 @@ import csv
 import os
 from pathlib import Path
 
-
 URL = os.environ.get("PLAYGROUND_URL", "http://127.0.0.1:8765/guia/playground/")
 ARTEFACTOS = Path(
     os.environ.get("PLAYGROUND_E2E_ARTIFACTS", "artifacts/playground-e2e")
