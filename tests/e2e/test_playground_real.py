@@ -179,12 +179,16 @@ def ejecutar():
         playwright_api.expect(page.locator("h1")).to_contain_text(
             "Auditoría de RUT para empresas"
         )
-        playwright_api.expect(page.get_by_text("3 UF", exact=False).first).to_be_visible()
+        playwright_api.expect(
+            page.get_by_text("3 UF", exact=False).first
+        ).to_be_visible()
         enlaces = page.locator('a[href*="utm_campaign=auditoria_rut_b2b"]')
         assert enlaces.count() >= 3, "Faltan enlaces de contacto atribuibles"
         for enlace in enlaces.all():
             destino = enlace.get_attribute("href")
-            assert destino.startswith("https://tooltician.com/es/?utm_source=rutificador")
+            assert destino.startswith(
+                "https://tooltician.com/es/?utm_source=rutificador"
+            )
             assert destino.endswith("#contact")
         for ancho in (1280, 390):
             page.set_viewport_size({"width": ancho, "height": 844})
