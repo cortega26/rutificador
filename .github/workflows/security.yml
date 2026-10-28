@@ -27,7 +27,9 @@ jobs:
           python -m pip install --upgrade "pip>=25.2"
           pip install -r requirements-dev.txt
           pip install -e .
-          pip install bandit safety pip-audit
+          # Safety tiene filelock<4 y rebaja un filelock corregido a uno vulnerable.
+          # Se ejecuta mas abajo dentro de un entorno virtual independiente.
+          pip install bandit pip-audit
 
       - name: Linter de seguridad (Bandit)
         run: |
@@ -37,10 +39,12 @@ jobs:
         run: |
           pip-audit --format json --output audit-report.json --desc --progress-spinner off --ignore-vuln PYSEC-2026-3740
 
-      - name: Safety check
+      - name: Safety check (aislado del entorno auditado)
         continue-on-error: true
         run: |
-          safety check || echo "::warning::Safety platform auth failed - skipping (external service)"
+          python -m venv "$RUNNER_TEMP/rutificador-safety"
+          "$RUNNER_TEMP/rutificador-safety/bin/python" -m pip install --upgrade pip safety
+          "$RUNNER_TEMP/rutificador-safety/bin/safety" check --file requirements-dev.txt
 
       - name: Generar SBOM CycloneDX
         run: |
